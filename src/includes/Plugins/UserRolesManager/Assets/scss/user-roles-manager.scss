@@ -25,7 +25,9 @@
 }
 
 .wikipress-capability-info {
-  border-radius: 100%;
+  color: var(--wikipress-blue);
+  font-size: 1.25rem;
+  margin-left: auto;
 }
 
 @media (min-width: 576px) {
