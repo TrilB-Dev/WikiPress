@@ -223,7 +223,7 @@ final class RoleManager extends Manager {
 											<div class="wikipress-capability-title d-flex align-items-center justify-content-center gap-1">
 												<h6 class="card-title mb-0 text-center"><?php echo esc_html( $description ?: $capability ); ?></h6>
 												<?php if ( $wordpress_description ) : ?>
-													<button type="button" class="btn btn-sm btn-outline-secondary wikipress-capability-info p-0" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="<?php echo esc_attr( $wordpress_description ); ?>" aria-label="<?php esc_attr_e( 'Capability information', 'wikipress' ); ?>">
+													<button type="button" class="btn btn-sm btn-primary wikipress-capability-info p-0" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="<?php echo esc_attr( $wordpress_description ); ?>" aria-label="<?php esc_attr_e( 'Capability information', 'wikipress' ); ?>">
 														<i class="fa-solid fa-circle-info" aria-hidden="true"></i>
 													</button>
 												<?php endif; ?>
