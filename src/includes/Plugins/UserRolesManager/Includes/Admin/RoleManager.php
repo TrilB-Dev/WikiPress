@@ -223,7 +223,12 @@ final class RoleManager extends Manager {
 											<div class="wikipress-capability-title d-flex align-items-center justify-content-center gap-1">
 												<h6 class="card-title mb-0 text-center"><?php echo esc_html( $description ?: $capability ); ?></h6>
 												<?php if ( $wordpress_description ) : ?>
-													<i class="fa-solid fa-circle-info btn btn-primary wikipress-capability-info p-1" aria-hidden="true" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="<?php echo esc_attr( $wordpress_description ); ?>" aria-label="<?php esc_attr_e( 'Capability information', 'wikipress' ); ?>"></i>
+													<a href="#" class="btn btn-primary wikipress-capability-info p-1" data-bs-toggle="tooltip" data-bs-placement="top" title="<?php echo esc_attr( $wordpress_description ); ?>" aria-label="<?php esc_attr_e( 'Capability information', 'wikipress' ); ?>">
+														<span class="fa-stack fa-2x">
+															<i class="fa-solid fa-circle fa-stack-2x"></i>
+															<i class="fa-solid fa-circle-info fa-stack-1x" aria-hidden="true"></i>
+														</span>
+													</a>
 												<?php endif; ?>
 											</div>
 											<input class="btn-check" type="checkbox" name="capabilities[]" value="<?php echo esc_attr( $capability ); ?>" id="<?php echo esc_attr( $input_id ); ?>" autocomplete="off"<?php checked( $is_selected ); ?> />
