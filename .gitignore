@@ -75,6 +75,7 @@ coverage/
 local-config.php
 .env
 .env.*
+src/Assets/Images/*.ai
 src/Assets/Images/Logo/*.ai
 src/Assets/Images/Logo/*@2x.png
 src/Assets/Images/Logo/*@3x.png
