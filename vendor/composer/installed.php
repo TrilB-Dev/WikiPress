@@ -1,13 +1,13 @@
 <?php return array(
     'root' => array(
         'name' => 'trilbdev/wikipress',
-        'pretty_version' => 'dev-main',
-        'version' => 'dev-main',
-        'reference' => '0cd5c4a0fb2b37477694f760a2686c4fe8954d84',
+        'pretty_version' => 'dev-Deploy',
+        'version' => 'dev-Deploy',
+        'reference' => 'd0a4bbbb48bbe079a0e29956bbed3a6eb4e2f88b',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'dev' => true,
+        'dev' => false,
     ),
     'versions' => array(
         'fortawesome/wordpress-fontawesome' => array(
@@ -20,9 +20,9 @@
             'dev_requirement' => false,
         ),
         'trilbdev/wikipress' => array(
-            'pretty_version' => 'dev-main',
-            'version' => 'dev-main',
-            'reference' => '0cd5c4a0fb2b37477694f760a2686c4fe8954d84',
+            'pretty_version' => 'dev-Deploy',
+            'version' => 'dev-Deploy',
+            'reference' => 'd0a4bbbb48bbe079a0e29956bbed3a6eb4e2f88b',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

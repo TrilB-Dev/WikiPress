@@ -55,6 +55,6 @@
             "install-path": "../fortawesome/wordpress-fontawesome"
         }
     ],
-    "dev": true,
+    "dev": false,
     "dev-package-names": []
 }
