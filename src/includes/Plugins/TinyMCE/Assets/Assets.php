@@ -11,6 +11,7 @@ namespace WikiPress\Includes\Plugins\TinyMCE\Assets;
 
 use WikiPress\Includes\Functions\Helpers\LoaderHelper;
 use WikiPress\Includes\Plugins\TinyMCE\Includes\Settings\Settings;
+use WikiPress\Includes\Functions\Helpers\ImageHelper;
 
 final class Assets {
     private LoaderHelper $loader;
@@ -60,5 +61,15 @@ final class Assets {
         }
 
         return $assets;
+    }
+    /**
+     * Retrieves the URL of an image asset.
+     *
+     * @param string $file The image file name.
+     * @return string The URL of the image asset.
+     */
+    public function get_image( string $file ): string {
+
+        return ImageHelper::get_image_url( 'tinymce-plugin', $file );
     }
 }

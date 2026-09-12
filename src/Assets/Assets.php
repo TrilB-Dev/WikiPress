@@ -8,6 +8,8 @@
  */
 namespace WikiPress\Assets;
 
+use WikiPress\Includes\Functions\Helpers\ImageHelper;
+
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
@@ -197,5 +199,15 @@ final class Assets {
                 'nonce' => wp_create_nonce( 'wikipress_manage_wiki' ),
             ] );
         }
+    }
+    /**
+     * Retrieves the URL of an image asset.
+     *
+     * @param string $file The image file name.
+     * @return string The URL of the image asset.
+     */
+    public function get_image( string $file ): string {
+
+        return ImageHelper::get_image_url( 'core', $file );
     }
 }

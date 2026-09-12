@@ -3,6 +3,7 @@
 namespace WikiPress\Includes\Plugins\Elementor\Assets;
 
 use WikiPress\Includes\Functions\Helpers\LoaderHelper;
+use WikiPress\Includes\Functions\Helpers\ImageHelper;
 
 final class Assets {
     private LoaderHelper $loader;
@@ -29,5 +30,15 @@ final class Assets {
 
     public function enqueue_scripts(): void {
         wp_enqueue_script( 'wikipress-elementor' );
+    }
+    /**
+     * Retrieves the URL of an image asset.
+     *
+     * @param string $file The image file name.
+     * @return string The URL of the image asset.
+     */
+    public function get_image( string $file ): string {
+
+        return ImageHelper::get_image_url( 'wikipress-elementor', $file );
     }
 }

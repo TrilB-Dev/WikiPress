@@ -18,8 +18,9 @@ use WikiPress\Includes\Plugins\SettingsPageProviderInterface;
 use WikiPress\Includes\Plugins\FontAwesome\Assets\Assets;
 use WikiPress\Includes\Plugins\FontAwesome\Includes\IconPicker;
 use WikiPress\Includes\Plugins\FontAwesome\API\FontAwesomeAPI;
-use WikiPress\Includes\Plugins\FontAwesome\Includes\I18n;
+use WikiPress\Includes\Plugins\FontAwesome\Includes\Core\I18n;
 use WikiPress\Includes\Plugins\FontAwesome\Includes\Includes;
+use WikiPress\Includes\Core\WP\Activator;
 
 final class FontAwesome implements PluginInterface, SettingsProviderInterface, SettingsPageProviderInterface, AssetsProviderInterface, I18nProviderInterface {
     /**
@@ -51,12 +52,24 @@ final class FontAwesome implements PluginInterface, SettingsProviderInterface, S
         return 'FontAwesome';
     }
     /**
+     * Get the plugin icon.
+     *
+     * @return array{0: string, 1: string} The plugin icon class and color.
+     */
+    public function get_icon(): array {
+        return ['fab fa-font-awesome', '#74c1fcff'];
+    }
+    /**
      * Get the plugin version.
      *
      * @return string The plugin version.
      */
     public function get_version(): string {
-        return WIKIPRESS_VERSION;
+        if ( self::is_wordpress_fontawesome_active() && function_exists( 'FortAwesome\\fa' ) && class_exists( '\\FortAwesome\\FontAwesome' ) ) {
+            return \FortAwesome\fa()->version();
+        }
+
+        return '1.0.0';
     }
     /**
      * Get the plugin author.
@@ -64,7 +77,7 @@ final class FontAwesome implements PluginInterface, SettingsProviderInterface, S
      * @return string The plugin author.
      */
     public function get_author(): string {
-        return 'WikiPress Team';
+        return 'TrilB.Dev Team';
     }
     /**
      * Get the plugin author URI.
@@ -80,7 +93,7 @@ final class FontAwesome implements PluginInterface, SettingsProviderInterface, S
      * @return string The plugin description.
      */
     public function get_description(): string {
-        return __( 'Provides Font Awesome loading, icon picking, and styling APIs for WikiPress.', 'wikipress' );
+        return __( 'Provides Font Awesome enqueueing in Admin, Frontend, Login Page, icon picking, and styling APIs for WikiPress.', 'wikipress' );
     }
     /**
      * Get the plugin URI.
@@ -156,7 +169,27 @@ final class FontAwesome implements PluginInterface, SettingsProviderInterface, S
      * @return bool True if the FontAwesome library is available, false otherwise.
      */
     public function is_available(): bool {
-        return function_exists( 'FortAwesome\\fa' ) && class_exists( '\\FortAwesome\\FontAwesome' );
+        return self::is_wordpress_fontawesome_active() || ( function_exists( 'FortAwesome\\fa' ) && class_exists( '\\FortAwesome\\FontAwesome' ) );
+    }
+
+    /**
+     * Determine whether a FontAwesome instance is already present.
+     *
+     * WordPress FontAwesome wins first, and WikiPress reuses that namespace and
+     * bootstrap instead of loading a second copy from Composer.
+     *
+     * @return bool True when an active FontAwesome loader or plugin is present.
+     */
+    public static function is_wordpress_fontawesome_active(): bool {
+        if ( function_exists( 'FortAwesome\\fa' ) || class_exists( '\\FortAwesome\\FontAwesome' ) || class_exists( '\\FortAwesome\\FontAwesome_Loader' ) ) {
+            return true;
+        }
+
+        if ( defined( 'FONTAWESOME_PLUGIN_FILE' ) && function_exists( 'is_plugin_active' ) ) {
+            return is_plugin_active( FONTAWESOME_PLUGIN_FILE );
+        }
+
+        return false;
     }
     /**
      * Get the IconPicker instance for the FontAwesome plugin.
@@ -177,7 +210,33 @@ final class FontAwesome implements PluginInterface, SettingsProviderInterface, S
     /**
      * Private constructor to prevent direct instantiation.
      */
-    private function __construct() {}
+    private function __construct() {
+        $this->load_vendor();
+        Activator::register( static function (): void {
+            if ( self::is_wordpress_fontawesome_active() ) {
+                return;
+            }
+
+            if ( class_exists( '\\FortAwesome\\FontAwesome_Loader' ) ) {
+                \FortAwesome\FontAwesome_Loader::initialize();
+            }
+        } );
+    }
+
+    /**
+     * Loads the bundled FontAwesome package only when some other active
+     * WordPress FontAwesome integration has not already claimed the namespace.
+     */
+    private function load_vendor(): void {
+        if ( self::is_wordpress_fontawesome_active() ) {
+            return;
+        }
+
+        $vendor_file = WIKIPRESS_DIR . 'vendor/fortawesome/wordpress-fontawesome/index.php';
+        if ( is_readable( $vendor_file ) ) {
+            require_once $vendor_file;
+        }
+    }
     /**
      * Initialize the FontAwesome plugin.
      *

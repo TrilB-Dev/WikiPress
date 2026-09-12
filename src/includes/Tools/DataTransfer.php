@@ -1,13 +1,13 @@
 <?php
 
-namespace WikiPress\Includes\Tools;
+namespace PluginName\Includes\Tools;
 
-use WikiPress\Includes\Core\PostType;
-use WikiPress\Includes\Core\Taxonomy;
-use WikiPress\Includes\Functions\Helpers\SanitizationHelper;
-use WikiPress\Includes\Functions\Helpers\PostHelper;
-use WikiPress\Includes\Functions\Helpers\QueryHelper;
-use WikiPress\Includes\Functions\Helpers\TaxonomyHelper;
+use PluginName\Includes\Core\PostType;
+use PluginName\Includes\Core\Taxonomy;
+use PluginName\Includes\Functions\Helpers\SanitizationHelper;
+use PluginName\Includes\Functions\Helpers\PostHelper;
+use PluginName\Includes\Functions\Helpers\QueryHelper;
+use PluginName\Includes\Functions\Helpers\TaxonomyHelper;
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
@@ -26,7 +26,7 @@ final class DataTransfer {
                 continue;
             }
 
-            $item = [ 'id' => $post->ID, 'title' => $post->post_title, 'content' => $post->post_content, 'excerpt' => $post->post_excerpt, 'status' => $post->post_status, 'wiki_id' => absint( get_post_meta( $post->ID, '_wikipress_wiki_id', true ) ), 'categories' => TaxonomyHelper::names( TaxonomyHelper::terms( Taxonomy::CATEGORY, $post->ID ) ), 'tags' => TaxonomyHelper::names( TaxonomyHelper::terms( Taxonomy::TAG, $post->ID ) ) ];
+            $item = [ 'id' => $post->ID, 'title' => $post->post_title, 'content' => $post->post_content, 'excerpt' => $post->post_excerpt, 'status' => $post->post_status, 'wiki_id' => absint( get_post_meta( $post->ID, '_pluginname_wiki_id', true ) ), 'categories' => TaxonomyHelper::names( TaxonomyHelper::terms( Taxonomy::CATEGORY, $post->ID ) ), 'tags' => TaxonomyHelper::names( TaxonomyHelper::terms( Taxonomy::TAG, $post->ID ) ) ];
             $data[ $post->post_type === PostType::WIKI ? 'wikis' : 'pages' ][] = $item;
         }
         wp_reset_postdata();
@@ -47,15 +47,15 @@ final class DataTransfer {
     public static function validate( $data ): array {
         $errors = [];
         if ( ! is_array( $data ) ) {
-            return [ 'valid' => false, 'errors' => [ __( 'The import data must be an object.', 'wikipress' ) ] ];
+            return [ 'valid' => false, 'errors' => [ __( 'The import data must be an object.', 'pluginname' ) ] ];
         }
         if ( absint( $data['version'] ?? 0 ) !== self::VERSION ) {
-            $errors[] = __( 'This WikiPress export version is not supported.', 'wikipress' );
+            $errors[] = __( 'This PluginName export version is not supported.', 'pluginname' );
         }
         foreach ( [ 'wikis', 'pages', 'categories', 'tags' ] as $key ) {
             if ( isset( $data[ $key ] ) && ! is_array( $data[ $key ] ) ) {
                 /* translators: %s is the name of the export section. */
-                $errors[] = sprintf( esc_html__( 'The %s export section must be an array.', 'wikipress' ), $key );
+                $errors[] = sprintf( esc_html__( 'The %s export section must be an array.', 'pluginname' ), $key );
             }
         }
 
@@ -71,7 +71,7 @@ final class DataTransfer {
         $result = [ 'wikis' => 0, 'pages' => 0, 'categories' => 0, 'tags' => 0, 'errors' => [] ];
         foreach ( (array) ( $data['wikis'] ?? [] ) as $wiki ) {
             if ( ! is_array( $wiki ) ) {
-                $result['errors'][] = __( 'A Wiki entry was skipped because it was invalid.', 'wikipress' );
+                $result['errors'][] = __( 'A Wiki entry was skipped because it was invalid.', 'pluginname' );
                 continue;
             }
             $id = wp_insert_post( [ 'post_type' => PostType::WIKI, 'post_title' => SanitizationHelper::text( $wiki['title'] ?? '' ), 'post_content' => self::content( $wiki['content'] ?? '' ), 'post_status' => self::status( $wiki['status'] ?? 'draft' ) ], true );
@@ -84,14 +84,14 @@ final class DataTransfer {
         }
         foreach ( (array) ( $data['pages'] ?? [] ) as $page ) {
             if ( ! is_array( $page ) ) {
-                $result['errors'][] = __( 'A page entry was skipped because it was invalid.', 'wikipress' );
+                $result['errors'][] = __( 'A page entry was skipped because it was invalid.', 'pluginname' );
                 continue;
             }
             $id = wp_insert_post( [ 'post_type' => PostType::PAGE, 'post_title' => SanitizationHelper::text( $page['title'] ?? '' ), 'post_content' => self::content( $page['content'] ?? '' ), 'post_excerpt' => SanitizationHelper::text( $page['excerpt'] ?? '' ), 'post_status' => self::status( $page['status'] ?? 'draft' ) ], true );
             if ( ! is_wp_error( $id ) ) {
                 $result['pages']++;
                 if ( ! empty( $wiki_map[ absint( $page['wiki_id'] ?? 0 ) ] ) ) {
-                    update_post_meta( (int) $id, '_wikipress_wiki_id', $wiki_map[ absint( $page['wiki_id'] ?? 0 ) ] );
+                    update_post_meta( (int) $id, '_pluginname_wiki_id', $wiki_map[ absint( $page['wiki_id'] ?? 0 ) ] );
                 }
                 self::set_terms( (int) $id, $page['categories'] ?? [], Taxonomy::CATEGORY );
                 self::set_terms( (int) $id, $page['tags'] ?? [], Taxonomy::TAG );

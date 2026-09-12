@@ -1,6 +1,6 @@
 <?php
 
-namespace WikiPress\PublicArea;
+namespace WikiPress\Public;
 
 use WikiPress\Includes\Core\PostType;
 use WikiPress\Includes\Functions\Helpers\ContentHelper;

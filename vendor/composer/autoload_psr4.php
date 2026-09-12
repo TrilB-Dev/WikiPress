@@ -6,8 +6,8 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'WikiPress\\PublicArea\\' => array($baseDir . '/src/Public'),
-    'WikiPress\\Includes\\' => array($baseDir . '/src/includes'),
+    'WikiPress\\Public\\' => array($baseDir . '/src/Public'),
+    'WikiPress\\Includes\\' => array($baseDir . '/src/Includes'),
     'WikiPress\\Assets\\' => array($baseDir . '/src/Assets'),
     'WikiPress\\Admin\\' => array($baseDir . '/src/Admin'),
     'WikiPress\\API\\' => array($baseDir . '/src/API'),

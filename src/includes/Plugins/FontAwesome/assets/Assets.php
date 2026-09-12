@@ -4,6 +4,7 @@ namespace WikiPress\Includes\Plugins\FontAwesome\Assets;
 
 use WikiPress\Includes\Functions\Helpers\LoaderHelper;
 use WikiPress\Includes\Plugins\FontAwesome\Includes\Settings\Settings as FontAwesomeSettings;
+use WikiPress\Includes\Functions\Helpers\ImageHelper;
 
 final class Assets {
     private LoaderHelper $loader;
@@ -103,5 +104,15 @@ final class Assets {
 
         return strpos( $screen->id, 'wikipress' ) !== false
             || in_array( $screen->id, [ 'post', 'page', 'custom_css', 'customize' ], true );
+    }
+    /**
+     * Retrieves the URL of an image asset.
+     *
+     * @param string $file The image file name.
+     * @return string The URL of the image asset.
+     */
+    public function get_image( string $file ): string {
+
+        return ImageHelper::get_image_url( 'wikipress-fontawesome', $file );
     }
 }

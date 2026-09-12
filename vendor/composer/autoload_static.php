@@ -7,13 +7,13 @@ namespace Composer\Autoload;
 class ComposerStaticInite6f69f8956ab7824cf2c0b2e178a3cb9
 {
     public static $files = array (
-        '99c0418880a922f86b096a6e4e815847' => __DIR__ . '/../..' . '/src/includes/Plugins/PluginsInterface.php',
+        '6c2803ddeef7454a2a56faef0fb4a886' => __DIR__ . '/../..' . '/src/Includes/Plugins/PluginsInterface.php',
     );
 
     public static $prefixLengthsPsr4 = array (
         'W' =>
         array (
-            'WikiPress\\PublicArea\\' => 21,
+            'WikiPress\\Public\\' => 17,
             'WikiPress\\Includes\\' => 19,
             'WikiPress\\Assets\\' => 17,
             'WikiPress\\Admin\\' => 16,
@@ -22,13 +22,13 @@ class ComposerStaticInite6f69f8956ab7824cf2c0b2e178a3cb9
     );
 
     public static $prefixDirsPsr4 = array (
-        'WikiPress\\PublicArea\\' =>
+        'WikiPress\\Public\\' =>
         array (
             0 => __DIR__ . '/../..' . '/src/Public',
         ),
         'WikiPress\\Includes\\' =>
         array (
-            0 => __DIR__ . '/../..' . '/src/includes',
+            0 => __DIR__ . '/../..' . '/src/Includes',
         ),
         'WikiPress\\Assets\\' =>
         array (

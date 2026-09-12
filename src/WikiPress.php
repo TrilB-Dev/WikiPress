@@ -224,7 +224,7 @@ class WikiPress {
 		$this->settings_functions = new FunctionsSettings( new FunctionsPlugins() );
 
 		$this->loader->add_action( 'init', $this->includes, 'init' );
-		$this->loader->add_action( 'init', $this->plugins, 'init', 20 );
+		$this->loader->add_action( 'init', $this->plugins, 'init', -10 );
 		$this->loader->add_action( 'admin_menu', $this->admin, 'register_admin_menu' );
 		$this->loader->add_action( 'admin_init', $this->settings_functions, 'register_settings' );
 		$this->loader->add_action( 'admin_post_wikipress_export', $this->export_functions, 'export_data' );

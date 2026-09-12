@@ -10,6 +10,7 @@
 namespace WikiPress\Includes\Plugins\Demo\Assets;
 
 use WikiPress\Includes\Functions\Helpers\LoaderHelper;
+use WikiPress\Includes\Functions\Helpers\ImageHelper;
 
 final class Assets {
     private LoaderHelper $loader;
@@ -35,5 +36,15 @@ final class Assets {
         ];
 
         return $assets;
+    }
+    /**
+     * Retrieves the URL of an image asset.
+     *
+     * @param string $file The image file name.
+     * @return string The URL of the image asset.
+     */
+    public function get_image( string $file ): string {
+
+        return ImageHelper::get_image_url( 'wiki-demo-plugin', $file );
     }
 }

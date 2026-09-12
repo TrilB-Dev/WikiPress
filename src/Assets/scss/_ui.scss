@@ -49,6 +49,7 @@
 			width: 250px;
 			object-fit: contain;
 			margin-left: 35px;
+			margin-top: 1rem;
 		}
 
 		.nav-link {
@@ -212,6 +213,7 @@
 	.wikipress-inline-form,
 	.wikipress-content-toolbar {
 		border-color: var(--wikipress-line);
+		max-width: 100%;
 	}
 }
 

@@ -11,6 +11,7 @@ namespace WikiPress\Includes\Plugins\UserRolesManager\Assets;
 
 use WikiPress\Includes\Functions\Helpers\LoaderHelper;
 use WikiPress\Includes\Functions\Helpers\RequestHelper;
+use WikiPress\Includes\Functions\Helpers\ImageHelper;
 
 final class Assets {
     /**
@@ -66,5 +67,15 @@ final class Assets {
         ];
 
         return $assets;
+    }
+    /**
+     * Retrieves the URL of an image asset.
+     *
+     * @param string $file The image file name.
+     * @return string The URL of the image asset.
+     */
+    public function get_image( string $file ): string {
+
+        return ImageHelper::get_image_url( 'wikipress-user-roles-manager-plugin', $file );
     }
 }

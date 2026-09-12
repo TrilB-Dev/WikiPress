@@ -11,6 +11,7 @@ namespace WikiPress\Includes\Plugins\InternalWiki\Assets;
 
 use WikiPress\Includes\Functions\Helpers\LoaderHelper;
 use WikiPress\Includes\Functions\Helpers\RequestHelper;
+use WikiPress\Includes\Functions\Helpers\ImageHelper;
 
 final class Assets {
     /**
@@ -80,5 +81,15 @@ final class Assets {
             WIKIPRESS_VERSION,
             true
         );
+    }
+    /**
+     * Retrieves the URL of an image asset.
+     *
+     * @param string $file The image file name.
+     * @return string The URL of the image asset.
+     */
+    public function get_image( string $file ): string {
+
+        return ImageHelper::get_image_url( 'wikipress-internal-wiki', $file );
     }
 }

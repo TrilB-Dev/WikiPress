@@ -54,26 +54,12 @@ if ( is_readable( $wikipress_autoloader ) ) {
 	require_once $wikipress_autoloader;
 }
 
-$wikipress_fontawesome = WIKIPRESS_DIR . 'vendor/fortawesome/wordpress-fontawesome/index.php';
-if ( is_readable( $wikipress_fontawesome ) ) {
-	require_once $wikipress_fontawesome;
-}
-
-add_action(
-	'init',
-	[ '\\WikiPress\\Includes\\Plugins\\FontAwesome\\API\\FontAwesomeAPI', 'configure' ],
-	-2
-);
-
 /**
  * The code that runs during plugin activation.
  * This action is documented in includes/class-wikipress-activator.php
  */
 function activate_wikipress() {
 	\WikiPress\Includes\Core\WP\Activator::activate();
-	if ( class_exists( '\FortAwesome\FontAwesome_Loader' ) ) {
-		\FortAwesome\FontAwesome_Loader::initialize();
-	}
 }
 
 /**
