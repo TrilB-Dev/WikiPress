@@ -15,32 +15,47 @@ const entries = {
   'bootstrap-select': [
     './src/Assets/js/bootstrap-select.js',
     './src/Assets/scss/bootstrap-select.scss',
+  ]
+};
+
+const internalWikiEntries = {
+  'admin.internal-wiki': [
+    './src/Includes/Plugins/InternalWiki/Assets/scss/admin.internal-wiki.js',
   ],
-  'admin.internal-wiki': './src/Includes/Plugins/InternalWiki/Assets/js/admin.internal-wiki.js',
+  'internal-wiki': [
+    './src/Includes/Plugins/InternalWiki/Assets/scss/internal-wiki.scss',
+    './src/Includes/Plugins/InternalWiki/Assets/js/internal-wiki.js'
+  ],
 };
 
 const fontAwesomeEntries = {
   'icon-picker': [
-    './src/includes/Plugins/FontAwesome/Assets/js/icon-picker.js',
-    './src/includes/Plugins/FontAwesome/Assets/scss/icon-picker.scss',
+    './src/Includes/Plugins/FontAwesome/Assets/js/icon-picker.js',
+    './src/Includes/Plugins/FontAwesome/Assets/scss/icon-picker.scss',
+  ],
+};
+
+const tinyMCEEntries = {
+  'tiny-mce': [
+    './src/Includes/Plugins/TinyMCE/Assets/js/tinymce.js'
   ],
 };
 
 const elementorEntries = {
   wiki: [
-    './src/includes/Plugins/Elementor/Assets/js/WikiPress/wiki.js',
-    './src/includes/Plugins/Elementor/Assets/scss/WikiPress/wiki.scss',
+    './src/Includes/Plugins/Elementor/Assets/js/WikiPress/wiki.js',
+    './src/Includes/Plugins/Elementor/Assets/scss/WikiPress/wiki.scss',
   ],
 };
 
 const gutenburgEntries = {
-  blocks: './src/includes/Plugins/Gutenburg/Assets/js/blocks.js',
+  blocks: './src/Includes/Plugins/Gutenburg/Assets/js/blocks.js',
 };
 
 const userRolesManagerEntries = {
   'user-roles-manager': [
-    './src/includes/Plugins/UserRolesManager/Assets/js/user-roles-manager.js',
-    './src/includes/Plugins/UserRolesManager/Assets/scss/user-roles-manager.scss',
+    './src/Includes/Plugins/UserRolesManager/Assets/js/user-roles-manager.js',
+    './src/Includes/Plugins/UserRolesManager/Assets/scss/user-roles-manager.scss',
   ],
 };
 
@@ -106,7 +121,7 @@ module.exports = [
     ...shared,
     entry: fontAwesomeEntries,
     output: {
-      path: path.resolve(__dirname, 'src/includes/Plugins/FontAwesome/Assets/dist'),
+      path: path.resolve(__dirname, 'src/Includes/Plugins/FontAwesome/Assets/dist'),
       filename: 'js/[name].js',
       clean: true,
     },
@@ -118,7 +133,7 @@ module.exports = [
     ...shared,
     entry: elementorEntries,
     output: {
-      path: path.resolve(__dirname, 'src/includes/Plugins/Elementor/Assets/dist'),
+      path: path.resolve(__dirname, 'src/Includes/Plugins/Elementor/Assets/dist'),
       filename: 'js/[name].js',
       clean: true,
     },
@@ -130,7 +145,7 @@ module.exports = [
     ...shared,
     entry: gutenburgEntries,
     output: {
-      path: path.resolve(__dirname, 'src/includes/Plugins/Gutenburg/Assets/dist'),
+      path: path.resolve(__dirname, 'src/Includes/Plugins/Gutenburg/Assets/dist'),
       filename: 'js/[name].js',
       clean: true,
     },
@@ -142,7 +157,7 @@ module.exports = [
     ...shared,
     entry: userRolesManagerEntries,
     output: {
-      path: path.resolve(__dirname, 'src/includes/Plugins/UserRolesManager/Assets/dist'),
+      path: path.resolve(__dirname, 'src/Includes/Plugins/UserRolesManager/Assets/dist'),
       filename: 'js/[name].js',
       clean: true,
     },
@@ -150,4 +165,28 @@ module.exports = [
       new MiniCssExtractPlugin({ filename: 'css/[name].css' }),
     ],
   },
+  {
+    ...shared,
+    entry: internalWikiEntries,
+    output: {
+      path: path.resolve(__dirname, 'src/Includes/Plugins/InternalWiki/Assets/dist'),
+      filename: 'js/[name].js',
+      clean: true,
+    },
+    plugins: [
+      new MiniCssExtractPlugin({ filename: 'css/[name].css' }),
+    ],
+  },
+  {
+    ...shared,
+    entry: tinyMCEEntries,
+    output: {
+      path: path.resolve(__dirname, 'src/Includes/Plugins/TinyMCE/Assets/dist'),
+      filename: 'js/[name].js',
+      clean: true,
+    },
+    plugins: [
+      new MiniCssExtractPlugin({ filename: 'css/[name].css' }),
+    ],
+  }
 ];
