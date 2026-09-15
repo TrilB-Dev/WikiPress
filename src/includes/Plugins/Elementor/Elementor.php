@@ -45,6 +45,8 @@ final class Elementor implements PluginInterface, SettingsProviderInterface, Set
      */
     private function __construct() {
         $this->loader = new LoaderHelper();
+        define( 'WIKIPRESS_ELEMENTOR', WIKIPRESS_PLUGINS . '/Elementor' );
+        define( 'WIKIPRESS_ELEMENTOR_URL', WIKIPRESS_PLUGINS_URL . '/Elementor' );
     }
     /**
      * Initialize the Elementor plugin.
