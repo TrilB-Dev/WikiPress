@@ -36,21 +36,32 @@ define( 'WIKIPRESS_URL', plugin_dir_url( __FILE__ ) );
 define( 'WIKIPRESS_BASENAME', plugin_basename( __FILE__ ) );
 define( 'WIKIPRESS_ROOT', WIKIPRESS_DIR );
 define( 'WIKIPRESS_ROOT_URL', WIKIPRESS_URL );
+
+$wikipress_includes_dir = is_dir( WIKIPRESS_DIR . 'src/includes' ) ? 'src/includes' : 'src/Includes';
+$wikipress_includes_url = is_dir( WIKIPRESS_DIR . 'src/includes' ) ? 'src/includes' : 'src/Includes';
+$wikipress_plugins_interface = file_exists( WIKIPRESS_DIR . 'src/includes/Plugins/PluginsInterface.php' )
+	? WIKIPRESS_DIR . 'src/includes/Plugins/PluginsInterface.php'
+	: WIKIPRESS_DIR . 'src/Includes/Plugins/PluginsInterface.php';
+
 define( 'WIKIPRESS_API', WIKIPRESS_DIR . 'src/API' );
 define( 'WIKIPRESS_ASSETS', WIKIPRESS_DIR . 'src/Assets' );
 define( 'WIKIPRESS_ASSETS_URL', WIKIPRESS_URL . 'src/Assets' );
 define( 'WIKIPRESS_ADMIN', WIKIPRESS_DIR . 'src/Admin' );
 define( 'WIKIPRESS_ADMIN_URL', WIKIPRESS_URL . 'src/Admin' );
 define( 'WIKIPRESS_LANGUAGES', WIKIPRESS_DIR . 'src/languages' );
-define( 'WIKIPRESS_INCLUDES', WIKIPRESS_DIR . 'src/Includes' );
+define( 'WIKIPRESS_INCLUDES', WIKIPRESS_DIR . $wikipress_includes_dir );
 define( 'WIKIPRESS_CORE', WIKIPRESS_INCLUDES . '/Core' );
 define( 'WIKIPRESS_SETTINGS', WIKIPRESS_INCLUDES . '/Settings' );
 define( 'WIKIPRESS_PLUGINS', WIKIPRESS_INCLUDES . '/Plugins' );
-define( 'WIKIPRESS_PLUGINS_URL', WIKIPRESS_URL . 'src/Includes/Plugins' );
+define( 'WIKIPRESS_PLUGINS_URL', WIKIPRESS_URL . $wikipress_includes_url . '/Plugins' );
 
 $wikipress_autoloader = WIKIPRESS_DIR . 'vendor/autoload.php';
 if ( is_readable( $wikipress_autoloader ) ) {
 	require_once $wikipress_autoloader;
+}
+
+if ( is_readable( $wikipress_plugins_interface ) ) {
+	require_once $wikipress_plugins_interface;
 }
 
 /**

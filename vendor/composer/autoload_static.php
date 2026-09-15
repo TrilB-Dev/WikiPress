@@ -13,7 +13,6 @@ class ComposerStaticInite6f69f8956ab7824cf2c0b2e178a3cb9
         'ec07570ca5a812141189b1fa81503674' => __DIR__ . '/..' . '/phpunit/phpunit/src/Framework/Assert/Functions.php',
         '051bafe20e2674435a162870efa2d2a7' => __DIR__ . '/..' . '/brain/monkey/inc/api.php',
         '7d3b315c4f303f2fc14aca642a738e50' => __DIR__ . '/..' . '/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php',
-        '6c2803ddeef7454a2a56faef0fb4a886' => __DIR__ . '/../..' . '/src/Includes/Plugins/PluginsInterface.php',
     );
 
     public static $prefixLengthsPsr4 = array (
