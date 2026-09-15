@@ -8,11 +8,7 @@
             "src/Includes/Plugins/PluginsInterface.php"
         ],
         "psr-4": {
-            "WikiPress\\Admin\\": "src/Admin/",
-            "WikiPress\\API\\": "src/API/",
-            "WikiPress\\Assets\\": "src/Assets/",
-            "WikiPress\\Includes\\": "src/Includes/",
-            "WikiPress\\Public\\": "src/Public/"
+            "WikiPress\\": "src/"
         },
         "classmap": [
             "src/WikiPress.php"
@@ -29,9 +25,10 @@
         }
     ],
     "require": {
-        "fortawesome/wordpress-fontawesome": "^5.2"
+        
     },
     "require-dev": {
+        "fortawesome/wordpress-fontawesome": "^5.2",
         "php-stubs/wordpress-stubs": "^6.9",
         "arts/elementor-stubs": "^4.2",
         "phpunit/phpunit": "^9.6",
@@ -51,6 +48,10 @@
 			"@lint",
 			"@lint:docs"
 		]
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     }
-    
 }

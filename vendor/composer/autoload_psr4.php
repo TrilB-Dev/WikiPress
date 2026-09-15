@@ -6,9 +6,11 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'WikiPress\\Public\\' => array($baseDir . '/src/Public'),
-    'WikiPress\\Includes\\' => array($baseDir . '/src/Includes'),
-    'WikiPress\\Assets\\' => array($baseDir . '/src/Assets'),
-    'WikiPress\\Admin\\' => array($baseDir . '/src/Admin'),
-    'WikiPress\\API\\' => array($baseDir . '/src/API'),
+    'WikiPress\\' => array($baseDir . '/src'),
+    'PhpParser\\' => array($vendorDir . '/nikic/php-parser/lib/PhpParser'),
+    'PHPCSStandards\\Composer\\Plugin\\Installers\\PHPCodeSniffer\\' => array($vendorDir . '/dealerdirect/phpcodesniffer-composer-installer/src'),
+    'Mockery\\' => array($vendorDir . '/mockery/mockery/library/Mockery'),
+    'Doctrine\\Instantiator\\' => array($vendorDir . '/doctrine/instantiator/src/Doctrine/Instantiator'),
+    'DeepCopy\\' => array($vendorDir . '/myclabs/deep-copy/src/DeepCopy'),
+    'Brain\\Monkey\\' => array($vendorDir . '/brain/monkey/src'),
 );
