@@ -13,12 +13,16 @@ const resolveExistingPath = (...candidates) => {
 };
 
 const pluginAssetPath = (pluginName, relativePath) => resolveExistingPath(
+  `./src/includes/Plugins/${pluginName}/assets/${relativePath}`,
   `./src/includes/Plugins/${pluginName}/Assets/${relativePath}`,
+  `./src/Includes/Plugins/${pluginName}/assets/${relativePath}`,
   `./src/Includes/Plugins/${pluginName}/Assets/${relativePath}`
 );
 
 const pluginOutputPath = (pluginName) => resolveExistingPath(
+  `./src/includes/Plugins/${pluginName}/assets/dist`,
   `./src/includes/Plugins/${pluginName}/Assets/dist`,
+  `./src/Includes/Plugins/${pluginName}/assets/dist`,
   `./src/Includes/Plugins/${pluginName}/Assets/dist`
 );
 
