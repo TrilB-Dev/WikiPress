@@ -13,8 +13,13 @@ const resolveExistingPath = (...candidates) => {
 };
 
 const pluginAssetPath = (pluginName, relativePath) => resolveExistingPath(
-  `./src/Includes/Plugins/${pluginName}/Assets/${relativePath}`,
-  `./src/includes/Plugins/${pluginName}/Assets/${relativePath}`
+  `./src/includes/Plugins/${pluginName}/Assets/${relativePath}`,
+  `./src/Includes/Plugins/${pluginName}/Assets/${relativePath}`
+);
+
+const pluginOutputPath = (pluginName) => resolveExistingPath(
+  `./src/includes/Plugins/${pluginName}/Assets/dist`,
+  `./src/Includes/Plugins/${pluginName}/Assets/dist`
 );
 
 const entries = {
@@ -136,7 +141,7 @@ module.exports = [
     ...shared,
     entry: fontAwesomeEntries,
     output: {
-      path: path.resolve(__dirname, 'src/Includes/Plugins/FontAwesome/Assets/dist'),
+      path: path.resolve(__dirname, pluginOutputPath('FontAwesome')),
       filename: 'js/[name].js',
       clean: true,
     },
@@ -148,7 +153,7 @@ module.exports = [
     ...shared,
     entry: elementorEntries,
     output: {
-      path: path.resolve(__dirname, 'src/Includes/Plugins/Elementor/Assets/dist'),
+      path: path.resolve(__dirname, pluginOutputPath('Elementor')),
       filename: 'js/[name].js',
       clean: true,
     },
@@ -160,7 +165,7 @@ module.exports = [
     ...shared,
     entry: gutenburgEntries,
     output: {
-      path: path.resolve(__dirname, 'src/Includes/Plugins/Gutenburg/Assets/dist'),
+      path: path.resolve(__dirname, pluginOutputPath('Gutenburg')),
       filename: 'js/[name].js',
       clean: true,
     },
@@ -172,7 +177,7 @@ module.exports = [
     ...shared,
     entry: userRolesManagerEntries,
     output: {
-      path: path.resolve(__dirname, 'src/Includes/Plugins/UserRolesManager/Assets/dist'),
+      path: path.resolve(__dirname, pluginOutputPath('UserRolesManager')),
       filename: 'js/[name].js',
       clean: true,
     },
@@ -184,7 +189,7 @@ module.exports = [
     ...shared,
     entry: internalWikiEntries,
     output: {
-      path: path.resolve(__dirname, 'src/Includes/Plugins/InternalWiki/Assets/dist'),
+      path: path.resolve(__dirname, pluginOutputPath('InternalWiki')),
       filename: 'js/[name].js',
       clean: true,
     },
@@ -196,7 +201,7 @@ module.exports = [
     ...shared,
     entry: tinyMCEEntries,
     output: {
-      path: path.resolve(__dirname, 'src/Includes/Plugins/TinyMCE/Assets/dist'),
+      path: path.resolve(__dirname, pluginOutputPath('TinyMCE')),
       filename: 'js/[name].js',
       clean: true,
     },
