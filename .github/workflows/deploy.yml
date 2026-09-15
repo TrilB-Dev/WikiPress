@@ -1,4 +1,4 @@
-name: Sync WikiPress & Deploy
+name: Build WikiPress Deploy Branch
 
 on:
   push:
@@ -29,11 +29,34 @@ jobs:
         shell: bash
         run: git checkout -b Deploy Master
 
-      - name: Install production dependencies
+      - name: Install Node dependencies
+        shell: bash
+        run: npm install
+
+      - name: Build Node frontend assets
+        shell: bash
+        run: npm run build
+
+      - name: Add Node changes
+        shell: bash
+        run: |
+          shopt -s globstar
+          git add src/**/dist/** || true
+
+      - name: Commit Node changes
+        shell: bash
+        run: |
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Build Node frontend assets"
+          fi
+
+      - name: Install Composer production dependencies
         shell: bash
         run: composer install --no-dev --optimize-autoloader
 
-      - name: Add composer changes
+      - name: Add Composer changes
         shell: bash
         run: git add vendor/ composer.lock || true
 
@@ -66,11 +89,16 @@ jobs:
         shell: bash
         run: |
           # Force removal of directories
+          rm -rf .vscode || true
           rm -rf .github || true
+          rm -rf .kiota || true
           rm -rf dev-stubs || true
           rm -rf node_modules || true
+          rm -rf Licence\ Code || true
           rm -rf Test || true
-          rm -rf scripts || true
+          rm -rf Scripts || true
+          rm -rf Docs || true
+          rm -rf PluginBackup || true
           
       - name: Remove Root Non Production Files
         shell: bash
@@ -80,7 +108,12 @@ jobs:
           rm -f .gitignore || true
           rm -f package-lock.json || true
           #rm -f package.json || true
+          rm -f phpunit.xml.dist || true
+          rm -f phpcs.xml.dist || true
           rm -f webpack.config.js || true
+          rm -f debug_dashboard_route.php || true
+          rm -f debug_route_output.html || true
+          rm -f .wp-env.json || true
 
       - name: Add all remaining files
         shell: bash
@@ -88,8 +121,13 @@ jobs:
 
       - name: Commit changes
         shell: bash
-        run: git commit -m "Remove development files and update to latest Master"
+        run: |
+          if git diff --cached --quiet; then
+            echo "No deployment cleanup changes to commit"
+          else
+            git commit -m "Deployment Ready - Remove development files and update to latest Master"
+          fi
 
       - name: Push Deploy
         shell: bash
-        run: git push origin Deploy
+        run: git push --force origin Deploy
