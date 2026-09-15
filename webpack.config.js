@@ -2,6 +2,21 @@ const path = require('path');
 const fs = require('fs');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
+const resolveExistingPath = (...candidates) => {
+  for (const candidate of candidates) {
+    if (fs.existsSync(path.resolve(__dirname, candidate))) {
+      return candidate;
+    }
+  }
+
+  return candidates[0];
+};
+
+const pluginAssetPath = (pluginName, relativePath) => resolveExistingPath(
+  `./src/Includes/Plugins/${pluginName}/Assets/${relativePath}`,
+  `./src/includes/Plugins/${pluginName}/Assets/${relativePath}`
+);
+
 const entries = {
   bootstrap: [
     './src/Assets/js/bootstrap.js',
@@ -20,42 +35,42 @@ const entries = {
 
 const internalWikiEntries = {
   'admin.internal-wiki': [
-    './src/Includes/Plugins/InternalWiki/Assets/scss/admin.internal-wiki.js',
+    pluginAssetPath('InternalWiki', 'js/admin.internal-wiki.js'),
   ],
   'internal-wiki': [
-    './src/Includes/Plugins/InternalWiki/Assets/scss/internal-wiki.scss',
-    './src/Includes/Plugins/InternalWiki/Assets/js/internal-wiki.js'
+    pluginAssetPath('InternalWiki', 'scss/internal-wiki.scss'),
+    pluginAssetPath('InternalWiki', 'js/internal-wiki.js')
   ],
 };
 
 const fontAwesomeEntries = {
   'icon-picker': [
-    './src/Includes/Plugins/FontAwesome/Assets/js/icon-picker.js',
-    './src/Includes/Plugins/FontAwesome/Assets/scss/icon-picker.scss',
+    pluginAssetPath('FontAwesome', 'js/icon-picker.js'),
+    pluginAssetPath('FontAwesome', 'scss/icon-picker.scss'),
   ],
 };
 
 const tinyMCEEntries = {
   'tiny-mce': [
-    './src/Includes/Plugins/TinyMCE/Assets/js/tinymce.js'
+    pluginAssetPath('TinyMCE', 'js/tinymce.js')
   ],
 };
 
 const elementorEntries = {
   wiki: [
-    './src/Includes/Plugins/Elementor/Assets/js/WikiPress/wiki.js',
-    './src/Includes/Plugins/Elementor/Assets/scss/WikiPress/wiki.scss',
+    pluginAssetPath('Elementor', 'js/WikiPress/wiki.js'),
+    pluginAssetPath('Elementor', 'scss/WikiPress/wiki.scss'),
   ],
 };
 
 const gutenburgEntries = {
-  blocks: './src/Includes/Plugins/Gutenburg/Assets/js/blocks.js',
+  blocks: pluginAssetPath('Gutenburg', 'js/blocks.js'),
 };
 
 const userRolesManagerEntries = {
   'user-roles-manager': [
-    './src/Includes/Plugins/UserRolesManager/Assets/js/user-roles-manager.js',
-    './src/Includes/Plugins/UserRolesManager/Assets/scss/user-roles-manager.scss',
+    pluginAssetPath('UserRolesManager', 'js/user-roles-manager.js'),
+    pluginAssetPath('UserRolesManager', 'scss/user-roles-manager.scss'),
   ],
 };
 

@@ -1,1 +1,0 @@
-// Demo plugin JavaScript bundle.
