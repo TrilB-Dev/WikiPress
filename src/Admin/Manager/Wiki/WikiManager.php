@@ -7,6 +7,7 @@ use WikiPress\Assets\Assets;
 use WikiPress\Includes\Core\PostType;
 use WikiPress\Includes\Core\Taxonomy;
 use WikiPress\Includes\Core\Editor;
+use WikiPress\Includes\Functions\Helpers\FormFieldHelper;
 use WikiPress\Includes\Functions\Helpers\PostHelper;
 use WikiPress\Includes\Functions\Helpers\QueryHelper;
 use WikiPress\Includes\Functions\Helpers\TaxonomyHelper;
@@ -17,12 +18,25 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class WikiManager extends Manager {
+	/**
+	 * Functions related to Wiki operations.
+	 *
+	 * @var FunctionsWiki
+	 */
 	private FunctionsWiki $wiki_functions;
-
+	/**
+	 * Constructor.
+	 *
+	 * @param FunctionsWiki $wiki_functions Functions related to Wiki operations.
+	 */
 	public function __construct( FunctionsWiki $wiki_functions ) {
 		$this->wiki_functions = $wiki_functions;
 	}
-
+	/**
+	 * Registers the assets for the Wiki Manager.
+	 *
+	 * @param Assets $assets The assets manager instance.
+	 */
 	public function register_assets( Assets $assets ): void {
 		$this->register_page_assets( $assets, [ 'wikipress-manage' ], 'wiki' );
 		$this->register_page_assets( $assets, [ 'wikipress-manage' ], 'navbuilder' );
@@ -32,7 +46,9 @@ final class WikiManager extends Manager {
 			}
 		} );
 	}
-
+	/**
+	 * Renders the Wiki Manager interface.
+	 */
 	public function render(): void {
 		$wiki_action = sanitize_key( wp_unslash( $_GET['wiki'] ?? '' ) );
 		if ( 'new' === $wiki_action ) {
@@ -75,6 +91,9 @@ final class WikiManager extends Manager {
 		$this->footer();
 	}
 
+	/**
+	 * Renders the form to create a new Wiki.
+	 */
 	private function render_new_wiki(): void {
 		$notice = $this->wiki_functions->save_wiki();
 		$this->header( __( 'Create a New Wiki', 'wikipress' ) );
@@ -88,6 +107,9 @@ final class WikiManager extends Manager {
 		$this->footer();
 	}
 
+	/**
+	 * Renders the editor for a Wiki page.
+	 */
 	private function render_page_editor(): void {
 		$wiki_id = absint( wp_unslash( $_GET['wiki_id'] ?? 0 ) );
 		$page_id = absint( wp_unslash( $_GET['page_id'] ?? 0 ) );
@@ -104,6 +126,11 @@ final class WikiManager extends Manager {
 		$this->footer();
 	}
 
+	/**
+	 * Renders a card for a Wiki.
+	 *
+	 * @param \WP_Post $wiki The Wiki post object.
+	 */
 	private function render_wiki_card( \WP_Post $wiki ): void {
 		$page_count = QueryHelper::posts( [
 			'post_type'      => PostType::PAGE,
@@ -136,7 +163,9 @@ final class WikiManager extends Manager {
 					<?php else : ?>
 						<div class="wikipress-wiki-image wikipress-wiki-image-placeholder rounded mx-auto d-flex align-items-center justify-content-center mb-3" aria-hidden="true"><span class="dashicons dashicons-book-alt"></span></div>
 					<?php endif; ?>
-					<p class="card-text text-secondary"><?php echo esc_html( $description ?: __( 'No description provided yet.', 'wikipress' ) ); ?></p>
+					<p class="card-text text-secondary">
+						<?php echo esc_html( $description ?: __( 'No description provided yet.', 'wikipress' ) ); ?>
+					</p>
 					<div class="d-flex align-items-center gap-2 mb-3">
 						<img src="<?php echo esc_url( $author_url ); ?>" class="wikipress-author-image rounded-circle" alt="">
 						<p class="card-text mb-0"><span class="text-secondary"><?php esc_html_e( 'Author:', 'wikipress' ); ?></span> <?php echo esc_html( get_the_author_meta( 'display_name', $wiki->post_author ) ); ?></p>
@@ -148,11 +177,23 @@ final class WikiManager extends Manager {
 					</div>
 				</div>
 				<div class="card-footer d-flex flex-wrap gap-2">
-					<button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#<?php echo esc_attr( $settings_id ); ?>"><?php esc_html_e( 'Settings', 'wikipress' ); ?></button>
-					<?php /* translators: %s is the title of the Wiki. */ ?>
-					<button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#<?php echo esc_attr( $manage_id ); ?>"><?php printf( esc_html__( 'Manage %s', 'wikipress' ), esc_html( get_the_title( $wiki ) ) ); ?></button>
-					<?php /* translators: %s is the title of the Wiki. */ ?>
-					<button type="button" class="btn btn-outline-danger btn-sm ms-auto" data-wikipress-delete-wiki="<?php echo esc_attr( $wiki->ID ); ?>"><?php printf( esc_html__( 'Delete %s', 'wikipress' ), esc_html( get_the_title( $wiki ) ) ); ?></button>
+					<?php echo FormFieldHelper::button( __( 'Settings', 'wikipress' ), [
+						'type'            => 'button',
+						'class'           => 'btn btn-outline-secondary btn-sm',
+						'data-bs-toggle'  => 'modal',
+						'data-bs-target'  => '#' . $settings_id,
+					] ); ?>
+					<?php echo FormFieldHelper::button( sprintf( __( 'Manage %s', 'wikipress' ), get_the_title( $wiki ) ), [
+						'type'            => 'button',
+						'class'           => 'btn btn-primary btn-sm',
+						'data-bs-toggle'  => 'modal',
+						'data-bs-target'  => '#' . $manage_id,
+					] ); ?>
+					<?php echo FormFieldHelper::button( sprintf( __( 'Delete %s', 'wikipress' ), get_the_title( $wiki ) ), [
+						'type'                     => 'button',
+						'class'                    => 'btn btn-outline-danger btn-sm ms-auto',
+						'data-wikipress-delete-wiki' => (string) $wiki->ID,
+					] ); ?>
 				</div>
 			</article>
 		</div>

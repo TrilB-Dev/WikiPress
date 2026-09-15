@@ -64,6 +64,33 @@ final class FormFieldHelper {
 
 		return '<input ' . self::attributes_to_string( $attributes ) . ' />' . self::feedback( $options );
 	}
+
+	/**
+	 * Render a hidden input field.
+	 *
+	 * @param string $name       The name attribute for the input.
+	 * @param string $value      The value attribute for the input.
+	 * @param array  $options    Additional attributes for the input.
+	 * @return string The HTML markup for the hidden input.
+	 */
+	public static function hidden( string $name, string $value = '', array $options = array() ): string {
+		$options['type'] = 'hidden';
+
+		return self::input( $name, $value, $options );
+	}
+
+	/**
+	 * Render a WordPress nonce field.
+	 *
+	 * @param string $action     The nonce action.
+	 * @param string $name       The hidden field name.
+	 * @param bool   $referer    Whether to include the referer field.
+	 * @param bool   $echo       Whether to echo or return the markup.
+	 * @return string The nonce field HTML.
+	 */
+	public static function nonce_field( string $action, string $name = '_wpnonce', bool $referer = false, bool $echo = true ): string {
+		return wp_nonce_field( $action, $name, $referer, $echo );
+	}
 	/**
 	 * Render a textarea.
 	 *
