@@ -60,6 +60,30 @@ if ( is_readable( $wikipress_autoloader ) ) {
 	require_once $wikipress_autoloader;
 }
 
+spl_autoload_register(
+	static function ( string $class_name ): void {
+		if ( 0 !== strpos( $class_name, 'WikiPress\\' ) ) {
+			return;
+		}
+
+		$relative_path = str_replace( '\\', '/', substr( $class_name, strlen( 'WikiPress\\' ) ) ) . '.php';
+		$candidates    = array(
+			WIKIPRESS_DIR . 'src/includes/' . $relative_path,
+			WIKIPRESS_DIR . 'src/Includes/' . $relative_path,
+			WIKIPRESS_DIR . 'src/' . $relative_path,
+		);
+
+		foreach ( $candidates as $candidate ) {
+			if ( is_readable( $candidate ) ) {
+				require_once $candidate;
+				return;
+			}
+		}
+	},
+	true,
+	true
+);
+
 if ( is_readable( $wikipress_plugins_interface ) ) {
 	require_once $wikipress_plugins_interface;
 }
