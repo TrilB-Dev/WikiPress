@@ -41,13 +41,13 @@ define( 'WIKIPRESS_ASSETS_URL', WIKIPRESS_URL . 'src/Assets' );
 define( 'WIKIPRESS_ADMIN', WIKIPRESS_DIR . 'src/Admin' );
 define( 'WIKIPRESS_ADMIN_URL', WIKIPRESS_URL . 'src/Admin' );
 define( 'WIKIPRESS_LANGUAGES', WIKIPRESS_DIR . 'src/languages' );
-define( 'WIKIPRESS_INCLUDES', WIKIPRESS_DIR . 'src/includes' );
+define( 'WIKIPRESS_INCLUDES', WIKIPRESS_DIR . 'src/Includes' );
 define( 'WIKIPRESS_CORE', WIKIPRESS_INCLUDES . '/Core' );
 define( 'WIKIPRESS_ELEMENTOR', WIKIPRESS_INCLUDES . '/Plugins/Elementor' );
-define( 'WIKIPRESS_ELEMENTOR_URL', WIKIPRESS_URL . 'src/includes/Plugins/Elementor' );
+define( 'WIKIPRESS_ELEMENTOR_URL', WIKIPRESS_URL . 'src/Includes/Plugins/Elementor' );
 define( 'WIKIPRESS_SETTINGS', WIKIPRESS_INCLUDES . '/Settings' );
 define( 'WIKIPRESS_PLUGINS', WIKIPRESS_INCLUDES . '/Plugins' );
-define( 'WIKIPRESS_PLUGINS_URL', WIKIPRESS_URL . 'src/includes/Plugins' );
+define( 'WIKIPRESS_PLUGINS_URL', WIKIPRESS_URL . 'src/Includes/Plugins' );
 
 $wikipress_autoloader = WIKIPRESS_DIR . 'vendor/autoload.php';
 if ( is_readable( $wikipress_autoloader ) ) {
@@ -61,7 +61,7 @@ if ( is_readable( $wikipress_autoloader ) ) {
 function activate_wikipress() {
 	\WikiPress\Includes\Core\WP\Activator::activate();
 }
-
+register_activation_hook( __FILE__, 'activate_wikipress' );
 /**
  * The code that runs during plugin deactivation.
  * This action is documented in includes/class-wikipress-deactivator.php
@@ -70,7 +70,7 @@ function deactivate_wikipress() {
 	\WikiPress\Includes\Core\WP\Deactivator::deactivate();
 }
 
-register_activation_hook( __FILE__, 'activate_wikipress' );
+
 register_deactivation_hook( __FILE__, 'deactivate_wikipress' );
 
 /**
