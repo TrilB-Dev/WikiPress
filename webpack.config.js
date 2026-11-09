@@ -1,30 +1,32 @@
 const path = require('path');
 const fs = require('fs');
+const { copyFileSync, mkdirSync, readFileSync, writeFileSync } = require('fs');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
-const resolveExistingPath = (...candidates) => {
-  for (const candidate of candidates) {
-    if (fs.existsSync(path.resolve(__dirname, candidate))) {
-      return candidate;
-    }
+class CopyUnprocessedAssetPlugin {
+  constructor(patterns) {
+    this.patterns = patterns;
   }
 
-  return candidates[0];
-};
+  apply(compiler) {
+    compiler.hooks.afterEmit.tap('CopyUnprocessedAssetPlugin', () => {
+      this.patterns.forEach(({ from, to }) => {
+        const src = path.resolve(__dirname, from);
+        const dest = path.resolve(__dirname, to);
 
-const pluginAssetPath = (pluginName, relativePath) => resolveExistingPath(
-  `./src/includes/Plugins/${pluginName}/assets/${relativePath}`,
-  `./src/includes/Plugins/${pluginName}/Assets/${relativePath}`,
-  `./src/Includes/Plugins/${pluginName}/assets/${relativePath}`,
-  `./src/Includes/Plugins/${pluginName}/Assets/${relativePath}`
-);
+        mkdirSync(path.dirname(dest), { recursive: true });
 
-const pluginOutputPath = (pluginName) => resolveExistingPath(
-  `./src/includes/Plugins/${pluginName}/assets/dist`,
-  `./src/includes/Plugins/${pluginName}/Assets/dist`,
-  `./src/Includes/Plugins/${pluginName}/assets/dist`,
-  `./src/Includes/Plugins/${pluginName}/Assets/dist`
-);
+        if (path.basename(dest) === 'bs-country-data.min.css') {
+          const css = readFileSync(src, 'utf8').replace(/url\(\s*['"]?\.\.\/images\//g, 'url(../../images/');
+          writeFileSync(dest, css);
+          return;
+        }
+
+        copyFileSync(src, dest);
+      });
+    });
+  }
+}
 
 const entries = {
   bootstrap: [
@@ -33,53 +35,28 @@ const entries = {
   ],
   'admin.ui': [
     './src/Assets/js/admin.ui.js',
+    './src/Assets/js/admin.settings.js',
+    './src/Assets/js/admin.plugins.js',
+    './src/Assets/js/admin.page.js',
+    './src/Assets/js/admin.dashboard.js',
     './src/Assets/scss/admin.ui.scss',
   ],
   'wpoverride': './src/Assets/scss/wpoverride.scss',
-  'bootstrap-select': [
-    './src/Assets/js/bootstrap-select.js',
-    './src/Assets/scss/bootstrap-select.scss',
-  ]
-};
-
-const internalWikiEntries = {
-  'admin.internal-wiki': [
-    pluginAssetPath('InternalWiki', 'js/admin.internal-wiki.js'),
-  ],
-  'internal-wiki': [
-    pluginAssetPath('InternalWiki', 'scss/internal-wiki.scss'),
-    pluginAssetPath('InternalWiki', 'js/internal-wiki.js')
-  ],
 };
 
 const fontAwesomeEntries = {
   'icon-picker': [
-    pluginAssetPath('FontAwesome', 'js/icon-picker.js'),
-    pluginAssetPath('FontAwesome', 'scss/icon-picker.scss'),
+    './src/Includes/Plugins/FontAwesome/Assets/js/fontawesome.icon-picker.js',
+    './src/Includes/Plugins/FontAwesome/Assets/scss/fontawesome.icon-picker.scss',
+  ],
+  'admin.plugins.fontawesome': [
+    './src/Includes/Plugins/FontAwesome/Assets/js/admin.plugins.fontawesome.js',
   ],
 };
-
 const tinyMCEEntries = {
-  'tiny-mce': [
-    pluginAssetPath('TinyMCE', 'js/tinymce.js')
-  ],
-};
-
-const elementorEntries = {
-  wiki: [
-    pluginAssetPath('Elementor', 'js/WikiPress/wiki.js'),
-    pluginAssetPath('Elementor', 'scss/WikiPress/wiki.scss'),
-  ],
-};
-
-const gutenburgEntries = {
-  blocks: pluginAssetPath('Gutenburg', 'js/blocks.js'),
-};
-
-const userRolesManagerEntries = {
-  'user-roles-manager': [
-    pluginAssetPath('UserRolesManager', 'js/user-roles-manager.js'),
-    pluginAssetPath('UserRolesManager', 'scss/user-roles-manager.scss'),
+  'tinyMCE': [
+    './src/Includes/Plugins/TinyMCE/Assets/js/tinymce.js',
+    './src/Includes/Plugins/TinyMCE/Assets/scss/tinymce.scss',
   ],
 };
 
@@ -101,7 +78,13 @@ const shared = {
         test: /\.scss$/,
         use: [
           MiniCssExtractPlugin.loader,
-          'css-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              url: false,
+              import: false,
+            },
+          },
           {
             loader: 'sass-loader',
             options: {
@@ -116,7 +99,16 @@ const shared = {
       },
       {
         test: /\.css$/,
-        use: [MiniCssExtractPlugin.loader, 'css-loader'],
+        use: [
+          MiniCssExtractPlugin.loader,
+          {
+            loader: 'css-loader',
+            options: {
+              url: false,
+              import: false,
+            },
+          },
+        ],
       },
       {
         test: /\.js$/,
@@ -139,61 +131,31 @@ module.exports = [
     },
     plugins: [
       new MiniCssExtractPlugin({ filename: 'css/[name].css' }),
+      new CopyUnprocessedAssetPlugin([
+        {
+          from: 'node_modules/@crestapps/bootstrap-select/dist/css/bootstrap-select.min.css',
+          to: 'src/Assets/dist/css/bootstrap-select.min.css',
+        },
+        {
+          from: 'node_modules/@crestapps/bootstrap-select/dist/js/bootstrap-select.min.js',
+          to: 'src/Assets/dist/js/bootstrap-select.min.js',
+        },
+        {
+          from: 'node_modules/@trilbdev/boostrap-select-country-data/dist/js/bs-country-data.min.js',
+          to: 'src/Assets/dist/js/bs-country-data.min.js',
+        },
+        {
+          from: 'node_modules/@trilbdev/boostrap-select-country-data/dist/css/bs-country-data.min.css',
+          to: 'src/Assets/dist/css/bs-country-data.min.css',
+        },
+      ]),
     ],
   },
   {
     ...shared,
     entry: fontAwesomeEntries,
     output: {
-      path: path.resolve(__dirname, pluginOutputPath('FontAwesome')),
-      filename: 'js/[name].js',
-      clean: true,
-    },
-    plugins: [
-      new MiniCssExtractPlugin({ filename: 'css/[name].css' }),
-    ],
-  },
-  {
-    ...shared,
-    entry: elementorEntries,
-    output: {
-      path: path.resolve(__dirname, pluginOutputPath('Elementor')),
-      filename: 'js/[name].js',
-      clean: true,
-    },
-    plugins: [
-      new MiniCssExtractPlugin({ filename: 'css/[name].css' }),
-    ],
-  },
-  {
-    ...shared,
-    entry: gutenburgEntries,
-    output: {
-      path: path.resolve(__dirname, pluginOutputPath('Gutenburg')),
-      filename: 'js/[name].js',
-      clean: true,
-    },
-    plugins: [
-      new MiniCssExtractPlugin({ filename: 'css/[name].css' }),
-    ],
-  },
-  {
-    ...shared,
-    entry: userRolesManagerEntries,
-    output: {
-      path: path.resolve(__dirname, pluginOutputPath('UserRolesManager')),
-      filename: 'js/[name].js',
-      clean: true,
-    },
-    plugins: [
-      new MiniCssExtractPlugin({ filename: 'css/[name].css' }),
-    ],
-  },
-  {
-    ...shared,
-    entry: internalWikiEntries,
-    output: {
-      path: path.resolve(__dirname, pluginOutputPath('InternalWiki')),
+      path: path.resolve(__dirname, 'src/Includes/Plugins/FontAwesome/Assets/dist'),
       filename: 'js/[name].js',
       clean: true,
     },
@@ -205,7 +167,7 @@ module.exports = [
     ...shared,
     entry: tinyMCEEntries,
     output: {
-      path: path.resolve(__dirname, pluginOutputPath('TinyMCE')),
+      path: path.resolve(__dirname, 'src/Includes/Plugins/TinyMCE/Assets/dist'),
       filename: 'js/[name].js',
       clean: true,
     },

@@ -91,3 +91,5 @@ tinymce.Resource.add('tinymce.html-i18n.help-keynav.vi',
   '\n' +
   '<p>Chuyển sang một tab hộp thoại khác bằng cách chuyển trọng tâm vào menu tab, rồi ấn phím <strong>Mũi tên</strong> phù hợp\n' +
   '  để xoay vòng các tab hiện có.</p>\n');
+
+

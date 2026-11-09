@@ -9,67 +9,100 @@
 
 namespace WikiPress\Includes\Plugins\TinyMCE\Assets;
 
-use WikiPress\Includes\Functions\Helpers\LoaderHelper;
 use WikiPress\Includes\Plugins\TinyMCE\Includes\Settings\Settings;
 use WikiPress\Includes\Functions\Helpers\ImageHelper;
+use WikiPress\Includes\Functions\Helpers\LoaderHelper;
 
 final class Assets {
-    private LoaderHelper $loader;
+	/**
+	 * The loader helper instance.
+	 *
+	 * @var LoaderHelper The loader helper instance.
+	 */
+	private LoaderHelper $loader;
+	/**
+	 * Constructor for the TinyMCE plugin assets.
+	 *
+	 * @param LoaderHelper|null $loader The loader helper instance.
+	 */
+	public function __construct( ?LoaderHelper $loader = null ) {
+		$this->loader = $loader ?? new LoaderHelper();
+	}
 
-    public function __construct( ?LoaderHelper $loader = null ) {
-        $this->loader = $loader ?? new LoaderHelper();
-    }
+	/**
+	 * Registers the TinyMCE plugin assets with the core assets manager.
+	 *
+	 * @return void
+	 */
+	public function register(): void {
+		$this->loader->register_component(
+			$this,
+			array(
+				array(
+					'type'          => 'filter',
+					'hook'          => 'wikipress_admin_assets',
+					'callback'      => 'register_admin_assets',
+					'accepted_args' => 2,
+				),
+			)
+		)->run();
+	}
+	/**
+	 * Registers the admin assets for the TinyMCE plugin.
+	 *
+	 * @param array  $assets The current assets.
+	 * @param string $context The context (e.g., 'frontend', 'admin').
+	 * @return array The updated assets with TinyMCE assets included.
+	 */
+	public function register_admin_assets( $assets = array(), string $context = 'admin' ): array {
+		if ( ! is_array( $assets ) ) {
+			$assets = array();
+		}
 
-    /**
-     * Constructor for the TinyMCE plugin assets.
-     */
-    public function register(): void {
-        $this->loader->register_component( $this, [
-            [ 'type' => 'filter', 'hook' => 'wikipress_admin_assets', 'callback' => 'register_admin_assets', 'accepted_args' => 2 ],
-        ] )->run();
-    }
+		if ( 'admin' !== strtolower( $context ) && 'frontend' !== strtolower( $context ) ) {
+			return $assets;
+		}
 
-    public function register_admin_assets( array $assets, string $context = '' ): array {
-        $base_url = WIKIPRESS_URL . 'src/includes/Plugins/TinyMCE/Assets/tinymce/';
+		$base_url = WIKIPRESS_URL . 'src/Includes/Plugins/TinyMCE/Assets/tinymce/';
 
-        $assets['styles'][] = [
-            'handle' => 'wikipress-tinymce-skin',
-            'src' => $base_url . 'skins/ui/' . Settings::ui_skin() . '/skin.min.css',
-        ];
-        $assets['scripts'][] = [
-            'handle' => 'wikipress-tinymce',
-            'src' => $base_url . 'tinymce.min.js',
-            'in_footer' => true,
-        ];
-        $assets['scripts'][] = [
-            'handle' => 'wikipress-tinymce-boot',
-            'src' => WIKIPRESS_URL . 'src/includes/Plugins/TinyMCE/Assets/js/tinymce.js',
-            'deps' => [ 'wikipress-tinymce' ],
-            'in_footer' => true,
-            'localize' => [
-                'object_name' => 'wikipressTinyMCE',
-                'data' => [
-                    'mediaTitle' => __( 'Insert media', 'wikipress' ),
-                    'mediaButton' => __( 'Insert into editor', 'wikipress' ),
-                    'mediaTooltip' => __( 'Insert media', 'wikipress' ),
-                ],
-            ],
-        ];
+		$assets['styles'][]  = array(
+			'handle' => 'wikipress-tinymce-skin',
+			'src'    => $base_url . 'skins/ui/' . Settings::ui_skin() . '/skin.min.css',
+		);
+		$assets['scripts'][] = array(
+			'handle'    => 'wikipress-tinymce',
+			'src'       => $base_url . 'tinymce.min.js',
+			'in_footer' => true,
+		);
+		$assets['scripts'][] = array(
+			'handle'    => 'wikipress-tinymce-boot',
+			'src'       => WIKIPRESS_URL . 'src/Includes/Plugins/TinyMCE/Assets/js/tinymce.js',
+			'deps'      => array( 'wikipress-tinymce' ),
+			'in_footer' => true,
+			'localize'  => array(
+				'object_name' => 'wikipressTinyMCE',
+				'data'        => array(
+					'mediaTitle'   => __( 'Insert media', 'wikipress' ),
+					'mediaButton'  => __( 'Insert into editor', 'wikipress' ),
+					'mediaTooltip' => __( 'Insert media', 'wikipress' ),
+				),
+			),
+		);
 
-        if ( function_exists( 'wp_enqueue_media' ) ) {
-            wp_enqueue_media();
-        }
+		$assets['enqueue_media'] = true;
 
-        return $assets;
-    }
-    /**
-     * Retrieves the URL of an image asset.
-     *
-     * @param string $file The image file name.
-     * @return string The URL of the image asset.
-     */
-    public function get_image( string $file ): string {
-
-        return ImageHelper::get_image_url( 'tinymce-plugin', $file );
-    }
+		return $assets;
+	}
+	/**
+	 * Get an image asset URL from the core Images directory.
+	 *
+	 * @param string $file The image path relative to Assets/images.
+	 * @return string The image URL, or an empty string when the path is invalid.
+	 */
+	public static function get_image( string $file ): string {
+		return ImageHelper::get_image_url( 'wikipress-tinymce', $file );
+	}
 }
+
+
+

@@ -91,3 +91,5 @@ tinymce.Resource.add('tinymce.html-i18n.help-keynav.hu_HU',
   '\n' +
   '<p>A párbeszédablak másik lapjára úgy léphet, hogy a fókuszt a lapmenüre állítja, majd lenyomja a megfelelő <strong>nyílbillentyűt</strong>\n' +
   '  a rendelkezésre álló lapok közötti lépkedéshez.</p>\n');
+
+

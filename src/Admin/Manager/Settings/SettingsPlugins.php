@@ -36,37 +36,79 @@ final class SettingsPlugins {
         if ( ! is_array( $page ) ) {
             return;
         }
+        ?>
+        <tr>
+            <th scope="row">
+                <?php echo esc_html( $page['title'] ?? $page['label'] ); ?>
+            </th>
+            <td>
+                <?php foreach ( $page['fields'] as $field ) : ?>
+                    <?php
+                    $key = SanitizationHelper::key( $field['key'] ?? '' );
+                    if ( '' === $key ) {
+                        continue;
+                    }
+                    $default = array_key_exists( 'default', $field ) ? $field['default'] : false;
+                    $name = 'wikipress_' . SanitizationHelper::key( $page['slug'] ) . '[' . $key . ']';
+                    $value = $values[ $key ] ?? $default;
+                    $type = SanitizationHelper::key( $field['type'] ?? 'checkbox', 'checkbox' );
+                    ?>
+                    <div class="mb-3">
+                        <?php echo FormFieldHelper::label(
+                            'wikipress-' . $key,
+                            (string) ( $field['label'] ?? $key ),
+                            [
+                                'description' => (string) ( $field['description'] ?? '' ),
+                                'tooltip' => (string) ( $field['tooltip'] ?? '' ),
+                                'tooltip_type' => SanitizationHelper::key( $field['tooltip_type'] ?? 'question', 'question' ),
+                                'tooltip_icon' => (string) ( $field['tooltip_icon'] ?? '' ),
+                            ]
+                        ); ?>
+                        <?php if ( 'select' === $type ) : ?>
+                            <?php echo FormFieldHelper::bootstrap_select(
+                                $name,
+                                [
+                                    'data' => (array) ( $field['options'] ?? [] ),
+                                    'selected' => $value,
+                                    'id' => 'wikipress-' . $key,
+                                ]
+                            ); ?>
+                        <?php elseif ( 'text' === $type ) : ?>
+                            <?php echo FormFieldHelper::input(
+                                $name,
+                                is_scalar( $value ) ? (string) $value : '',
+                                [
+                                    'id' => 'wikipress-' . $key,
+                                    'type' => 'text',
+                                ]
+                            ); ?>
 
-        echo '<tr><th scope="row">' . esc_html( $page['title'] ?? $page['label'] ) . '</th><td>';
-        foreach ( $page['fields'] as $field ) {
-            $key = SanitizationHelper::key( $field['key'] ?? '' );
-            if ( '' === $key ) {
-                continue;
-            }
-            $default = array_key_exists( 'default', $field ) ? $field['default'] : false;
-            $name = 'wikipress_' . SanitizationHelper::key( $page['slug'] ) . '[' . $key . ']';
-            $value = $values[ $key ] ?? $default;
-            $type = SanitizationHelper::key( $field['type'] ?? 'checkbox', 'checkbox' );
-            echo '<div class="mb-3">' . FormFieldHelper::label(
-                'wikipress-' . $key,
-                (string) ( $field['label'] ?? $key ),
-                [
-                    'description' => (string) ( $field['description'] ?? '' ),
-                    'tooltip' => (string) ( $field['tooltip'] ?? '' ),
-                    'tooltip_type' => SanitizationHelper::key( $field['tooltip_type'] ?? 'question', 'question' ),
-                    'tooltip_icon' => (string) ( $field['tooltip_icon'] ?? '' ),
-                ]
-            );
-            if ( 'select' === $type ) {
-                echo FormFieldHelper::select( $name, (array) ( $field['options'] ?? [] ), $value, [ 'id' => 'wikipress-' . $key ] );
-            } elseif ( 'text' === $type ) {
-                echo FormFieldHelper::input( $name, is_scalar( $value ) ? (string) $value : '', [ 'id' => 'wikipress-' . $key, 'type' => 'text' ] );
-            } else {
-                echo FormFieldHelper::checkbox( $name, '1', '', [ 'id' => 'wikipress-' . $key, 'checked' => ! empty( $value ) ] );
-            }
-            echo '</div>';
-        }
-        echo '</td></tr>';
+                        <?php elseif ( 'switch' === $type ) : ?>
+                            <?php echo FormFieldHelper::switch(
+                                $name,
+                                true,
+                                '',
+                                [
+                                    'id' => 'wikipress-' . $key,
+                                    'checked' => ! empty( $value ),
+                                ]
+                            ); ?>
+                        <?php else :?>
+                            <?php echo FormFieldHelper::checkbox(
+                                $name,
+                                true,
+                                '',
+                                [
+                                    'id' => 'wikipress-' . $key,
+                                    'checked' => ! empty( $value ),
+                                ]
+                            ); ?>
+                        <?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
+            </td>
+        </tr>
+        <?php
     }
     /**
      * Render the settings page for the given tab.
@@ -106,9 +148,10 @@ final class SettingsPlugins {
      * @since 1.0.0
      */
     private function render_wikipress_plugins(): void {
+        $plugins = Plugins::get_instance()->get_registered_plugins();
         ?>
         <div class="row g-4">
-            <?php foreach ( Plugins::get_instance()->get_registered_plugins() as $plugin ) : ?>
+            <?php foreach ( $plugins as $plugin ) : ?>
                 <?php if ( $plugin instanceof PluginInterface && $this->can_view_plugin( $plugin ) ) : ?>
                     <?php $this->render_wikipress_plugin_card( $plugin ); ?>
                 <?php endif; ?>
@@ -149,17 +192,55 @@ final class SettingsPlugins {
             <article class="card wikipress-plugin-card shadow-sm h-100 w-100">
                 <div class="card-header d-flex align-items-center gap-2">
                     <?php /* translators: %s is the plugin name. */ ?>
-                    <?php echo FormFieldHelper::switch( 'wikipress-plugin-status', '1', '', [ 'id' => 'wikipress-plugin-status-' . SanitizationHelper::key( $plugin->get_slug() ), 'checked' => $enabled, 'disabled' => ! $can_edit, 'data-wikipress-plugin-toggle' => 'true', 'data-plugin-slug' => $plugin->get_slug(), 'aria-label' => sprintf( __( 'Enable %s', 'wikipress' ), $plugin->get_name() ) ] ); ?>
-                    <span class="fw-semibold"><?php echo esc_html( $plugin->get_name() ); ?></span>
+                    <?php echo FormFieldHelper::switch( 
+                        'wikipress-plugin-status', 
+                        '1', 
+                        '', 
+                        [ 
+                            'id' => 'wikipress-plugin-status-' . SanitizationHelper::key( $plugin->get_slug() ), 
+                            'checked' => $enabled, 
+                            'disabled' => ! $can_edit, 
+                            'data-wikipress-plugin-toggle' => 'true', 
+                            'data-plugin-slug' => $plugin->get_slug(), 
+                            'aria-label' => sprintf( 
+                                __( 'Enable %s', 'wikipress' ), 
+                                $plugin->get_name() 
+                            ) 
+                        ] 
+                    ); ?>
+                    <span class="fw-semibold">
+                        <?php echo esc_html( $plugin->get_name() ); ?>
+                    </span>
                 </div>
                 <div class="card-body d-flex flex-column">
                     <span class="wikipress-plugin-icon dashicons dashicons-admin-plugins" aria-hidden="true"></span>
-                    <p class="card-text text-secondary mt-3"><?php echo esc_html( $plugin->get_description() ); ?></p>
-                    <p class="card-text mb-2"><span class="text-secondary"><?php esc_html_e( 'Author:', 'wikipress' ); ?></span> <?php echo esc_html( $plugin->get_author() ); ?></p>
-                    <p class="card-text mb-2"><span class="text-secondary"><?php esc_html_e( 'Version:', 'wikipress' ); ?></span> <?php echo esc_html( $plugin->get_version() ); ?></p>
-                    <p class="card-text mb-3"><span class="text-secondary"><?php esc_html_e( 'Docs:', 'wikipress' ); ?></span> <a href="<?php echo esc_url( $plugin->get_uri() ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'View documentation', 'wikipress' ); ?></a></p>
+                    <p class="card-text text-secondary mt-3">
+                        <?php echo esc_html( $plugin->get_description() ); ?>
+                    </p>
+                    <p class="card-text mb-2">
+                        <span class="text-secondary">
+                            <?php esc_html_e( 'Author:', 'wikipress' ); ?>
+                        </span> <?php echo esc_html( $plugin->get_author() ); ?>
+                    </p>
+                    <p class="card-text mb-2">
+                        <span class="text-secondary">
+                            <?php esc_html_e( 'Version:', 'wikipress' ); ?>
+                        </span> <?php echo esc_html( $plugin->get_version() ); ?>
+                    </p>
+                    <p class="card-text mb-3">
+                        <span class="text-secondary">
+                            <?php esc_html_e( 'Docs:', 'wikipress' ); ?>
+                        </span> <a href="<?php echo esc_url( $plugin->get_uri() ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'View documentation', 'wikipress' ); ?></a></p>
                     <?php if ( ! empty( $settings_page['fields'] ) ) : ?>
-                        <?php echo FormFieldHelper::button( __( 'Settings', 'wikipress' ), [ 'type' => 'button', 'class' => 'btn-primary mt-auto', 'data-bs-toggle' => 'modal', 'data-bs-target' => '#' . $modal_id ] ); ?>
+                        <?php echo FormFieldHelper::button( 
+                            __( 'Settings', 'wikipress' ), 
+                            [ 
+                                'type' => 'button', 
+                                'class' => 'btn-primary mt-auto', 
+                                'data-bs-toggle' => 'modal', 
+                                'data-bs-target' => '#' . $modal_id 
+                            ] 
+                        ); ?>
                     <?php endif; ?>
                 </div>
             </article>
@@ -199,17 +280,37 @@ final class SettingsPlugins {
                                 <dd class="col-sm-9 mb-0"><?php echo esc_html( $plugin->get_license() ); ?></dd>
                             </dl>
                         </section>
-                        <form class="wikipress-plugin-settings-form" data-plugin-settings-form data-plugin-slug="<?php echo esc_attr( $plugin->get_slug() ); ?>" data-internal-wiki-fields>
+                        <form method="post" 
+                            id="wikipress-plugin-settings-form-<?php echo esc_attr( $modal_id ); ?>" 
+                            class="wikipress-plugin-settings-form" 
+                            data-plugin-settings-form="" 
+                            data-plugin-slug="<?php echo esc_attr( $plugin->get_slug() ); ?>" 
+                            data-internal-mod-fields="">
                             <h3 class="h6 mb-3"><?php echo esc_html( $settings_page['title'] ?? $settings_page['label'] ); ?></h3>
                             <fieldset <?php disabled( ! $can_edit ); ?>>
                                 <?php $this->render_plugin_settings_fields( $settings_page, $values, $modal_id ); ?>
                             </fieldset>
-                        </form>
+                    </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><?php esc_html_e( 'Cancel', 'wikipress' ); ?></button>
+                        <?php echo FormFieldHelper::button( 
+                            __( 'Cancel', 'wikipress' ), 
+                            [ 
+                                'type' => 'button', 
+                                'class' => 'btn-secondary', 
+                                'data-bs-dismiss' => 'modal' 
+                            ] 
+                        ); ?>
                         <?php if ( $can_edit ) : ?>
-                            <button type="button" class="btn btn-primary" data-plugin-settings-save><?php esc_html_e( 'Save', 'wikipress' ); ?></button>
+                            <?php echo FormFieldHelper::button( 
+                                __( 'Save', 'wikipress' ), 
+                                [
+                                    'type' => 'submit',
+                                    'class' => 'btn-primary',
+                                    'form' => 'wikipress-plugin-settings-form-' . $modal_id,
+                                    'data-plugin-settings-save' => '',
+                                ] 
+                            ); ?>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -231,6 +332,105 @@ final class SettingsPlugins {
     private function is_internal_plugin( PluginInterface $plugin ): bool {
         return 0 === strpos( get_class( $plugin ), 'WikiPress\\Includes\\Plugins\\' );
     }
+
+    /**
+     * Normalize conditional visibility rules for a field.
+     *
+     * Supports the common patterns used across plugin settings pages:
+     * - visible_when => [ 'fontawesome_type' => 'cdn' ]
+     * - visible_when => [ [ 'fontawesome_type' => 'cdn' ], [ 'fontawesome_type' => 'kit' ] ]
+     * - required => [ 'fontawesome_type' => 'kit' ]
+     *
+     * @param array $field Field definition.
+     * @return array{visible_when?: array<mixed>, required?: array<mixed>}
+     */
+    private function get_field_condition_rules( array $field ): array {
+        $rules = array(
+            'visible_when' => $field['visible_when'] ?? null,
+            'required'     => $field['required'] ?? null,
+        );
+
+        foreach ( $rules as $key => $value ) {
+            if ( is_array( $value ) ) {
+                continue;
+            }
+
+            $rules[ $key ] = null;
+        }
+
+        return array_filter(
+            $rules,
+            static fn ( $value ) => is_array( $value ) && ! empty( $value )
+        );
+    }
+
+    /**
+     * Determine whether a field should be shown for the current values.
+     *
+     * @param array $field Field definition.
+     * @param array $values Current setting values.
+     * @return bool Whether the field should render.
+     */
+    private function should_render_field( array $field, array $values ): bool {
+        $condition = $this->get_field_condition_rules( $field );
+        if ( empty( $condition ) ) {
+            return true;
+        }
+
+        $check_rule = function ( $rule ) use ( $values ) {
+            if ( ! is_array( $rule ) ) {
+                return true;
+            }
+
+            if ( empty( $rule ) ) {
+                return true;
+            }
+
+            if ( array_is_list( $rule ) ) {
+                return array_reduce(
+                    $rule,
+                    fn ( $carry, $item ) => $carry || $this->matches_rule_condition( $item, $values ),
+                    false
+                );
+            }
+
+            return $this->matches_rule_condition( $rule, $values );
+        };
+
+        foreach ( $condition as $rule_type => $rule ) {
+            if ( ! $check_rule( $rule ) ) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Evaluate a single condition array against current field values.
+     *
+     * @param array $rule Condition map.
+     * @param array $values Current values.
+     * @return bool Whether the condition matches.
+     */
+    private function matches_rule_condition( array $rule, array $values ): bool {
+        foreach ( $rule as $key => $expected ) {
+            $actual = $values[ $key ] ?? '';
+            if ( is_array( $expected ) ) {
+                $matches = in_array( (string) $actual, array_map( 'strval', $expected ), true );
+                if ( ! $matches ) {
+                    return false;
+                }
+                continue;
+            }
+
+            if ( (string) $actual !== (string) $expected ) {
+                return false;
+            }
+        }
+
+        return true;
+    }
     /**
      * Render the settings fields for a plugin's settings page.
      *
@@ -242,11 +442,17 @@ final class SettingsPlugins {
         $layout = SanitizationHelper::key( $settings_page['layout'] ?? 'box', 'box' );
         $layout = in_array( $layout, [ 'table', 'box' ], true ) ? $layout : 'box';
 
-        if ( 'table' === $layout ) {
-            echo '<div class="wikipress-plugin-settings-fields wikipress-plugin-settings-fields-table"><table class="table align-middle"><tbody>';
-        } else {
-            echo '<div class="wikipress-plugin-settings-fields wikipress-plugin-settings-fields-box">';
-        }
+        if ( 'table' === $layout ) :
+            ?>
+            <div class="wikipress-plugin-settings-fields wikipress-plugin-settings-fields-table">
+                <table class="table align-middle">
+                    <tbody>
+            <?php
+        else :
+            ?>
+            <div class="wikipress-plugin-settings-fields wikipress-plugin-settings-fields-box">
+            <?php
+        endif;
 
         foreach ( $settings_page['fields'] as $field ) {
             $key = SanitizationHelper::key( $field['key'] ?? '' );
@@ -260,57 +466,165 @@ final class SettingsPlugins {
             $id = SanitizationHelper::key( $prefix . '-' . $key );
             $name = 'settings[' . $key . ']';
             $wrapper_attributes = [];
+            $wrapper_attributes['data-wikipress-field-key'] = $key;
             if ( ! empty( $field['wrapper_class'] ) ) {
                 $wrapper_attributes['class'] = (string) $field['wrapper_class'];
             }
             if ( ! empty( $field['wrapper_attributes'] ) && is_array( $field['wrapper_attributes'] ) ) {
                 $wrapper_attributes = array_merge( $wrapper_attributes, $field['wrapper_attributes'] );
             }
-            if ( ! empty( $field['visible_when'] ) && is_array( $field['visible_when'] ) ) {
-                $wrapper_attributes['data-wikipress-visible-when'] = wp_json_encode( $field['visible_when'] );
+            $condition = $this->get_field_condition_rules( $field );
+            if ( ! empty( $condition['visible_when'] ) ) {
+                $wrapper_attributes['data-wikipress-visible-when'] = wp_json_encode( $condition['visible_when'] );
+            }
+            if ( ! empty( $condition['required'] ) ) {
+                $wrapper_attributes['data-wikipress-required-when'] = wp_json_encode( $condition['required'] );
             }
             $wrapper_attributes = FormFieldHelper::attributes_to_string( $wrapper_attributes );
-            $label = FormFieldHelper::label( $id, (string) ( $field['label'] ?? $key ), [
-                'tooltip' => (string) ( $field['tooltip'] ?? '' ),
-                'tooltip_type' => SanitizationHelper::key( $field['tooltip_type'] ?? 'question', 'question' ),
-                'tooltip_icon' => (string) ( $field['tooltip_icon'] ?? '' ),
-            ] );
-            if ( 'table' === $layout ) {
-                echo '<tr' . ( $wrapper_attributes ? ' ' . $wrapper_attributes : '' ) . '><th scope="row" class="w-50">' . wp_kses_post( $label ) . '</th><td>';
-            } else {
-                echo '<article class="wikipress-plugin-settings-field card h-100"' . ( $wrapper_attributes ? ' ' . $wrapper_attributes : '' ) . '><div class="card-body">';
-                echo '<div class="wikipress-plugin-settings-field-header d-flex align-items-start justify-content-between gap-3">' . wp_kses_post( $label );
-                if ( 'checkbox' === $type ) {
-                    echo FormFieldHelper::switch( $name, '1', '', [ 'id' => $id, 'checked' => ! empty( $value ), 'wrapper_class' => 'ms-auto flex-shrink-0' ] );
-                }
-                echo '</div>';
-                if ( ! empty( $field['description'] ) ) {
-                    echo '<p class="wikipress-plugin-settings-field-description text-secondary mb-3">' . esc_html( (string) $field['description'] ) . '</p>';
-                }
-            }
+            $label = FormFieldHelper::label( 
+                $id, 
+                (string) ( $field['label'] ?? $key ), 
+                [
+                    'tooltip' => (string) ( $field['tooltip'] ?? '' ),
+                    'tooltip_type' => SanitizationHelper::key( 
+                        $field['tooltip_type'] ?? 'question', 
+                        'question' 
+                    ),
+                    'tooltip_icon' => (string) ( $field['tooltip_icon'] ?? '' ),
+                ] 
+            );
+            if ( 'table' === $layout ) :
+                ?>
+                <tr<?php echo $wrapper_attributes ? ' ' . $wrapper_attributes : ''; ?>>
+                    <th scope="row" class="w-50"><?php echo wp_kses_post( $label ); ?></th>
+                    <td>
+                <?php
+            else :
+                ?>
+                <article class="wikipress-plugin-settings-field card h-100"<?php echo $wrapper_attributes ? ' ' . $wrapper_attributes : ''; ?>>
+                    <div class="card-body">
+                        <div class="wikipress-plugin-settings-field-header d-flex align-items-start justify-content-between gap-3">
+                            <?php echo wp_kses_post( $label ); ?>
+                            <?php if ( 'checkbox' === $type || 'switch' === $type ) : ?>
+                                <?php echo FormFieldHelper::switch( $name, '1', '', [ 'id' => $id, 'checked' => ! empty( $value ), 'wrapper_class' => 'ms-auto flex-shrink-0' ] ); ?>
+                            <?php endif; ?>
+                        </div>
+                        <?php if ( ! empty( $field['description'] ) ) : ?>
+                            <p class="wikipress-plugin-settings-field-description text-secondary mb-3"><?php echo esc_html( (string) $field['description'] ); ?></p>
+                        <?php endif; ?>
+                <?php
+            endif;
+
             if ( 'table' === $layout && 'select' === $type ) {
-                echo FormFieldHelper::select( $name, (array) ( $field['options'] ?? [] ), $value, [ 'id' => $id, 'attributes' => $field['attributes'] ?? [] ] );
+                echo FormFieldHelper::bootstrap_select( 
+                    $name,
+                    [
+                        'data' => (array) ( $field['options'] ?? [] ),
+                        'selected' => $value,
+                        'id' => $id,
+                        'attributes' => $field['attributes'] ?? []
+                    ]
+                );
             } elseif ( 'table' === $layout && 'multiselect' === $type ) {
-                echo FormFieldHelper::bootstrap_multiselect( $name, [ 'id' => $id, 'data' => (array) ( $field['options'] ?? [] ), 'selected' => (array) $value, 'dropup_auto' => $field['dropup_auto'] ?? true, 'show_tick' => $field['show_tick'] ?? null, 'selection_indicator' => $field['selection_indicator'] ?? null, 'attributes' => $field['attributes'] ?? [] ] );
+                echo FormFieldHelper::bootstrap_multiselect( 
+                    $name, 
+                    [ 
+                        'id' => $id, 
+                        'data' => (array) ( $field['options'] ?? [] ), 
+                        'selected' => (array) $value, 
+                        'dropup_auto' => $field['dropup_auto'] ?? true, 
+                        'show_tick' => $field['show_tick'] ?? null, 
+                        'selection_indicator' => $field['selection_indicator'] ?? null, 
+                        'attributes' => $field['attributes'] ?? [] 
+                    ] 
+                );
             } elseif ( 'table' === $layout && 'text' === $type ) {
-                echo FormFieldHelper::input( $name, is_scalar( $value ) ? (string) $value : '', [ 'id' => $id, 'type' => 'text' ] );
+                echo FormFieldHelper::input( 
+                    $name, 
+                    is_scalar( $value ) ? (string) $value : '', 
+                    [ 
+                        'id' => $id, 
+                        'type' => 'text' 
+                    ] 
+                );
             } elseif ( 'table' === $layout ) {
-                echo FormFieldHelper::checkbox( $name, '1', '', [ 'id' => $id, 'checked' => ! empty( $value ) ] );
+                echo FormFieldHelper::switch( 
+                    $name, 
+                    '1', 
+                    '', 
+                    [ 
+                        'id' => $id, 
+                        'checked' => ! empty( $value ) 
+                    ] 
+                );
             } elseif ( 'select' === $type ) {
-                echo FormFieldHelper::select( $name, (array) ( $field['options'] ?? [] ), $value, [ 'id' => $id, 'attributes' => $field['attributes'] ?? [] ] );
+                echo FormFieldHelper::bootstrap_select( 
+                    $name,
+                    [
+                        'data' => (array) ( $field['options'] ?? [] ),
+                        'selected' => $value,
+                        'id' => $id,
+                        'attributes' => $field['attributes'] ?? []
+                    ]
+                );
             } elseif ( 'multiselect' === $type ) {
-                echo FormFieldHelper::bootstrap_multiselect( $name, [ 'id' => $id, 'data' => (array) ( $field['options'] ?? [] ), 'selected' => (array) $value, 'dropup_auto' => $field['dropup_auto'] ?? true, 'show_tick' => $field['show_tick'] ?? null, 'selection_indicator' => $field['selection_indicator'] ?? null, 'attributes' => $field['attributes'] ?? [] ] );
+                echo FormFieldHelper::bootstrap_multiselect( 
+                    $name, 
+                    [ 
+                        'id' => $id, 
+                        'data' => (array) ( $field['options'] ?? [] ), 
+                        'selected' => (array) $value, 
+                        'dropup_auto' => $field['dropup_auto'] ?? true, 
+                        'show_tick' => $field['show_tick'] ?? null, 
+                        'selection_indicator' => $field['selection_indicator'] ?? null, 
+                        'attributes' => $field['attributes'] ?? [] 
+                    ] 
+                );
             } elseif ( 'text' === $type ) {
-                echo FormFieldHelper::input( $name, is_scalar( $value ) ? (string) $value : '', [ 'id' => $id, 'type' => 'text' ] );
+                echo FormFieldHelper::input( 
+                    $name, 
+                    is_scalar( $value ) ? (string) $value : '', 
+                    [ 
+                        'id' => $id, 
+                        'type' => 'text' 
+                    ] 
+                );
+            } elseif ( 'checkbox' === $type || 'switch' === $type ) {
+                echo FormFieldHelper::switch( 
+                    $name, 
+                    '1', 
+                    '', 
+                    [ 
+                        'id' => $id, 
+                        'checked' => ! empty( $value ) 
+                    ] 
+                );
             }
-            echo 'table' === $layout ? '</td></tr>' : '</div></article>';
+
+            if ( 'table' === $layout ) :
+                ?>
+                    </td>
+                </tr>
+                <?php
+            else :
+                ?>
+                    </div>
+                </article>
+                <?php
+            endif;
         }
 
-        if ( 'table' === $layout ) {
-            echo '</tbody></table></div>';
-        } else {
-            echo '</div>';
-        }
+        if ( 'table' === $layout ) :
+            ?>
+                    </tbody>
+                </table>
+            </div>
+            <?php
+        else :
+            ?>
+            </div>
+            <?php
+        endif;
     }
     /**
      * Render a card for a third-party plugin.
@@ -325,7 +639,20 @@ final class SettingsPlugins {
             <article class="card wikipress-plugin-card shadow-sm h-100 w-100">
                 <div class="card-header d-flex align-items-center gap-2">
                     <?php /* translators: %s is the plugin name. */ ?>
-                    <?php echo FormFieldHelper::switch( 'wikipress-third-party-status', '1', '', [ 'id' => 'wikipress-third-party-status-' . SanitizationHelper::key( $file ), 'checked' => $active, 'disabled' => true, 'aria-label' => sprintf( __( 'Enable %s', 'wikipress' ), $plugin['Name'] ?? $file ) ] ); ?>
+                    <?php echo FormFieldHelper::switch( 
+                        'wikipress-third-party-status', 
+                        '1', 
+                        '', 
+                        [ 
+                            'id' => 'wikipress-third-party-status-' . SanitizationHelper::key( $file ), 
+                            'checked' => $active, 
+                            'disabled' => true, 
+                            'aria-label' => sprintf( 
+                                __( 'Enable %s', 'wikipress' ), 
+                                $plugin['Name'] ?? $file 
+                            ) 
+                        ] 
+                    ); ?>
                     <span class="fw-semibold"><?php echo esc_html( $plugin['Name'] ?? $file ); ?></span>
                 </div>
                 <div class="card-body d-flex flex-column">
@@ -341,3 +668,5 @@ final class SettingsPlugins {
         <?php
     }
 }
+
+

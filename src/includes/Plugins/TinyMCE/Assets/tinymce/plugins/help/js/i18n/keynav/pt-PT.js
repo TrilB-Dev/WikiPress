@@ -91,3 +91,5 @@ tinymce.Resource.add('tinymce.html-i18n.help-keynav.pt-PT',
   '\n' +
   '<p>Mude para outro separador do diálogo colocando o menu do separador em foco e, em seguida, premindo a tecla de <strong>seta</strong>\n' +
   '  adequada para se deslocar ciclicamente pelos separadores disponíveis.</p>\n');
+
+

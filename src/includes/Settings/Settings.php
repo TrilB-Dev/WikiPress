@@ -80,3 +80,4 @@ final class Settings {
         return SettingsManager::get_all();
     }
 }
+

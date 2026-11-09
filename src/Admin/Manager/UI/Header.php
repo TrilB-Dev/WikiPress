@@ -8,6 +8,8 @@
  */
 namespace WikiPress\Admin\Manager\UI;
 
+use WikiPress\Assets\Assets;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -50,7 +52,7 @@ final class Header {
 			<nav class="navbar navbar-expand-lg" aria-label="<?php esc_attr_e( 'WikiPress header navigation', 'wikipress' ); ?>">
 				<div class="container-fluid wikipress-shell px-3 px-lg-4">
 					<a href="<?php echo esc_url( admin_url( 'admin.php?page=wikipress' ) ); ?>">
-						<img class="navbar-brand d-flex align-items-center gap-2" src="<?php echo esc_url( WIKIPRESS_ASSETS_URL . '/Images/Logo/WikiPress-Logo-full-length.svg' ); ?>" alt="" />
+						<img class="navbar-brand d-flex align-items-center gap-2" src="<?php echo esc_url( Assets::get_image( 'logo/WikiPress-Logo-Full-Length.svg' ) ); ?>" alt="" />
 					</a>
 					<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#wikipress-header-menu" aria-controls="wikipress-header-menu" aria-expanded="false" aria-label="<?php esc_attr_e( 'Toggle header navigation', 'wikipress' ); ?>">
 						<span class="navbar-toggler-icon"></span>
@@ -68,3 +70,5 @@ final class Header {
 		<?php
 	}
 }
+
+

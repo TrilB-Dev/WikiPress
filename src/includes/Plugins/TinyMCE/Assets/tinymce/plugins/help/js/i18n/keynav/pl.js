@@ -91,3 +91,5 @@ tinymce.Resource.add('tinymce.html-i18n.help-keynav.pl',
   '\n' +
   '<p>Przełączenie się na inną kartę okna dialogowego wykonuje się poprzez ustawienie fokusu na menu karty i naciśnięcie odpowiedniego klawisza <strong>strzałki</strong>\n' +
   '  w celu przemieszczenia się pomiędzy dostępnymi kartami.</p>\n');
+
+

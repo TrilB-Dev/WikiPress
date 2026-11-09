@@ -242,3 +242,7 @@ Use the menu helpers only for menus owned by the current plugin. Keep menu slugs
 ## Related Shared Services
 
 `Response` and `Validators` provide consistent REST envelopes and payload validation. `Settings` and `SettingsManager` cover shared settings persistence. Use `PermissionHelper` for authorization rather than duplicating capability checks in those services or feature classes.
+
+
+
+

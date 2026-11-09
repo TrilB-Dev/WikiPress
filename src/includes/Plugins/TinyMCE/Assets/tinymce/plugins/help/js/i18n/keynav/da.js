@@ -91,3 +91,5 @@ tinymce.Resource.add('tinymce.html-i18n.help-keynav.da',
   '\n' +
   '<p>Skift til en anden dialogboksfane ved at fokusere på fanemenuen og derefter trykke på den relevante <strong>piletast</strong>\n' +
   '  for at køre igennem de tilgængelige faner.</p>\n');
+
+

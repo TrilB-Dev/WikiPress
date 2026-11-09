@@ -2,7 +2,7 @@
 <phpunit
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.6/phpunit.xsd"
-    bootstrap="Tests/bootstrap.php"
+    bootstrap="Test/bootstrap.php"
     colors="true"
     failOnRisky="true"
     failOnWarning="true"
@@ -10,12 +10,20 @@
 >
     <testsuites>
         <testsuite name="unit">
-            <directory suffix="Test.php">Tests/Unit</directory>
+            <directory suffix="Test.php">Test/Unit</directory>
         </testsuite>
     </testsuites>
     <coverage>
         <include>
             <directory suffix=".php">src</directory>
         </include>
+        <exclude>
+            <directory suffix=".php">src/Includes/Plugins/*/Assets</directory>
+            <directory suffix=".php">src/Includes/Plugins/*/Assets/dist</directory>
+            <directory suffix=".php">src/Includes/Plugins/*/Assets/tinymce</directory>
+        </exclude>
     </coverage>
 </phpunit>
+
+
+

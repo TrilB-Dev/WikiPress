@@ -91,3 +91,5 @@ tinymce.Resource.add('tinymce.html-i18n.help-keynav.ca',
   '\n' +
   "<p>Canvieu a la pestanya d'un altre quadre de diàleg, tot enfocant el menú de la pestanya, i després premeu la tecla <strong>Fletxa</strong> adequada\n" +
   '  per canviar entre les pestanyes disponibles.</p>\n');
+
+

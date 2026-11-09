@@ -1,1 +1,0 @@
-(e=>{"use strict";e(document).on("click",".wikipress-wiki-searchmodal .open-search",s=>{e(s.currentTarget).closest(".wikipress-wiki-searchmodal").find(".overlay").show()}),e(document).on("click",".wikipress-wiki-searchmodal .close",s=>{e(s.currentTarget).closest(".overlay").hide()})})(jQuery);

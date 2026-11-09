@@ -1,1 +1,0 @@
-document.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll(".wikipress-editor-form").forEach(e=>{e.addEventListener("submit",()=>{const t=e.querySelector('[type="submit"]');t&&(t.disabled=!0)})})});

@@ -11527,7 +11527,7 @@ namespace {
     }
 }
 namespace WP_CLI {
-    trait ParsePluginNameInput
+    trait ParseWikiPressInput
     {
         /**
          * If have optional args ([<plugin>...]) and an all option, then check have something to do.
@@ -11579,7 +11579,7 @@ namespace {
      */
     class Plugin_AutoUpdates_Command
     {
-        use \WP_CLI\ParsePluginNameInput;
+        use \WP_CLI\ParseWikiPressInput;
         /**
          * Site option that stores the status of plugin auto-updates.
          *
@@ -11927,7 +11927,7 @@ namespace {
      */
     class Plugin_Command extends \WP_CLI\CommandWithUpgrade
     {
-        use \WP_CLI\ParsePluginNameInput;
+        use \WP_CLI\ParseWikiPressInput;
         protected $item_type = 'plugin';
         protected $upgrade_refresh = 'wp_update_plugins';
         protected $upgrade_transient = 'update_plugins';

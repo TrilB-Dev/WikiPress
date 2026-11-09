@@ -1,31 +1,33 @@
-# WikiPress Plugin Template
+# PluginPress Plugin Template
 
-Every discovered WikiPress plugin should use this structure:
+Every discovered PluginPress plugin should use this structure:
 
 ```text
-PluginName/
+WikiPress/
 |- Assets/
 |  |- dist/
 |  |  |- css/
 |  |  `- js/
+|  |- images/
 |  |- js/
 |  |- scss/
 |  `- Assets.php
 |- Includes/
 |  |- Core/
 |  |  `- Capabilities.php
+|  |  `- I18n.php
+|  |- Functions/
 |  |- Settings/
 |  |  `- Settings.php
-|  |- I18n.php
 |  `- Includes.php
 |- Language/
-|  `- PluginName.pot
-`- PluginName.php
+|  `- WikiPress-lng_code.pot
+`- WikiPress.php
 ```
 
-`PluginName.php` must implement `PluginInterface`. The loader discovers direct PHP bootstrap files in each plugin directory and validates that contract at runtime; the `Assets`, `Includes`, settings, and language directories are optional. It calls optional capability methods when the plugin implements their corresponding interfaces, then calls `init()`.
+`WikiPress.php` must implement `PluginInterface`. The loader discovers direct PHP bootstrap files in each plugin directory and validates that contract at runtime; the `Assets`, `Includes`, settings, and language directories are optional. It calls optional capability methods when the plugin implements their corresponding interfaces, then calls `init()`.
 
-A plugin should use composition for its `Assets`, `Includes`, and `Settings` classes. WikiPress core service classes are final and must not be extended.
+A plugin should use composition for its `Assets`, `Includes`, and `Settings` classes. PluginPress core service classes are final and must not be extended.
 
 The required plugin contract is:
 
@@ -51,7 +53,7 @@ Optional capabilities are defined in `PluginsInterface.php`:
 - `I18nProviderInterface::load_textdomain()`
 
 Plugins that define their own permissions should place them in
-`Includes/Core/Capabilities.php`, extend `WikiPress\Includes\Core\Capabilities`,
+`Includes/Core/Capabilities.php`, extend `PluginPress\Includes\Core\Capabilities`,
 and register them from their `Includes` initializer. The core registry merges
 these definitions with core capabilities and installs missing capabilities on
 the administrator role.
@@ -59,3 +61,6 @@ the administrator role.
 Plugins that provide translations should implement `I18nProviderInterface`, keep
 their text-domain loader in `Includes/I18n.php`, and store translation templates
 and language files in `Language/`.
+
+
+

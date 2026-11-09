@@ -6,7 +6,7 @@
  * @since 1.0.0
  */
 
-(function($) {
+(($) => {
     'use strict';
 
     /**
@@ -35,13 +35,13 @@
             });
 
             // Close picker modal
-            $(document).on('click', '.wikipress-fa-picker-close, .wikipress-fa-picker-overlay, .wikipress-fa-picker-cancel', function(e) {
+            $(document).on('click', '.wikipress-fa-picker-close, .wikipress-fa-picker-overlay, .wikipress-fa-picker-cancel', (e) => {
                 e.preventDefault();
                 self.closePicker();
             });
 
             // Search icons
-            $(document).on('input', '.wikipress-fa-picker-search-input', function() {
+            $(document).on('input', '.wikipress-fa-picker-search-input', () => {
                 self.searchIcons();
             });
 
@@ -64,7 +64,7 @@
             });
 
             // Filter by style
-            $(document).on('change', '.wikipress-fa-picker-style-filter', function() {
+            $(document).on('change', '.wikipress-fa-picker-style-filter', () => {
                 self.searchIcons();
             });
 
@@ -75,12 +75,12 @@
             });
 
             // Confirm selection
-            $(document).on('click', '.wikipress-fa-picker-select', function() {
+            $(document).on('click', '.wikipress-fa-picker-select', () => {
                 self.confirmSelection();
             });
 
             // Load more icons (pagination)
-            $(document).on('click', '.wikipress-fa-picker-load-more', function() {
+            $(document).on('click', '.wikipress-fa-picker-load-more', () => {
                 self.loadMoreIcons();
             });
         },
@@ -136,37 +136,27 @@
             var $styleFilter = $container.find('.wikipress-fa-picker-style-filter');
             var $results = $container.find('.wikipress-fa-picker-results');
 
-            var search = $searchInput.val();
+            var search = ($searchInput.val() || '').toLowerCase();
             var pack = $packFilter.val();
             var style = $styleFilter.val();
+            var catalog = (window.wikipress_fa_picker && window.wikipress_fa_picker.icons) || [];
 
-            // Show loading
             $results.html('<div class="wikipress-fa-picker-loading">' + wikipress_fa_picker.strings.loading + '</div>');
 
-            // AJAX request
-            $.ajax({
-                url: wikipress_fa_picker.ajax_url,
-                type: 'POST',
-                data: {
-                    action: 'wikipress_fontawesome_search_icons',
-                    nonce: wikipress_fa_picker.nonce,
-                    search: search,
-                    pack: pack,
-                    style: style,
-                    page: this.currentPage,
-                    per_page: 50
-                },
-                success: function(response) {
-                    if (response.success) {
-                        self.displayIcons(response.data, pack, style);
-                    } else {
-                        $results.html('<div class="wikipress-fa-picker-error">' + response.data + '</div>');
-                    }
-                },
-                error: function() {
-                    $results.html('<div class="wikipress-fa-picker-error">' + wikipress_fa_picker.strings.no_icons_found + '</div>');
-                }
+            var filtered = catalog.filter((icon) => {
+                var terms = [(icon.name || ''), (icon.label || ''), ...(icon.search_terms || [])];
+                return !search || terms.some((term) => (term || '').toLowerCase().indexOf(search) !== -1);
+            }).map((icon) => {
+                var prefix = (pack === 'brands') ? 'fab' : ((style === 'regular') ? 'far' : ((style === 'light') ? 'fal' : ((style === 'thin') ? 'fat' : 'fas')));
+                return {
+                    name: icon.name,
+                    label: icon.label,
+                    prefix: prefix,
+                    className: prefix + ' fa-' + icon.name
+                };
             });
+
+            self.displayIcons({ icons: filtered, total: filtered.length, page: 1, total_pages: 1, prefix: (pack === 'brands') ? 'fab' : ((style === 'regular') ? 'far' : ((style === 'light') ? 'fal' : ((style === 'thin') ? 'fat' : 'fas'))) }, pack, style);
         },
 
         /**
@@ -188,7 +178,7 @@
 
             var html = '<div class="wikipress-fa-picker-grid">';
 
-            data.icons.forEach(function(icon) {
+            data.icons.forEach((icon) => {
                 var iconClass = data.prefix + ' fa-' + icon.name;
 
                 html += '<div class="wikipress-fa-picker-icon-item" data-icon-name="' + icon.name + '" data-icon-pack="' + pack + '" data-icon-style="' + style + '" data-icon-prefix="' + data.prefix + '">';
@@ -287,7 +277,7 @@
     };
 
     // Initialize when document is ready
-    $(document).ready(function() {
+    $(document).ready(() => {
         WikiPressFAIconPicker.init();
     });
 
@@ -295,3 +285,4 @@
     window.WikiPressFAIconPicker = WikiPressFAIconPicker;
 
 })(jQuery);
+

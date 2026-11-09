@@ -91,3 +91,5 @@ tinymce.Resource.add('tinymce.html-i18n.help-keynav.fi',
   '\n' +
   '<p>Voit siirtyä valintaikkunan toiseen välilehteen siirtämällä kohdistuksen välilehtivalikkoon ja painamalla sopivaa <strong>nuolinäppäintä</strong>\n' +
   '  siirtyäksesi käytettävissä olevien välilehtien välillä syklissä.</p>\n');
+
+

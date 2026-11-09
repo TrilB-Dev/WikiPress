@@ -91,3 +91,5 @@ tinymce.Resource.add('tinymce.html-i18n.help-keynav.en',
   '\n' +
   '<p>Switch to another dialog tab by giving the tab menu focus and then pressing the appropriate <strong>Arrow</strong>\n' +
   '  key to cycle through the available tabs.</p>\n');
+
+

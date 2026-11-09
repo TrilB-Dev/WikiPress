@@ -15,7 +15,9 @@ final class I18n {
         load_plugin_textdomain(
             'wikipress',
             false,
-            dirname( plugin_basename( WIKIPRESS_FILE ) ) . '/src/includes/Plugins/FontAwesome/Language/'
+            dirname( plugin_basename( WIKIPRESS_PLUGINS ) ) . '/FontAwesome/Language/'
         );
     }
 }
+
+

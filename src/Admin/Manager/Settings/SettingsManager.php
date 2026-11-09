@@ -10,10 +10,13 @@ namespace WikiPress\Admin\Manager\Settings;
 
 use WikiPress\Admin\Manager\Manager;
 use WikiPress\Assets\Assets;
+use WikiPress\Includes\Functions\Admin\FunctionsPlugins;
+use WikiPress\Includes\Functions\Admin\FunctionsSettings;
 use WikiPress\Includes\Settings\Settings;
 use WikiPress\Admin\Manager\Settings\SettingsPlugins;
 use WikiPress\Includes\Functions\Helpers\SanitizationHelper;
 use WikiPress\Includes\Functions\Helpers\FormFieldHelper;
+use WikiPress\Includes\Functions\Helpers\AlertHelper;
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
@@ -54,13 +57,27 @@ final class SettingsManager extends Manager {
     private SettingsPlugins $plugins_page;
 
     /**
+     * The settings handler instance.
+     *
+     * @var FunctionsSettings
+     */
+    private FunctionsSettings $settings_functions;
+
+    /**
+     * The plugin admin handler instance.
+     *
+     * @var FunctionsPlugins
+     */
+    private FunctionsPlugins $plugin_functions;
+
+    /**
      * The Page variable.
      *
      * @since 1.0.0
      * @access protected
      * @var string $page The page variable.
      */
-    protected $page;
+    protected string $page;
     /**
      * `Constructor` method for the `DashboardManager` class. 
      *
@@ -70,11 +87,11 @@ final class SettingsManager extends Manager {
 
     public function __construct() {
         /**
-         * Set the page variable to 'dashboard'.
+         * Set the page variable to 'settinigs'.
          *
          * @since 1.0.0
          */
-        $this->page = 'dashboard';
+        $this->page = 'settings';
         /**
          * Initialize the General Settings pages.
          *
@@ -99,7 +116,135 @@ final class SettingsManager extends Manager {
          * @since 1.0.0
          */
         $this->plugins_page = new SettingsPlugins();
+        /**
+         * Initialize the Plugin and Settings function handlers.
+         *
+         * @since 1.0.0
+         */
+        $this->plugin_functions = new FunctionsPlugins();
+        /**
+         * Initialize the Settings function handler.
+         *
+         * @since 1.0.0
+         */
+        $this->settings_functions = new FunctionsSettings( $this->plugin_functions );
+        /**
+         * Register the admin actions for the settings manager.
+         *
+         * @since 1.0.0
+         */
+        $this->register_actions();
     }
+
+    /**
+     * Register the Settings Manager admin actions.
+     *
+     * @return void
+     */
+    private function register_actions(): void {
+        add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
+        add_action( 'admin_post_wikipress_save_settings', array( $this->settings_functions, 'save_settings' ) );
+        add_action( 'admin_post_wikipress_save_general_settings', array( $this->settings_functions, 'general_save' ) );
+        add_action( 'admin_post_wikipress_save_access_settings', array( $this->settings_functions, 'access_save' ) );
+        add_action( 'admin_post_wikipress_save_layout_settings', array( $this->settings_functions, 'layout_save' ) );
+    }
+
+    /**
+     * Register the REST routes used by the settings manager.
+     *
+     * @return void
+     */
+    public function register_rest_routes(): void {
+        \register_rest_route(
+            'wikipress/v1',
+            '/settings/tab/(?P<tab>[a-z0-9_\-]+)',
+            array(
+                'methods'             => \WP_REST_Server::READABLE,
+                'callback'            => array( $this, 'rest_get_tab' ),
+                'permission_callback' => function () {
+                    return current_user_can( 'manage_options' )
+                        || current_user_can( 'wikipress_settings_general_view' )
+                        || current_user_can( 'wikipress_settings_layout_view' )
+                        || current_user_can( 'wikipress_settings_access_view' )
+                        || current_user_can( 'wikipress_settings_plugins_view' );
+                },
+                'args' => array(
+                    'tab' => array(
+                        'required' => true,
+                        'sanitize_callback' => 'sanitize_key',
+                    ),
+                    'layout_section' => array(
+                        'required' => false,
+                        'sanitize_callback' => 'sanitize_key',
+                    ),
+                ),
+            )
+        );
+
+        \register_rest_route(
+            'wikipress/v1',
+            '/plugins/toggle',
+            array(
+                'methods'             => \WP_REST_Server::CREATABLE,
+                'callback'            => array( $this->plugin_functions, 'rest_toggle_plugin' ),
+                'permission_callback' => function () {
+                    return current_user_can( 'manage_options' )
+                        || current_user_can( 'wikipress_settings_plugins_int_edit' )
+                        || current_user_can( 'wikipress_settings_plugins_ext_edit' );
+                },
+            )
+        );
+
+        \register_rest_route(
+            'wikipress/v1',
+            '/plugins/settings',
+            array(
+                'methods'             => \WP_REST_Server::CREATABLE,
+                'callback'            => array( $this->plugin_functions, 'rest_save_plugin_settings' ),
+                'permission_callback' => function () {
+                    return current_user_can( 'manage_options' )
+                        || current_user_can( 'wikipress_settings_plugins_int_edit' )
+                        || current_user_can( 'wikipress_settings_plugins_ext_edit' );
+                },
+            )
+        );
+    }
+
+    /**
+     * Render a settings tab via REST.
+     *
+     * @param \WP_REST_Request $request Request instance.
+     * @return \WP_REST_Response
+     */
+    public function rest_get_tab( \WP_REST_Request $request ) {
+        $tab = $this->normalize_tab( (string) $request->get_param( 'tab' ) );
+        $layout_section = in_array( (string) ( $request->get_param( 'layout_section' ) ?: 'general' ), array( 'general', 'search', 'sidebar', 'page' ), true )
+            ? (string) $request->get_param( 'layout_section' )
+            : 'general';
+
+        ob_start();
+        $this->render_tab_content( $tab, $layout_section );
+        $html = ob_get_clean();
+
+        return \rest_ensure_response(
+            array(
+                'tab' => $tab,
+                'layout_section' => $layout_section,
+                'html' => $html,
+            )
+        );
+    }
+    /**
+     * Register the settings page asset bundles.
+     *
+     * @param Assets $assets Asset registry.
+     * @return void
+     */
+    public function register_assets( Assets $assets ): void {
+        $this->register_page_assets( $assets, array( 'wikipress' ), 'settings' );
+        $this->register_page_assets( $assets, array( 'wikipress' ), 'plugins' );
+    }
+
     /**
      * Renders the settings page.
      *
@@ -108,16 +253,43 @@ final class SettingsManager extends Manager {
      */
     public function render(): void {
         $tab = SanitizationHelper::key( wp_unslash( $_GET['tab'] ?? 'general' ), 'general' );
-        $layout_section = SanitizationHelper::key( wp_unslash( $_GET['layout_section'] ?? 'general' ), 'general' );
+        $layout_section = SanitizationHelper::key( wp_unslash( $_GET['s'] ?? $_GET['layout_section'] ?? 'general' ), 'general' );
         $tab = $this->normalize_tab( $tab );
         $tab_context = [
-            'general' => [ 'description' => __( 'Configure WikiPress names, URL slugs, and permalink settings.', 'wikipress' ), 'tooltip' => __( 'These settings affect how WikiPress content is identified and linked throughout the site.', 'wikipress' ) ],
-            'layout' => [ 'description' => __( 'Choose which navigation and page layout features WikiPress displays.', 'wikipress' ), 'tooltip' => __( 'Layout settings control the visitor-facing WikiPress interface.', 'wikipress' ) ],
-            'access' => [ 'description' => __( 'Set the minimum WordPress capabilities required for WikiPress tasks.', 'wikipress' ), 'tooltip' => __( 'Choose carefully so editors and administrators retain the access they need.', 'wikipress' ) ],
-            'plugins' => [ 'description' => __( 'View the WikiPress plugins installed on this site.', 'wikipress' ), 'tooltip' => __( 'Plugin-specific configuration is available from each plugin settings page when provided.', 'wikipress' ) ],
-            'third-party' => [ 'description' => __( 'View third-party plugins installed on this site.', 'wikipress' ), 'tooltip' => __( 'Third-party plugin settings are managed through WordPress or the plugin author’s own settings page.', 'wikipress' ) ],
+            'general' => [ 
+                'description' => __( 'Configure WikiPress names, URL slugs, and permalink settings.', 'wikipress' ), 
+                'tooltip' => __( 'These settings affect how WikiPress content is identified and linked throughout the site.', 'wikipress' ) 
+            ],
+            'layout' => [ 
+                'description' => __( 'Choose which navigation and page layout features WikiPress displays.', 'wikipress' ), 
+                'tooltip' => __( 'Layout settings control the visitor-facing WikiPress interface.', 'wikipress' ) 
+            ],
+            'access' => [ 
+                'description' => __( 'Set the minimum WordPress capabilities required for WikiPress tasks.', 'wikipress' ), 
+                'tooltip' => __( 'Choose carefully so editors and administrators retain the access they need.', 'wikipress' ) 
+            ],
+            'plugins' => [ 
+                'description' => __( 'View the WikiPress plugins installed on this site.', 'wikipress' ), 
+                'tooltip' => __( 'Plugin-specific configuration is available from each plugin settings page when provided.', 'wikipress' ) 
+            ],
+            'third-party' => [ 
+                'description' => __( 'View third-party plugins installed on this site.', 'wikipress' ), 
+                'tooltip' => __( 'Third-party plugin settings are managed through WordPress or the plugin author’s own settings page.', 'wikipress' ) 
+            ],
         ];
         $this->header( __( 'Settings', 'wikipress' ) );
+
+        if ( ! empty( $_GET['settings_saved'] ) ) {
+            $message = isset( $_GET['settings_message'] ) ? rawurldecode( wp_unslash( $_GET['settings_message'] ) ) : __( 'WikiPress settings saved successfully.', 'wikipress' );
+            echo AlertHelper::get_admin_notice( $message, 'success' );
+        } elseif ( ! empty( $_GET['settings_failed'] ) ) {
+            $message = isset( $_GET['settings_message'] ) ? rawurldecode( wp_unslash( $_GET['settings_message'] ) ) : __( 'Failed to save WikiPress settings. Please try again.', 'wikipress' );
+            echo AlertHelper::get_admin_notice( $message, 'error' );
+        }
+
+        if ( function_exists( 'settings_errors' ) ) {
+            settings_errors( 'wikipress_settings' );
+        }
         echo '<div id="wikipress-settings-panel" data-current-tab="' . esc_attr( $tab ) . '" data-current-section="' . esc_attr( $layout_section ) . '">';
         $this->render_tab_content( $tab, $layout_section );
         echo '</div>';
@@ -131,19 +303,33 @@ final class SettingsManager extends Manager {
      */
     public function render_tab_content( string $tab, string $layout_section = 'general' ): void {
         $tab = $this->normalize_tab( $tab );
+        $layout_section = in_array( $layout_section, [ 'general', 'search', 'sidebar', 'page' ], true ) ? $layout_section : 'general';
         $view_capabilities = [
-            'general' => [ 'wikipress_settings_general_view' ],
-            'layout' => [ 'wikipress_settings_layout_view' ],
-            'access' => [ 'wikipress_settings_access_view' ],
-            'plugins' => [ 'wikipress_settings_plugins_view' ],
-            'third-party' => [ 'wikipress_settings_plugins_view', 'wikipress_settings_plugins_ext_view' ],
+            'general' => [ 
+                'wikipress_settings_general_view' 
+            ],
+            'layout' => [ 
+                'wikipress_settings_layout_view' 
+            ],
+            'access' => [ 
+                'wikipress_settings_access_view' 
+            ],
+            'plugins' => [ 
+                'wikipress_settings_plugins_view' 
+            ],
+            'third-party' => [ 
+                'wikipress_settings_plugins_view', 
+                'wikipress_settings_plugins_ext_view' 
+            ],
         ];
         $can_view = true;
         foreach ( $view_capabilities[ $tab ] ?? [] as $capability ) {
-            if ( ! current_user_can( $capability ) ) {
-                $can_view = false;
-                break;
+            if ( current_user_can( 'manage_options' ) || current_user_can( $capability ) ) {
+                continue;
             }
+
+            $can_view = false;
+            break;
         }
         if ( ! $can_view ) {
             wp_die( esc_html__( 'You are not authorized to view these WikiPress settings.', 'wikipress' ) );
@@ -153,56 +339,76 @@ final class SettingsManager extends Manager {
             'layout' => 'wikipress_settings_layout_edit',
             'access' => 'wikipress_settings_access_edit',
         ];
-        $can_edit = isset( $edit_capabilities[ $tab ] ) && current_user_can( $edit_capabilities[ $tab ] );
-        $groups = Settings::get_all();
-        $values = $groups[ $tab ] ?? [];
-        echo '<div class="wikipress-settings-tab-content" role="tabpanel">';
+        $can_edit = isset( $edit_capabilities[ $tab ] ) && ( current_user_can( 'manage_options' ) || current_user_can( $edit_capabilities[ $tab ] ) );
         $tab_context = [
-            'general' => [ 'description' => __( 'Configure WikiPress names, URL slugs, and permalink settings.', 'wikipress' ), 'tooltip' => __( 'These settings affect how WikiPress content is identified and linked throughout the site.', 'wikipress' ) ],
-            'layout' => [ 'description' => __( 'Choose which navigation and page layout features WikiPress displays.', 'wikipress' ), 'tooltip' => __( 'Layout settings control the visitor-facing WikiPress interface.', 'wikipress' ) ],
-            'access' => [ 'description' => __( 'Set the minimum WordPress capabilities required for WikiPress tasks.', 'wikipress' ), 'tooltip' => __( 'Choose carefully so editors and administrators retain the access they need.', 'wikipress' ) ],
-            'plugins' => [ 'description' => __( 'View the WikiPress plugins installed on this site.', 'wikipress' ), 'tooltip' => __( 'Plugin-specific configuration is available from each plugin settings page when provided.', 'wikipress' ) ],
-            'third-party' => [ 'description' => __( 'View third-party plugins installed on this site.', 'wikipress' ), 'tooltip' => __( 'Third-party plugin settings are managed through WordPress or the plugin author’s own settings page.', 'wikipress' ) ],
+            'general' => [
+                'description' => __( 'Configure WikiPress names, URL slugs, and permalink settings.', 'wikipress' ),
+                'tooltip' => __( 'These settings affect how WikiPress content is identified and linked throughout the site.', 'wikipress' ),
+            ],
+            'layout' => [
+                'description' => __( 'Choose which navigation and page layout features WikiPress displays.', 'wikipress' ),
+                'tooltip' => __( 'Layout settings control the visitor-facing WikiPress interface.', 'wikipress' ),
+            ],
+            'access' => [
+                'description' => __( 'Set the minimum WordPress capabilities required for WikiPress tasks.', 'wikipress' ),
+                'tooltip' => __( 'Choose carefully so editors and administrators retain the access they need.', 'wikipress' ),
+            ],
+            'plugins' => [
+                'description' => __( 'View the WikiPress plugins installed on this site.', 'wikipress' ),
+                'tooltip' => __( 'Plugin-specific configuration is available from each plugin settings page when provided.', 'wikipress' ),
+            ],
+            'third-party' => [
+                'description' => __( 'View third-party plugins installed on this site.', 'wikipress' ),
+                'tooltip' => __( 'Third-party plugin settings are managed through WordPress or the plugin author’s own settings page.', 'wikipress' ),
+            ],
         ];
-        if ( isset( $tab_context[ $tab ] ) ) {
-            echo '<p class="text-secondary mb-4">' . esc_html( $tab_context[ $tab ]['description'] ) . ' ' . FormFieldHelper::label( 'wikipress-settings-context', __( 'Settings information', 'wikipress' ), [ 'tooltip' => $tab_context[ $tab ]['tooltip'], 'tooltip_type' => 'info', 'tooltip_icon' => 'fa-circle-info', 'class' => 'visually-hidden' ] ) . '</p>';
-        }
-        if ( in_array( $tab, [ 'plugins', 'third-party' ], true ) ) {
-            $this->plugins_page->render( $tab );
-            echo '</div>';
-            return;
-        }
-        if ( $can_edit ) {
-            echo '<form method="post" action="options.php" class="wikipress-settings-form card shadow-sm">';
-        } else {
-            echo '<div class="wikipress-settings-form card shadow-sm">';
-        }
-        settings_fields( 'wikipress_settings' );
-        echo '<div class="card-body">';
-        if ( 'layout' === $tab ) {
-            $this->layout_page->render( $values, SanitizationHelper::key( $layout_section, 'general' ) );
-        } else {
-            echo '<table class="form-table table align-middle"><tbody>';
-        }
-        if ( 'general' === $tab ) {
-            $this->general_page->render( $values );
-        } elseif ( 'access' === $tab ) {
-            $this->access_page->render( $values );
-        } elseif ( $this->plugins_page->has_settings_page( $tab ) ) {
-            $this->plugins_page->render_settings_page( $tab, $values );
-        }
-        if ( 'layout' !== $tab ) {
-            echo '</tbody></table>';
-        }
-        if ( $can_edit ) {
-            echo FormFieldHelper::button( __( 'Save Changes', 'wikipress' ), [
-                'type' => 'submit',
-                'name' => 'submit',
-                'class' => 'btn-primary',
-            ] );
-        }
-        echo '</div>' . ( $can_edit ? '</form>' : '' );
-        echo '</div>';
+        ?>
+        <div class="wikipress-settings-tab-content" role="tabpanel">
+            <?php if ( isset( $tab_context[ $tab ] ) ) : ?>
+                <p class="text-secondary mb-4">
+                    <?php echo esc_html( $tab_context[ $tab ]['description'] ); ?>
+                    <?php echo FormFieldHelper::label(
+                        'wikipress-settings-context',
+                        __( 'Settings information', 'wikipress' ),
+                        [
+                            'tooltip' => $tab_context[ $tab ]['tooltip'],
+                            'tooltip_type' => 'info',
+                            'tooltip_icon' => 'fa-circle-info',
+                            'class' => 'visually-hidden',
+                        ]
+                    ); ?>
+                </p>
+            <?php endif; ?>
+
+            <?php if ( in_array( $tab, [ 'plugins', 'third-party' ], true ) ) : ?>
+                <?php $this->plugins_page->render( $tab ); ?>
+            </div>
+            <?php return; ?>
+            <?php endif; ?>
+
+            <div class="wikipress-settings-page">
+            <div class="wikipress-settings-card card shadow-sm">
+                <div class="card-body">
+                    <?php if ( 'layout' === $tab ) : ?>
+                        <?php $this->layout_page->render( $values = Settings::get_group( 'layout' ), SanitizationHelper::key( $layout_section, 'general' ) ); ?>
+                    <?php else : ?>
+                        <table class="form-table table align-middle" role="presentation">
+                            <tbody>
+                                <?php if ( 'general' === $tab ) : ?>
+                                    <?php $this->general_page->render( $values = Settings::get_group( 'general' )); ?>
+                                <?php elseif ( 'access' === $tab ) : ?>
+                                    <?php $this->access_page->render( $values = Settings::get_group( 'access' )); ?>
+                                <?php elseif ( $this->plugins_page->has_settings_page( $tab ) ) : ?>
+                                    <?php $this->plugins_page->render_settings_page( $tab, $values = Settings::get_all() ); ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+        <?php
     }
     /**
      * Normalize the tab name to ensure it is valid.
@@ -218,21 +424,8 @@ final class SettingsManager extends Manager {
         }
         return 'general';
     }
-    /**
-     * Register assets for the settings page.
-     *
-     * @since 1.0.0
-     * @param Assets $assets The Assets instance to register assets with.
-     */
-    public function register_assets( Assets $assets ): void {
-        $settings_assets = $this->assets( 'settings' );
-        $settings_assets['scripts'][] = [
-            'handle' => 'wikipress-admin-plugins',
-            'src' => WIKIPRESS_URL . 'src/Assets/dist/js/admin.plugins.js',
-            'deps' => [ 'wikipress-bootstrap' ],
-            'in_footer' => true,
-        ];
-        $assets->register_page( 'wikipress-settings', $settings_assets );
-    }
+    
 
 }
+
+

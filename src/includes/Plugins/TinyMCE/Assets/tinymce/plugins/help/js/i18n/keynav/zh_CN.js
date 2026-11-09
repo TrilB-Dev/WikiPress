@@ -85,3 +85,5 @@ tinymce.Resource.add('tinymce.html-i18n.help-keynav.zh_CN',
   '<p>通过按 <strong>Tab</strong> 或 <strong>Shift+Tab</strong>，在此对话框的交互组件之间导航。</p>\n' +
   '\n' +
   '<p>通过将焦点移至另一对话框标签页的菜单，然后按相应的<strong>箭头</strong>键以在可用的标签页间循环，从而切换到该对话框标签页。</p>\n');
+
+

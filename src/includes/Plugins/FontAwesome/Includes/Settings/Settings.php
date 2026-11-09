@@ -2,81 +2,171 @@
 /**
  * Settings for the Font Awesome WikiPress plugin.
  * 
- * @package    Wikipress
- * @subpackage Wikipress/includes
+ * @package    WikiPress
+ * @subpackage WikiPress/includes
  */
 namespace WikiPress\Includes\Plugins\FontAwesome\Includes\Settings;
 use WikiPress\Includes\Settings\Settings as BaseSettings;
 use WikiPress\Includes\Functions\Helpers\SanitizationHelper;
 
 final class Settings {
+    /**
+     * Registers the Font Awesome settings group.
+     *
+     * @since 1.0.0
+     */
     public function register(): void {
         BaseSettings::register_group( 'fontawesome', [
-            'fontawesome_source' => 'base',
+            'fontawesome_type' => 'cdn',
+            'fontawesome_cdn_technology' => 'webfont',
             'fontawesome_kit_id' => '',
-            'fontawesome_version' => '7.0.0',
+            'fontawesome_enable_icon_picker' => true,
         ] );
     }
+    /**
+     * Determines whether the icon picker is enabled.
+     *
+     * @return bool True if the icon picker is enabled, false otherwise.
+     * @since 1.0.0
+     */
+    public static function enable_icon_picker(): bool {
+        $enabled = BaseSettings::get_bool( 'fontawesome_enable_icon_picker', true );
+        if ( ! $enabled ) {
+            $enabled = BaseSettings::get_bool( 'fontawesome_icon_picker', false );
+        }
 
-    public static function source(): string {
-        $source = BaseSettings::get_key( 'fontawesome_source', 'base' );
-        return in_array( $source, [ 'base', 'kit' ], true ) ? $source : 'base';
+        return $enabled;
     }
 
-    public static function kit_id(): string {
-        return BaseSettings::get_string( 'fontawesome_kit_id' );
+    /**
+     * Retrieves the selected Font Awesome source type.
+     *
+     * @return string The source type.
+     */
+    public static function get_type(): string {
+        $type = BaseSettings::get_key( 'fontawesome_type', 'cdn' );
+        return in_array( $type, [ 'cdn', 'kit' ], true ) ? $type : 'cdn';
     }
 
-    public static function version(): string {
-        return BaseSettings::get_string( 'fontawesome_version', '7.0.0' );
+    /**
+     * Retrieves the configured Font Awesome kit ID.
+     *
+     * @return string The Font Awesome kit ID.
+     */
+    public static function get_kit_id(): string {
+        return BaseSettings::get_string( 'fontawesome_kit_id', '' );
     }
 
+    /**
+     * Retrieves the selected Font Awesome CDN technology.
+     *
+     * @return string The CDN technology.
+     */
+    public static function get_cdn_technology(): string {
+        $technology = BaseSettings::get_key( 'fontawesome_cdn_technology', 'webfont' );
+        return in_array( $technology, [ 'webfont', 'svg' ], true ) ? $technology : 'webfont';
+    }
+    /**
+     * Retrieves the settings page configuration for the Font Awesome plugin.
+     *
+     * @return array The settings page configuration.
+     * @since 1.0.0
+     */
     public function get_settings_page(): array {
         return [
             'slug' => 'fontawesome',
-            'label' => __( 'Font Awesome', 'wikipress' ),
-            'title' => __( 'Font Awesome integration', 'wikipress' ),
+            'label' => __( 'FontAwesome', 'wikipress' ),
+            'title' => __( 'FontAwesome integration', 'wikipress' ),
             'layout' => 'table',
             'fields' => [
-                [ 
-                    'key' => 'fontawesome_source',
-                    'label' => __( 'Icon source', 'wikipress' ),
-                    'description' => __( 'Choose how WikiPress loads Font Awesome icons.', 'wikipress' ),
-                    'tooltip' => __( 'Use the base package for the bundled icons or a Kit when you need a custom Font Awesome configuration.', 'wikipress' ),
+                [
+                    'key' => 'fontawesome_type',
+                    'label' => __( 'FontAwesome Type', 'wikipress' ),
+                    'description' => __( 'Select how fontawesome is called in WikiPress.', 'wikipress' ),
+                    'tooltip' => __( 'Choose between using the CDN or a Kit for FontAwesome.', 'wikipress' ),
                     'tooltip_type' => 'info',
                     'type' => 'select',
-                    'options' => [ 'base' => __( 'Base package', 'wikipress' ),
-                    'kit' => __( 'Font Awesome Kit', 'wikipress' ) ],
-                    'default' => 'base' 
+                    'class' => 'w-100',
+                    'options' => [
+                        'cdn' => __( 'CDN', 'wikipress' ),
+                        'kit' => __( 'Kit', 'wikipress' ),
+                    ],
+                    'default' => 'cdn',
                 ],
-                [ 
+                [
+                    'key' => 'fontawesome_cdn_technology',
+                    'label' => __( 'FontAwesome CDN Technology', 'wikipress' ),
+                    'description' => __( 'Select the technology used for the Font Awesome CDN.', 'wikipress' ),
+                    'tooltip' => __( 'Choose between different CDN technologies for loading Font Awesome.', 'wikipress' ),
+                    'tooltip_type' => 'info',
+                    'type' => 'select',
+                    'class' => 'w-100',
+                    'options' => [
+                        'svg' => __( 'SVG', 'wikipress' ),
+                        'webfont' => __( 'Web Font', 'wikipress' ),
+                    ],
+                    'default' => 'webfont',
+                    'visible_when' => [
+                        'fontawesome_type' => 'cdn',
+                    ],
+                    'required' => [
+                        'fontawesome_type' => 'cdn',
+                    ],
+
+                ],
+                [
                     'key' => 'fontawesome_kit_id',
-                    'label' => __( 'Kit ID', 'wikipress' ),
-                    'description' => __( 'Enter the ID of your Font Awesome Kit.', 'wikipress' ),
-                    'tooltip' => __( 'This value is used only when Icon source is set to Font Awesome Kit.', 'wikipress' ),
-                    'type' => 'text',
-                    'default' => '' 
-                ],
-                [ 
-                    'key' => 'fontawesome_version',
-                    'label' => __( 'Base package version', 'wikipress' ),
-                    'description' => __( 'Set the version of the bundled Font Awesome package to load.', 'wikipress' ),
-                    'tooltip' => __( 'Use a version supported by the installed Font Awesome assets.', 'wikipress' ),
+                    'label' => __( 'FontAwesome Kit ID', 'wikipress' ),
+                    'description' => __( 'Enter the ID of your Font Awesome Kit if you selected "Kit" as the type.', 'wikipress' ),
+                    'tooltip' => __( 'The FontAwesome Kit ID is required when using the Kit type.', 'wikipress' ),
                     'tooltip_type' => 'info',
                     'type' => 'text',
-                    'default' => '7.0.0'
+                    'class' => 'w-100',
+                    'default' => '',
+                    'visible_when' => [
+                        'fontawesome_type' => 'kit',
+                    ],
+                    'required' => [
+                        'fontawesome_type' => 'kit',
+                    ],
+                ],
+                [
+                    'key' => 'fontawesome_enable_icon_picker',
+                    'label' => __( 'Enable icon picker', 'wikipress' ),
+                    'description' => __( 'Enable the bundled Font Awesome icon picker inside WikiPress admin interfaces.', 'wikipress' ),
+                    'tooltip' => __( 'WikiPress includes its own icon picker and fallback icon catalog, so no WordPress FontAwesome plugin is required.', 'wikipress' ),
+                    'tooltip_type' => 'info',
+                    'type' => 'switch',
+                    'default' => true,
                 ],
             ],
         ];
     }
-
+    /**
+     * Sanitizes the input for the Font Awesome settings.
+     *
+     * @param array $input The input array to sanitize.
+     * @return array The sanitized input array.
+     * @since 1.0.0
+     */
     public function sanitize( $input ): array {
         $input = is_array( $input ) ? $input : [];
-        $source = SanitizationHelper::key( $input['fontawesome_source'] ?? 'base', 'base' );
-        $input['fontawesome_source'] = in_array( $source, [ 'base', 'kit' ], true ) ? $source : 'base';
-        $input['fontawesome_kit_id'] = SanitizationHelper::text( $input['fontawesome_kit_id'] ?? '' );
-        $input['fontawesome_version'] = SanitizationHelper::text( $input['fontawesome_version'] ?? '7.0.0', '7.0.0' );
+
+        $type = SanitizationHelper::key( $input['fontawesome_type'] ?? 'cdn', 'cdn' );
+        $input['fontawesome_type'] = in_array( $type, [ 'cdn', 'kit' ], true ) ? $type : 'cdn';
+
+        if ( 'kit' === $input['fontawesome_type'] ) {
+            $input['fontawesome_kit_id'] = trim( (string) ( $input['fontawesome_kit_id'] ?? '' ) );
+        } else {
+            $input['fontawesome_kit_id'] = '';
+        }
+
+        $legacy_picker = ! empty( $input['fontawesome_icon_picker'] );
+        $input['fontawesome_enable_icon_picker'] = (bool) ( $input['fontawesome_enable_icon_picker'] ?? $legacy_picker );
+        $input['fontawesome_icon_picker'] = $input['fontawesome_enable_icon_picker'];
+
         BaseSettings::set_group( 'fontawesome', $input );
         return $input;
     }
 }
+

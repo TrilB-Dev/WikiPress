@@ -1,9 +1,12 @@
 {
-    "name": "trilbdev/wikipress",
-    "description": "A WordPress plugin that provides a comprehensive wiki management system, allowing users to create, manage, and display wiki content within their WordPress site.",
+    "name": "mrtrilb/wikipress",
+    "description": "A WikiPress Wordpress Plugin",
     "type": "wordpress-plugin",
     "license": "GPL-2.0-or-later",
     "autoload": {
+        "files": [
+            "src/Includes/Plugins/PluginsInterface.php"
+        ],
         "psr-4": {
             "WikiPress\\": "src/"
         },
@@ -16,35 +19,34 @@
     },
     "authors": [
         {
-            "name": "Anthony Blüthner",
+            "name": "Anthony Bluthner",
             "email": "mrtrilb@trilb.dev",
             "homepage": "https://trilb.dev"
         }
     ],
-    "require": {
-        
-    },
+    "require": {},
     "require-dev": {
-        "fortawesome/wordpress-fontawesome": "^5.2",
         "php-stubs/wordpress-stubs": "^6.9",
         "arts/elementor-stubs": "^4.2",
         "phpunit/phpunit": "^9.6",
-		"squizlabs/php_codesniffer": "^3.13",
-		"dealerdirect/phpcodesniffer-composer-installer": "^1.2",
-		"wp-coding-standards/wpcs": "^3.4",
-		"yoast/phpunit-polyfills": "^1.1",
-		"yoast/wp-test-utils": "^1.2"
-	},
-	"scripts": {
-		"test": "php ./vendor/bin/phpunit --configuration phpunit.xml.dist",
-		"test:unit": "php ./vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite unit",
-		"lint": "php ./vendor/bin/phpcs --standard=phpcs.xml.dist",
-		"lint:docs": "php ./vendor/bin/phpcs --standard=WordPress-Docs --extensions=php src tests",
-		"check": [
-			"@test",
-			"@lint",
-			"@lint:docs"
-		]
+        "squizlabs/php_codesniffer": "^3.13",
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.2",
+        "wp-coding-standards/wpcs": "^3.4",
+        "yoast/phpunit-polyfills": "^1.1",
+        "yoast/wp-test-utils": "^1.2",
+        "phpcompatibility/php-compatibility": "^9.3",
+        "phpcompatibility/phpcompatibility-wp": "^2.1"
+    },
+    "scripts": {
+        "test": "php ./vendor/bin/phpunit --configuration phpunit.xml.dist",
+        "test:unit": "php ./vendor/bin/phpunit --configuration phpunit.xml.dist --testsuite unit",
+        "lint": "php ./vendor/bin/phpcs --standard=phpcs.xml.dist",
+        "lint:docs": "php ./vendor/bin/phpcs --standard=WordPress-Docs --extensions=php src Test",
+        "check": [
+            "@test",
+            "@lint",
+            "@lint:docs"
+        ]
     },
     "config": {
         "allow-plugins": {

@@ -6,8 +6,7 @@ WikiPress is a modular WordPress platform. Internal plugins and separately insta
 
 The repository is organized into a core application and provider-based internal plugins:
 
-- `src/WikiPress.php` is the main application entry point.
-- `src/Plugin.php` wires the core services and plugin lifecycle.
+- `src/Plugin.php` is the main application entry point that wires the core services and plugin lifecycle.
 - `src/Admin/` contains core admin UI and managers.
 - `src/API/` contains shared API and response contracts.
 - `src/Assets/` is the central asset pipeline. `src/Assets/Assets.php` owns registration and enqueueing of styles and scripts.
@@ -37,13 +36,13 @@ Use the repository's existing casing: `src/Includes/` is authoritative, not `src
 
 ## Internal Plugins
 
-- Internal plugins live under `src/Includes/Plugins/<PluginName>/` and are initialized by `Plugins.php` through the contracts in `PluginsInterface.php`.
+- Internal plugins live under `src/Includes/Plugins/<WikiPress>/` and are initialized by `Plugins.php` through the contracts in `PluginsInterface.php`.
 - Separately installed plugins register through `wikipress_register_plugin` and follow the same ownership rules. They must not require core changes that reference their slug or class.
 - Do not bypass the plugin loader with direct feature requires from `WikiPress.php`, `Plugin.php`, or core bootstrap code.
 - Treat each internal plugin as a self-contained extension with its own bootstrap, assets, includes, settings, translations, capabilities, and frontend/admin behavior where needed. A plugin may use this structure:
 
 ```text
-PluginName/
+WikiPress/
 |- Admin/                         (optional)
 |- Assets/
 |  |- dist/
@@ -56,7 +55,7 @@ PluginName/
 |  |- Settings/                   (optional)
 |  `- Includes.php                (optional)
 |- Language/ or Languages/
-`- PluginName.php
+`- WikiPress.php
 ```
 
 - A plugin owns its settings defaults, settings sanitization, business rules, templates, JavaScript, Sass, translations, REST routes, admin pages, capabilities, and feature-specific helpers.
@@ -114,6 +113,63 @@ All WikiPress and internal-plugin assets must flow through `src/Assets/Assets.ph
 8. Regenerate language catalogs with `npm run i18n:pot` and `npm run i18n:mo` when translatable strings change.
 9. Run `git diff --check` and review generated files, deleted files, and unrelated worktree changes before finishing.
 
+## PHP and WordPress Coding Standards
+
+All code in this plugin must follow the project’s PHP coding standards, PHP compatibility requirements, and the WordPress Coding Standards suite at all times. This is a hard requirement for every changed file, not a suggestion.
+
+- Follow PHP coding standards consistently across all new and modified PHP files.
+- Follow the WordPress Coding Standards set for plugin code, including WordPress, WordPress-Core, WordPress-Docs, and WordPress-Extra where applicable.
+- Keep code aligned with WordPress security, escaping, sanitization, capability checks, and API conventions.
+- Ensure compatibility with the project’s supported PHP versions. Do not introduce syntax or language features that are not supported by the plugin’s declared runtime compatibility.
+- Run PHP compatibility checks as part of validation and fix any issues reported by `php-compatibility` before merge.
+- Do not add code that works around the standards or bypasses them by excluding vendor or third-party code from the project’s own logic.
+- Ensure all plugin-owned code remains clean, readable, and standards-compliant even when third-party dependencies, bundled vendor code, or generated files are present.
+- Fix PHPCS warnings, errors, and notices as they appear during development instead of leaving them for a later pass.
+- Do not merge code that introduces new standards violations, even if the feature is otherwise functional.
+
+## Required Validation and Test Workflow
+
+After creating or modifying code, validate it immediately and fix issues before continuing.
+
+- Run focused validation after each significant code change.
+- Check PHP syntax and linting for changed files before broader validation.
+- Run the relevant PHPCS checks for plugin source files after adding or editing PHP.
+- Run PHP compatibility validation against the supported PHP versions for the project.
+- Fix all warnings and errors surfaced by the standards and compatibility tools before considering the work complete.
+- Re-run validation after each fix to confirm the issue is resolved and no new issue was introduced.
+- Treat code quality checks as part of implementation, not as a final cleanup step.
+
+## WordPress Test Environment with .wp-env
+
+This project includes `.wp-env.json` and it must be used for local WordPress testing when validating plugin behavior and standards in a real WordPress environment.
+
+- Use `.wp-env.json` as the canonical local WordPress test environment for this plugin.
+- Run the WordPress environment before broader validation or suite-based checks.
+- Use the WordPress environment to exercise the plugin under actual WordPress runtime conditions rather than relying only on static analysis.
+- When running the coding standards suite, target the plugin source and exclude third-party or vendor code from the checks so the project is evaluated fairly and without unrelated noise.
+- Keep `.wp-env.json` aligned with the plugin’s expected local development/test setup.
+
+Typical workflow:
+
+```bash
+npm install
+npx wp-env start
+```
+
+Then run the standards suite against the plugin source, for example:
+
+```bash
+vendor/bin/phpcs \
+  --standard=WordPress,WordPress-Core,WordPress-Docs,WordPress-Extra \
+  --extensions=php \
+  --ignore=vendor,dist,node_modules \
+  src
+```
+
+For a full WordPress-oriented validation flow via the local environment, run the plugin under `.wp-env` and execute the WordPress test tooling from there as needed.
+
+The standard is simple: if a change introduces a PHP warning, PHPCS violation, or WordPress coding issue, it must be corrected before the task is considered finished.
+
 ## Documentation References
 
 - [REST API](../Docs/API.md)
@@ -122,3 +178,7 @@ All WikiPress and internal-plugin assets must flow through `src/Assets/Assets.ph
 - [Internal plugins](../Docs/INTERNAL_PLUGINS.md)
 - [WordPress plugin integration](../Docs/WORDPRESS_PLUGINS.md)
 - [Plugin interfaces](../src/Includes/Plugins/PluginsInterface.php)
+
+
+
+

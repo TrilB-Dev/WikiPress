@@ -91,3 +91,5 @@ tinymce.Resource.add('tinymce.html-i18n.help-keynav.es',
   '\n' +
   '<p>Si desea cambiar a otra pestaña del cuadro de diálogo, enfoque el menú de pestañas y, a continuación, pulse la tecla de <strong>flecha</strong>\n' +
   '  correspondiente para moverse por las pestañas disponibles.</p>\n');
+
+

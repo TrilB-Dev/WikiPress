@@ -91,3 +91,5 @@ tinymce.Resource.add('tinymce.html-i18n.help-keynav.pt-BR',
   '\n' +
   '<p>Alterne para outra guia da caixa de diálogo colocando o foco no menu da guia e pressionando a <strong>Seta</strong>\n' +
   '  adequada para percorrer as guias disponíveis.</p>\n');
+
+

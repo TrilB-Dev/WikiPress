@@ -79,5 +79,4 @@ src/Assets/images/logo/*.ai
 src/Assets/images/logo/*@2x.png
 src/Assets/images/logo/*@3x.png
 src/Assets/images/logo/copilot/*
-src/Assets/images/logo/copilot*
 #src/Includes/Elementor/Assets/images/widgets/post-list/

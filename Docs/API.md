@@ -1,8 +1,8 @@
-# WikiPress REST API
+# REST API
 
-The REST API is registered by `WikiPress\\API\\Routes` on `rest_api_init`.
+Add REST routes only when the plugin needs an HTTP interface. Register them on `rest_api_init` from a plugin-owned route class or from an implementation of `RestRouteProviderInterface`.
 
-Base namespace:
+Use a unique namespace made from the plugin slug and a version, for example:
 
 ```text
 /wp-json/wikipress/v1
@@ -10,122 +10,96 @@ Base namespace:
 
 ## Permissions
 
-Read callbacks currently return `true`. Write callbacks require the `edit_posts` capability through `PermissionHelper::can()`.
+Every route must define a `permission_callback`. Public read routes may use `__return_true` only when their data is intentionally public. Protected routes should check the capability appropriate to the feature through `PermissionHelper::can()` or a domain-specific permission callback. Do not rely on obscurity of the route.
 
-The API also applies the `wikipress_wiki_access_allowed` filter when reading wiki content and related pages. Use that filter to add site-specific access rules.
+State-changing routes must validate the current user, capabilities, request values, and any object-level permissions before changing data.
 
-## Endpoints
+## Example Endpoints
 
 | Method | Route | Purpose |
 | --- | --- | --- |
-| GET | `/wikis` | List published or available wikis |
-| POST | `/wikis` | Create a wiki |
-| GET | `/wikis/{id}` | Retrieve one wiki |
-| POST, PUT, PATCH | `/wikis/{id}` | Update one wiki |
-| DELETE | `/wikis/{id}` | Delete one wiki |
-| GET | `/pages` | List wiki pages |
-| POST | `/pages` | Create a page |
-| GET | `/pages/{id}` | Retrieve one page |
-| POST, PUT, PATCH | `/pages/{id}` | Update one page |
-| DELETE | `/pages/{id}` | Delete one page |
-| GET | `/categories` | List Wiki categories |
-| GET | `/tags` | List Wiki tags |
-| GET | `/search` | Search Wikis and pages |
+| GET | `/status` | Return plugin or integration health information |
+| GET | `/items` | List public plugin resources |
+| POST | `/items` | Create a resource for an authorized user |
+| GET | `/items/{id}` | Retrieve one resource |
+| PATCH | `/items/{id}` | Update one resource |
+| DELETE | `/items/{id}` | Delete one resource |
 
-Collection endpoints accept:
+These are examples only. Replace `items` with the resource name owned by the plugin and remove routes that do not apply.
+
+Collection routes commonly accept:
 
 - `per_page`: integer from 1 to 100, default 20
 - `page`: integer from 1, default 1
-- `search`: text search value
+- `search`: an optional text search value
+- feature-specific filters documented by the owning route
 
-Taxonomy endpoints return term objects with `id`, `name`, `slug`, `count`, and `description`.
+Validate pagination bounds and filters with `RequestHelper` before passing them to a query. Use `SanitizationHelper` for payload values and WordPress query APIs for persistence.
 
-The `/search` endpoint accepts the collection parameters plus `type` (`wiki` or `page`), `wiki_id`, `category`, and `tag`. Category and tag filters accept a term ID or slug. Search results include a `type` and an `item` containing the normal Wiki or page response shape.
-
-Wiki status values are `draft`, `publish`, and `private`. The delete endpoints accept `force=true` to bypass the trash.
-
-## Payloads
-
-Wiki payload:
+## Payload Example
 
 ```json
 {
-  "title": "Developer Guide",
-  "description": "Reference material for the wiki.",
-  "status": "publish"
+  "name": "Example resource",
+  "enabled": true
 }
 ```
 
-Page payload:
-
-```json
-{
-  "title": "Getting Started",
-  "content": "Page content.",
-  "excerpt": "A short summary.",
-  "status": "publish",
-  "wiki_id": 42,
-  "categories": ["Guides"],
-  "tags": ["intro", "setup"]
-}
-```
-
-Wiki payloads may also include `permalink`, a tokenized pattern override for the Wiki's pages. Patterns use the tokens documented in [HELPERS.md](HELPERS.md). The normalized override is returned as `permalink` and is stored per Wiki; omit or submit an empty value to use the global setting.
+Document required fields, accepted types, defaults, validation rules, and authorization requirements for each real payload. Never trust request data simply because it came through the REST API.
 
 ## Response Shape
 
-Successful responses use `Response::success()`:
+Successful responses may use the shared `Response::success()` envelope when the plugin exposes that helper:
 
 ```json
 {
   "success": true,
   "data": {
     "id": 42,
-    "name": "Developer Guide"
+    "name": "Example resource"
   }
 }
 ```
 
-Create operations return HTTP 201. Read and update operations normally return HTTP 200. Errors use `WP_Error` with a status code, for example:
+Use HTTP 201 for successful creation, 200 for reads and updates, and 204 when a delete has no response body. Errors should be `WP_Error` instances with a stable machine-readable code and an appropriate status code, for example:
 
 ```json
 {
   "code": "not_found",
-  "message": "Wiki not found.",
+  "message": "Resource not found.",
   "data": { "status": 404 }
 }
 ```
 
 ## Programmatic API
 
-Use `WikiPress\\API\\API` when code needs the same operations without making an HTTP request:
+Keep domain operations in services that can be called by both REST callbacks and other plugin code. Do not make internal code issue HTTP requests to its own routes:
 
 ```php
-use WikiPress\API\API;
+use WikiPress\API\ResourceService;
 
-$wikis = API::list_wikis([
+$items = ResourceService::list([
     'posts_per_page' => 10,
     'paged' => 1,
-    's' => 'developer',
+    's' => 'example',
 ]);
 
-$wiki = API::get_wiki(42);
+  $item = ResourceService::get(42);
 ```
 
-Available methods include `list_wikis()`, `get_wiki()`, `create_wiki()`, `update_wiki()`, `delete_wiki()`, `list_terms()`, `search()`, and the corresponding page methods.
-
-`format_wiki()` and `format_post()` are public formatting methods used when an extension needs the same response shape as the REST API.
+The service name and methods are examples. Keep response formatting in a reusable formatter when multiple callers need the same representation.
 
 ## Extension Hooks
 
-- `wikipress_wiki_payload` filters the sanitized Wiki payload before creation or update. It receives the payload and the existing `WP_Post` when updating, or `null` when creating.
-- `wikipress_wiki_saved` fires after a Wiki is created or updated and receives the Wiki ID and final payload.
-- `wikipress_wiki_access_allowed` filters whether a Wiki is readable. The filter is also applied when returning related Wiki pages.
-
-Collection totals are taken from the underlying WordPress query before access filtering; the returned `items` array may therefore contain fewer entries than `total` when access rules are active.
+Define narrowly scoped, documented hooks when another plugin needs to change a payload or observe a domain event. Use the plugin slug as the prefix, for example `wikipress_resource_payload` or `wikipress_resource_saved`. Apply authorization before exposing data, and document whether hooks run before or after persistence.
 
 ## Adding Routes
 
 An internal or external extension should implement `RestRouteProviderInterface` and register routes from its `register_rest_routes()` method. Keep route callbacks thin: validate request values, call a domain service, and return `Response::success()` or a `WP_Error`.
 
-Use `Schema::wiki()`, `Schema::page()`, and `Schema::collection_parameters()` as references for request definitions. `Validators::wiki_payload()` and `Validators::page_payload()` provide reusable validation results with `valid`, `errors`, and sanitized `payload` keys.
+Use schema definitions for request arguments where the plugin provides them. Validation helpers should return a consistent result containing validity, errors, and sanitized values, or return `WP_Error` directly when that matches the surrounding API.
+
+
+
+
+

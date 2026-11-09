@@ -91,3 +91,5 @@ tinymce.Resource.add('tinymce.html-i18n.help-keynav.nb_NO',
   '\n' +
   '<p>Veksle til en annen fane i dialogboksen ved å utheve fanemenyen, og trykk deretter på den aktuelle <strong>piltasten</strong>\n' +
   '  for å bevege deg mellom de tilgjengelige fanene.</p>\n');
+
+

@@ -1,6 +1,6 @@
 <?php
 /**
- * TrilB.Dev Plugin - Wiki functions helper
+ * WikiPress - Functions
  *
  * Shared utilities used by Wiki services, pages, and REST routes.
  *
@@ -39,7 +39,7 @@ final class Functions {
      * @param array $payload The payload to sanitize.
      * @return array The sanitized payload.
      */
-    public static function sanitize_wiki_payload( array $payload ): array {
+    public static function sanitize_payload( array $payload ): array {
         $status = SanitizationHelper::key( $payload['status'] ?? self::DEFAULT_STATUS );
 
         return [
@@ -47,7 +47,7 @@ final class Functions {
             'content' => self::sanitize_content( $payload['content'] ?? '' ),
             'excerpt' => SanitizationHelper::text( $payload['excerpt'] ?? '' ),
             'status' => SanitizationHelper::one_of( $status, self::ALLOWED_STATUSES, self::DEFAULT_STATUS ),
-            'wiki_id' => SanitizationHelper::integer( $payload['wiki_id'] ?? 0 ),
+            'post_id' => SanitizationHelper::integer( $payload['post_id'] ?? 0 ),
             'categories' => self::normalize_terms( $payload['categories'] ?? [] ),
             'tags' => self::normalize_terms( $payload['tags'] ?? [] ),
         ];
@@ -67,8 +67,8 @@ final class Functions {
      * @param mixed $post The post to check.
      * @return bool True if the post is a Wiki post, false otherwise.
      */
-    public static function is_wiki_post( $post ): bool {
-        return self::is_wiki_page( $post );
+    public static function is_post( $post ): bool {
+        return self::is_page( $post );
     }
     /**
      * Checks if a given post is a Wiki page.
@@ -76,8 +76,8 @@ final class Functions {
      * @param mixed $post The post to check.
      * @return bool True if the post is a Wiki page, false otherwise.
      */
-    public static function is_wiki( $post ): bool {
-        return PostHelper::is_wiki( $post );
+    public static function is( $post ): bool {
+        return PostHelper::is( $post );
     }
     /**
      * Checks if a given post is a Wiki content (either a Wiki post or a Wiki page).
@@ -85,8 +85,8 @@ final class Functions {
      * @param mixed $post The post to check.
      * @return bool True if the post is a Wiki content, false otherwise.
      */
-    public static function is_wiki_page( $post ): bool {
-        return PostHelper::is_wiki_page( $post );
+    public static function is_page( $post ): bool {
+        return PostHelper::is_page( $post );
     }
     /**
      * Checks if a given post is either a Wiki post or a Wiki page.
@@ -94,8 +94,8 @@ final class Functions {
      * @param mixed $post The post to check.
      * @return bool True if the post is a Wiki content, false otherwise.
      */
-    public static function is_wiki_content( $post ): bool {
-        return self::is_wiki( $post ) || self::is_wiki_page( $post );
+    public static function is_content( $post ): bool {
+        return self::is( $post ) || self::is_page( $post );
     }
     /**
      * Returns a standardized REST response array.
@@ -122,3 +122,4 @@ final class Functions {
         return is_scalar( $content ) ? wp_kses_post( (string) $content ) : '';
     }
 }
+

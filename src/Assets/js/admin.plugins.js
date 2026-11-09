@@ -1,7 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
     const root = document;
     const config = window.wikipressSettingsTabs;
-    if (!config) return;
+    if (!config) {
+        console.warn('[WikiPress] Missing wikipressSettingsTabs config. Check that the settings page enqueues the admin plugin script.');
+        return;
+    }
 
     //
     // --- MODAL HANDLING (Bootstrap-native) ---
@@ -124,17 +127,62 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- SAVE PLUGIN SETTINGS ---
     //
 
-    const savePluginSettings = (button) => {
-        const modal = button.closest('.wikipress-plugin-settings-modal');
-        const form = modal?.querySelector('[data-plugin-settings-form]');
-        if (!modal || !form) return;
+    const debugLog = (...args) => {
+        if (typeof console !== 'undefined') {
+            console.log('[WikiPress]', ...args);
+        }
+    };
 
-        setButtonSaving(button);
+    const savePluginSettings = (source) => {
+        const button = source instanceof HTMLElement ? source : null;
+        const modal = button ? button.closest('.wikipress-plugin-settings-modal') : source?.closest?.('.wikipress-plugin-settings-modal');
+        const form = button ? button.form || modal?.querySelector('[data-plugin-settings-form]') : source instanceof HTMLFormElement ? source : modal?.querySelector('[data-plugin-settings-form]');
 
-        const body = new URLSearchParams(new FormData(form));
+        if (!modal || !form) {
+            debugLog('savePluginSettings: missing modal or form', { source, modal: !!modal, form: !!form });
+            return;
+        }
+
+        const saveButton = button || modal.querySelector('[data-plugin-settings-save]');
+        if (saveButton) {
+            setButtonSaving(saveButton);
+        }
+
+        debugLog('savePluginSettings: starting save', {
+            slug: form.dataset.pluginSlug || '',
+            action: 'wikipress_save_plugin_settings',
+        });
+
+        const formData = new FormData(form);
+        const payload = Object.fromEntries(formData.entries());
+        const settings = {};
+
+        for (const [key, value] of Object.entries(payload)) {
+            if (key.startsWith('settings[') || key.startsWith('plugin_settings[')) {
+                const match = key.match(/^settings\[(.*)\]$|^plugin_settings\[(.*)\]$/);
+                if (match) {
+                    const fieldName = match[1] || match[2] || '';
+                    if (fieldName) {
+                        settings[fieldName] = value;
+                    }
+                }
+            }
+        }
+
+        debugLog('savePluginSettings: parsed payload', { formDataKeys: Object.keys(payload), settings });
+
+        const body = new URLSearchParams();
         body.set('action', 'wikipress_save_plugin_settings');
-        body.set('nonce', config.pluginSettingsNonce);
+        body.set('nonce', config.pluginSettingsNonce || '');
         body.set('slug', form.dataset.pluginSlug || '');
+        body.set('settings', JSON.stringify(settings));
+        body.set('plugin_settings', JSON.stringify(settings));
+
+        debugLog('savePluginSettings: sending request', {
+            url: config.ajaxUrl,
+            slug: form.dataset.pluginSlug || '',
+            settings
+        });
 
         fetch(config.ajaxUrl, {
             method: 'POST',
@@ -142,8 +190,12 @@ document.addEventListener('DOMContentLoaded', () => {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
             body
         })
-        .then((response) => response.json())
         .then((response) => {
+            debugLog('savePluginSettings: response received', { status: response.status, ok: response.ok });
+            return response.json();
+        })
+        .then((response) => {
+            debugLog('savePluginSettings: response payload', response);
             if (!response.success) {
                 const error = new Error(response.data?.message || 'Unable to save plugin settings');
                 error.alert = response.data?.alert;
@@ -154,17 +206,109 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         })
         .catch((error) => {
-            resetSavingButton(button);
+            console.error('[WikiPress] savePluginSettings: failed', error);
+            if (saveButton) {
+                resetSavingButton(saveButton);
+            }
             showPluginNotice(error.alert);
         })
         .finally(() => {
-            resetSavingButton(button);
+            if (saveButton) {
+                resetSavingButton(saveButton);
+            }
+        });
+    };
+
+    const getScopeControl = (field, key) => {
+        const scopes = [field.closest('form'), document];
+        for (const scope of scopes) {
+            if (!scope) continue;
+            const candidates = scope.querySelectorAll('[name]');
+            for (const candidate of candidates) {
+                const name = candidate.getAttribute('name') || '';
+                if (name === key || name === `settings[${key}]`) {
+                    return candidate;
+                }
+            }
+        }
+
+        return null;
+    };
+
+    const getFormControlValue = (control) => {
+        if (!control) {
+            return '';
+        }
+
+        if (control.type === 'checkbox') {
+            return control.checked ? '1' : '0';
+        }
+
+        if (control.type === 'radio') {
+            const checked = control.form?.querySelector(`input[name="${control.name}"]:checked`);
+            return checked ? String(checked.value ?? '') : '';
+        }
+
+        return String(control.value ?? '');
+    };
+
+    const matchesSingleRule = (field, key, expected) => {
+        const input = getScopeControl(field, key);
+        const actual = getFormControlValue(input);
+
+        if (Array.isArray(expected)) {
+            return expected.some((candidate) => String(candidate) === actual);
+        }
+
+        return String(expected ?? '') === actual;
+    };
+
+    const matchesCondition = (field, ruleSet) => {
+        if (!ruleSet || typeof ruleSet !== 'object') {
+            return true;
+        }
+
+        if (Array.isArray(ruleSet)) {
+            if (ruleSet.length === 0) {
+                return true;
+            }
+
+            return ruleSet.some((item) => matchesCondition(field, item));
+        }
+
+        return Object.entries(ruleSet).every(([key, expected]) => matchesSingleRule(field, key, expected));
+    };
+
+    const applyConditionalFieldVisibility = () => {
+        root.querySelectorAll('[data-wikipress-visible-when], [data-wikipress-required-when]').forEach((field) => {
+            const visibleRule = field.dataset.wikipressVisibleWhen ? JSON.parse(field.dataset.wikipressVisibleWhen) : null;
+            const requiredRule = field.dataset.wikipressRequiredWhen ? JSON.parse(field.dataset.wikipressRequiredWhen) : null;
+            const visible = matchesCondition(field, visibleRule) || !visibleRule;
+            const required = matchesCondition(field, requiredRule) || !requiredRule;
+            const showField = visible && required;
+
+            field.style.display = showField ? '' : 'none';
+            field.hidden = !showField;
+
+            field.querySelectorAll('input, select, textarea, button').forEach((input) => {
+                input.disabled = !showField;
+            });
         });
     };
 
     //
     // --- EVENT LISTENERS ---
     //
+
+    root.addEventListener('submit', (event) => {
+        const form = event.target.closest?.('[data-plugin-settings-form]');
+        if (!form) {
+            return;
+        }
+
+        event.preventDefault();
+        savePluginSettings(form);
+    }, true);
 
     root.addEventListener('click', (event) => {
         // Open modal
@@ -185,6 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Save settings
         const save = event.target.closest?.('[data-plugin-settings-save]');
         if (save) {
+            event.preventDefault();
             savePluginSettings(save);
         }
     }, true);
@@ -194,5 +339,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (toggle) {
             togglePlugin(toggle);
         }
+
+        const target = event.target;
+        const fieldName = target && target.getAttribute ? target.getAttribute('name') : '';
+        if (fieldName && (fieldName.startsWith('settings[') || fieldName === 'fontawesome_type')) {
+            applyConditionalFieldVisibility();
+        }
     }, true);
+
+    root.addEventListener('input', (event) => {
+        const target = event.target;
+        const fieldName = target && target.getAttribute ? target.getAttribute('name') : '';
+        if (fieldName && (fieldName.startsWith('settings[') || fieldName === 'fontawesome_type')) {
+            applyConditionalFieldVisibility();
+        }
+    }, true);
+
+    applyConditionalFieldVisibility();
 });

@@ -91,3 +91,5 @@ tinymce.Resource.add('tinymce.html-i18n.help-keynav.sl_SI',
   '\n' +
   '<p>Na drug zavihek pogovornega okna preklopite tako, da fokus prestavite na meni zavihka in nato pritisnete ustrezno <strong>puščično</strong>\n' +
   '  tipko, da se pomaknete med razpoložljivimi zavihki.</p>\n');
+
+

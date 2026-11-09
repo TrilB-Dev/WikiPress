@@ -91,3 +91,5 @@ tinymce.Resource.add('tinymce.html-i18n.help-keynav.ko-KR',
   '\n' +
   '<p>다른 대화 탭으로 이동하려면 탭 메뉴를 포커스 표시한 다음 적절한 <strong>화살표</strong>\n' +
   '  키를 눌러 사용 가능한 탭들을 지나 원하는 탭으로 이동합니다.</p>\n');
+
+

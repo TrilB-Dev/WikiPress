@@ -3,10 +3,7 @@ const path = require('path');
 const gettextParser = require('gettext-parser');
 
 const root = path.resolve(__dirname, '..');
-const sourceDirectories = [
-  path.join(root, 'src', 'languages'),
-  path.join(root, 'src', 'includes', 'Plugins'),
-];
+const languageDirectory = path.join(root, 'src', 'Languages');
 
 function potFilesIn(directory) {
   if (!fs.existsSync(directory)) return [];
@@ -18,7 +15,7 @@ function potFilesIn(directory) {
   });
 }
 
-const catalogs = [...new Set(sourceDirectories.flatMap(potFilesIn))].sort();
+const catalogs = potFilesIn(languageDirectory).sort();
 
 if (catalogs.length === 0) {
   throw new Error('No POT files were found. Run npm run i18n:pot first.');
@@ -34,3 +31,6 @@ catalogs.forEach((potPath) => {
   const sourceType = sourcePath === poPath ? 'PO' : 'POT template';
   console.log(`${path.relative(root, moPath)}: ${compiled.length} bytes (${sourceType})`);
 });
+
+
+

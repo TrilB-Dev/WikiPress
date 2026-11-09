@@ -91,3 +91,5 @@ tinymce.Resource.add('tinymce.html-i18n.help-keynav.hr',
   '\n' +
   '<p>Na karticu s drugim dijaloškim okvirom možete se prebaciti tako da stavite fokus na izbornik kartice pa pritisnete tipku s odgovarajućom <strong>strelicom</strong>\n' +
   '  za kružno pomicanje između dostupnih kartica.</p>\n');
+
+

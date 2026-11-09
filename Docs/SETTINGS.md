@@ -1,6 +1,6 @@
-# WikiPress Settings
+# Settings
 
-WikiPress settings are stored in the WikiPress settings database table through `SettingsManager`. Groups are stored with a `wikipress_` storage prefix while callers use the logical group name.
+Plugin settings are stored through `SettingsManager`. Use logical, plugin-owned group and key names; the storage implementation and prefix are internal details.
 
 ## Reading and Writing Values
 
@@ -9,49 +9,37 @@ Use the `Settings` facade rather than querying the database directly:
 ```php
 use WikiPress\Includes\Settings\Settings;
 
-$name = Settings::get_string('root_name', 'WikiPress');
-$slug = Settings::get_slug('root_slug', 'wiki');
-$show_toc = Settings::get_bool('show_toc', true);
+$name = Settings::get_string('name', 'WikiPress');
+$mode = Settings::get_key('mode', 'default');
+$enabled = Settings::get_bool('enabled', true);
 
-Settings::set('show_toc', false);
-Settings::delete('show_toc');
+Settings::set('enabled', false);
+Settings::delete('enabled');
 ```
 
-Available typed readers are `get()`, `get_string()`, `get_key()`, `get_slug()`, `get_int()`, and `get_bool()`. Group methods are `get_group()`, `set_group()`, and `get_all()`. `has()` checks whether a stored key exists.
+Typed readers include `get()`, `get_string()`, `get_key()`, `get_slug()`, `get_int()`, and `get_bool()`. Group methods include `get_group()`, `set_group()`, and `get_all()`. `has()` checks whether a key exists.
 
-The core group constants are `Settings::GENERAL`, `Settings::LAYOUT`, `Settings::ACCESS`, and `Settings::TOOLS`. Typed readers sanitize scalar values and return the supplied fallback when a value is missing or invalid.
+## Registering Settings
 
-## Core Groups
-
-Core defaults currently include:
-
-- `general`: `root_name`, `root_slug`, `category_slug`, `tag_slug`, `permalink`
-- `layout`: `show_search`, `show_toc`
-- `access`: extension-defined access keys
-- `tools`: `debug_logging`
-
-Use `Settings::register_group()` or `Settings::register_key()` for extension settings. Registered defaults are used during installation and fallback reads.
-
-## Registering an Extension Group
+Use `Settings::register_group()` or `Settings::register_key()` for settings and defaults:
 
 ```php
-use WikiPress\Includes\Settings\Settings;
-
 final class SettingsProvider {
     public function register(): void {
         Settings::register_group('my_extension', [
             'enabled' => true,
             'mode' => 'safe',
+            'api_url' => '',
         ]);
     }
 }
 ```
 
-Register groups before settings installation or before values are read. The plugin system calls `SettingsProviderInterface::register_settings()` before `init()` for active extensions.
+Register groups before installation or before values are read. The plugin system calls `SettingsProviderInterface::register_settings()` before `init()` for active extensions.
 
-## Settings Page Provider
+## Settings Pages
 
-An extension can supply a generated settings tab by implementing `SettingsPageProviderInterface`:
+An extension can implement `SettingsPageProviderInterface` to provide generated field metadata. Supported field types and layouts must match the current renderer. Dynamic options, conditional rules, validation, and persistence belong to the provider.
 
 ```php
 public function get_settings_page(): array {
@@ -61,7 +49,7 @@ public function get_settings_page(): array {
         'title' => __( 'My Extension settings', 'my-extension' ),
         'fields' => [
             [
-                'key' => 'my_extension_enabled',
+                'key' => 'enabled',
                 'label' => __( 'Enabled', 'my-extension' ),
                 'type' => 'checkbox',
                 'default' => true,
@@ -69,59 +57,26 @@ public function get_settings_page(): array {
         ],
     ];
 }
-
-public function sanitize_settings($input): array {
-    $input = is_array($input) ? $input : [];
-    $enabled = ! empty($input['my_extension_enabled']);
-
-    Settings::set_group('my_extension', [
-        'my_extension_enabled' => $enabled,
-    ]);
-
-    return [ 'my_extension_enabled' => $enabled ];
-}
 ```
 
-The actual field types supported by the admin settings renderer should be checked against the current settings page implementation before adding new types. Every submitted value must be normalized and validated before persistence.
+Normalize and validate every submitted value with `SanitizationHelper` or a provider-specific sanitizer. Escape values when rendering HTML.
 
-### Generated Settings Fields
+## Persistence and Migration
 
-Generated plugin settings pages support `checkbox`, `select`, `multiselect`, and `text` fields. A page may use `layout => 'table'` or `layout => 'box'`. Field definitions can include:
+`SettingsManager::install()` installs or updates the settings store and merges registered defaults with stored values. `set_group()` persists a logical group through the manager. Preserve released keys or provide an explicit migration when changing them.
 
-- `key`, `label`, `description`, and `default` for the field contract.
-- `options` for `select` and `multiselect` controls.
-- `attributes` for escaped control attributes supplied by the owning plugin.
-- `wrapper_class` for classes on the generated row or card.
-- `tooltip`, `tooltip_type`, and `tooltip_icon` for accessible field help.
-- `dropup_auto`, `show_tick`, and `selection_indicator` for Bootstrap Select multiselect presentation.
-- `visible_when => [ 'field' => 'other_key', 'equals' => 'value' ]` for declarative conditional visibility. The plugin owns the JavaScript that interprets its conditions; core only renders the metadata.
+Do not store secrets unless the feature has an explicit encryption strategy. Sensitive credentials should use the project encryption conventions rather than plain serialized values.
 
-Dynamic options, conditional rules, and validation belong to the provider. Core must not inspect a plugin slug to implement feature behavior.
-
-For example, an access-control extension can define a role field as:
-
-```php
-[
-    'key' => 'default_roles',
-    'label' => __( 'Default roles', 'my-plugin' ),
-    'type' => 'multiselect',
-    'options' => $role_options,
-    'attributes' => [ 'data-my-plugin-roles' => true ],
-    'visible_when' => [ 'field' => 'default_access_type', 'equals' => 'roles' ],
-]
-```
-
-## Migration and Persistence
-
-`SettingsManager::install()` installs the settings table, merges registered defaults with stored values, migrates legacy unprefixed groups, and removes the legacy rows. `set_group()` uses a database replace operation and serializes the group.
-
-Do not store secrets in settings unless the feature has an explicit encryption strategy. Sensitive credentials should use the project encryption conventions rather than plain serialized values.
-
-## Settings Checklist
+## Checklist
 
 1. Register the group and defaults.
-2. Register the provider through the WikiPress plugin lifecycle.
+2. Register the provider through the host plugin lifecycle.
 3. Read values through typed `Settings` methods.
-4. Sanitize submitted values with `SanitizationHelper` or a provider-specific sanitizer.
-5. Persist the complete logical group with `set_group()` when appropriate.
-6. Escape values when rendering HTML.
+4. Sanitize and validate submitted values.
+5. Persist through `set()` or `set_group()` as appropriate.
+6. Escape values at output time.
+
+
+
+
+

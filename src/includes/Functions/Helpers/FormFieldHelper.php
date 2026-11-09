@@ -16,6 +16,26 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 final class FormFieldHelper {
 	/**
+	 * Generate a unique fallback DOM id for repeated fields.
+	 *
+	 * @param string $base Base string used to derive the id.
+	 * @return string
+	 */
+	private static function unique_field_id( string $base = 'wikipress-field' ): string {
+		$prefix = '' !== trim( (string) $base ) ? (string) $base : 'wikipress-field';
+		$prefix = sanitize_key( $prefix );
+
+		if ( function_exists( 'wp_unique_id' ) ) {
+			return wp_unique_id( $prefix . '-' );
+		}
+
+		static $id_counter = 0;
+		$id_counter++;
+
+		return $prefix . '-' . $id_counter;
+	}
+
+	/**
 	 * Render a text input.
 	 *
 	 * @param string $name       The name attribute for the input.
@@ -63,33 +83,6 @@ final class FormFieldHelper {
 		}
 
 		return '<input ' . self::attributes_to_string( $attributes ) . ' />' . self::feedback( $options );
-	}
-
-	/**
-	 * Render a hidden input field.
-	 *
-	 * @param string $name       The name attribute for the input.
-	 * @param string $value      The value attribute for the input.
-	 * @param array  $options    Additional attributes for the input.
-	 * @return string The HTML markup for the hidden input.
-	 */
-	public static function hidden( string $name, string $value = '', array $options = array() ): string {
-		$options['type'] = 'hidden';
-
-		return self::input( $name, $value, $options );
-	}
-
-	/**
-	 * Render a WordPress nonce field.
-	 *
-	 * @param string $action     The nonce action.
-	 * @param string $name       The hidden field name.
-	 * @param bool   $referer    Whether to include the referer field.
-	 * @param bool   $echo       Whether to echo or return the markup.
-	 * @return string The nonce field HTML.
-	 */
-	public static function nonce_field( string $action, string $name = '_wpnonce', bool $referer = false, bool $echo = true ): string {
-		return wp_nonce_field( $action, $name, $referer, $echo );
 	}
 	/**
 	 * Render a textarea.
@@ -221,7 +214,10 @@ final class FormFieldHelper {
 	 * @param array  $attributes Additional attributes for the switch.
 	 * @return string The HTML markup for the switch input.
 	 */
-	public static function switch( string $name, string $value = '1', string $label = '', array $options = array() ): string {
+	public static function switch( string $name, $value = '1', string $label = '', array $options = array() ): string {
+		if ( is_bool( $value ) ) {
+			$value = '1';
+		}
 
 		$options['switch'] = true;
 
@@ -241,7 +237,7 @@ final class FormFieldHelper {
 
 		$type             = in_array( $options['type'] ?? 'radio', array( 'button', 'checkbox', 'radio' ), true ) ? $options['type'] : 'radio';
 		$size             = in_array( $options['size'] ?? '', array( 'sm', 'lg' ), true ) ? $options['size'] : '';
-		$group_id         = (string) ( $options['id'] ?? sanitize_title( $name . '-group' ) );
+		$group_id         = (string) ( $options['id'] ?? self::unique_field_id( $name . '-group' ) );
 		$group_attributes = array_merge( $options['attributes'] ?? array(), $options );
 		unset( $group_attributes['attributes'], $group_attributes['id'], $group_attributes['class'], $group_attributes['type'], $group_attributes['size'], $group_attributes['vertical'], $group_attributes['variant'], $group_attributes['button_class'], $group_attributes['aria_label'], $group_attributes['append_array'] );
 		$group_attributes['id']   = $group_id;
@@ -263,7 +259,7 @@ final class FormFieldHelper {
 			$definition   = is_array( $button ) ? $button : array();
 			$value        = (string) ( $definition['value'] ?? ( is_array( $button ) ? $key : $key ) );
 			$label        = (string) ( $definition['label'] ?? ( is_array( $button ) ? $value : $button ) );
-			$id           = (string) ( $definition['id'] ?? sanitize_title( $group_id . '-' . $value ) );
+			$id           = (string) ( $definition['id'] ?? self::unique_field_id( $group_id . '-' . $value ) );
 			$variant      = (string) ( $definition['variant'] ?? $options['variant'] ?? 'outline-primary' );
 			$button_class = self::classes( array( 'btn', 'btn-' . sanitize_html_class( $variant ), $definition['class'] ?? $options['button_class'] ?? '' ) );
 			$disabled     = ! empty( $definition['disabled'] );
@@ -297,7 +293,7 @@ final class FormFieldHelper {
 			}
 
 			$html .= '<input ' . self::attributes_to_string( $input_attributes ) . ' />';
-			$html .= '<label class="' . esc_attr( $button_class ) . '" for="' . esc_attr( $id ) . '">' . esc_html( $label ) . '</label>';
+			$html .= '<label class="' . esc_attr( $button_class ) . '" for="' . esc_attr( $id ) . '">' . self::render_button_label( $label, $definition ) . '</label>';
 		}
 
 		return $html . '</div>' . self::feedback( $options );
@@ -314,7 +310,7 @@ final class FormFieldHelper {
 
 		$tag        = ! empty( $options['href'] ) ? 'a' : 'button';
 		$attributes = array_merge( $options['attributes'] ?? array(), $options );
-		unset( $attributes['attributes'], $attributes['href'], $attributes['class'], $attributes['type'], $attributes['label'], $attributes['value'], $attributes['disabled'], $attributes['raw'] );
+		unset( $attributes['attributes'], $attributes['href'], $attributes['class'], $attributes['type'], $attributes['label'], $attributes['disabled'], $attributes['raw'] );
 		$attributes['class'] = self::classes( array( 'btn', $options['class'] ?? 'btn-primary' ) );
 
 		if ( 'a' === $tag ) {
@@ -331,9 +327,50 @@ final class FormFieldHelper {
 			}
 		}
 
-		$content = ! empty( $options['raw'] ) ? $label : esc_html( $label );
+		$content = self::render_button_label( $label, $options );
 
 		return '<' . $tag . ' ' . self::attributes_to_string( $attributes ) . '>' . $content . '</' . $tag . '>';
+	}
+
+	/**
+	 * Safely render a button label, allowing trusted inline HTML such as FontAwesome or SVG icons.
+	 *
+	 * @param string $label   Raw label content.
+	 * @param array  $options Button options.
+	 * @return string
+	 */
+	private static function render_button_label( string $label, array $options = array() ): string {
+		if ( ! empty( $options['raw'] ) ) {
+			return self::sanitize_inline_button_markup( $label );
+		}
+
+		if ( preg_match( '/<\s*([a-zA-Z][^>]*)>/', $label ) ) {
+			$sanitized = self::sanitize_inline_button_markup( $label );
+			if ( '' !== trim( (string) $sanitized ) ) {
+				return $sanitized;
+			}
+
+			$sanitized = function_exists( 'wp_kses_post' ) ? wp_kses_post( $label ) : (string) $label;
+			if ( '' !== trim( (string) $sanitized ) ) {
+				return $sanitized;
+			}
+		}
+
+		return esc_html( (string) $label );
+	}
+
+	/**
+	 * Strip unsafe markup while preserving trusted inline icon markup such as FontAwesome or SVG tags.
+	 *
+	 * @param string $label Html to sanitize.
+	 * @return string
+	 */
+	private static function sanitize_inline_button_markup( string $label ): string {
+		$clean = preg_replace( '/<\s*(script|style|iframe|object|embed|form|input|button)\b[^>]*>.*?<\s*\/\s*\1\s*>/is', '', $label );
+		$clean = preg_replace( '/\s+on[a-zA-Z0-9_-]+\s*=\s*(?:"[^"]*"|\'[^\']*\'|[^"]*?)/i', '', (string) $clean );
+		$clean = preg_replace( '/<(?!\/?(?:i|span|svg|path|circle|use|strong|em|b|br)\b)[^>]+>/i', '', (string) $clean );
+
+		return (string) $clean;
 	}
 
 	/**
@@ -364,7 +401,7 @@ final class FormFieldHelper {
 		$attributes['id']    = $dropdown_id;
 		$attributes['type']  = 'button';
 		$attributes['class'] = $button_class . ( ! empty( $options['split'] ) ? ' dropdown-toggle-split' : ' dropdown-toggle' );
-		$toggle              = '<button ' . self::attributes_to_string( $attributes ) . '>' . esc_html( $label );
+		$toggle              = '<button ' . self::attributes_to_string( $attributes ) . '>' . self::render_button_label( $label, $options );
 
 		if ( ! empty( $options['split'] ) ) {
 			$toggle .= '<span class="visually-hidden">' . esc_html__( 'Toggle Dropdown', 'wikipress' ) . '</span>';
@@ -443,13 +480,15 @@ final class FormFieldHelper {
 	 * @param array  $attributes Additional attributes for the input.
 	 * @return string The HTML markup for the checkbox or radio input.
 	 */
-	public static function check( string $type, string $name, string $value, string $label = '', array $options = array() ): string {
+	public static function check( string $type, string $name, $value = '1', string $label = '', array $options = array() ): string {
 
 		$type       = in_array( $type, array( 'checkbox', 'radio' ), true ) ? $type : 'checkbox';
-		$id         = (string) ( $options['id'] ?? sanitize_title( $name . '-' . $value ) );
+		$value      = is_bool( $value ) ? '1' : (string) $value;
+		$id         = (string) ( $options['id'] ?? self::unique_field_id( $name . '-' . $value ) );
 		$wrapper    = self::classes( array( 'form-check', ! empty( $options['inline'] ) ? 'form-check-inline' : '', ! empty( $options['switch'] ) ? 'form-switch' : '', ! empty( $options['reverse'] ) ? 'form-check-reverse' : '', $options['wrapper_class'] ?? '' ) );
 		$attributes = array_merge( $options['attributes'] ?? array(), $options );
 		unset( $attributes['attributes'], $attributes['class'], $attributes['wrapper_class'], $attributes['inline'], $attributes['switch'], $attributes['reverse'], $attributes['checked'], $attributes['id'], $attributes['type'], $attributes['value'], $attributes['validation'] );
+
 		$attributes['class'] = self::classes( array( 'form-check-input', $options['class'] ?? '', self::validation_class( $options ) ) );
 		$attributes['id']    = $id;
 		$attributes['type']  = $type;
@@ -468,7 +507,13 @@ final class FormFieldHelper {
 
 		}
 
-		$html = '<div class="' . esc_attr( $wrapper ) . '"><input ' . self::attributes_to_string( $attributes ) . ' />';
+		$html = '<div class="' . esc_attr( $wrapper ) . '">';
+
+		if ( 'checkbox' === $type ) {
+			$html .= '<input type="hidden" name="' . esc_attr( $name ) . '" value="0" />';
+		}
+
+		$html .= '<input ' . self::attributes_to_string( $attributes ) . ' />';
 
 		if ( '' !== $label ) {
 
@@ -692,7 +737,8 @@ final class FormFieldHelper {
 		$html = '<label ' . self::attributes_to_string( $attributes ) . '>' . esc_html( $text ) . '</label>';
 
 		if ( ! empty( $options['tooltip'] ) ) {
-			$tooltip_type = in_array( $options['tooltip_type'] ?? 'question', array( 'question', 'info' ), true ) ? $options['tooltip_type'] : 'question';
+			$tooltip_type = isset( $options['tooltip_type'] ) ? (string) $options['tooltip_type'] : 'question';
+			$tooltip_type = in_array( $tooltip_type, array( 'question', 'info' ), true ) ? $tooltip_type : 'question';
 			$default_icon = 'info' === $tooltip_type ? 'fa-circle-info' : 'fa-circle-question';
 			$icon         = self::icon_class( $options['tooltip_icon'] ?? $default_icon, $default_icon );
 			$html        .= ' <button type="button" class="btn btn-link p-0 align-baseline wikipress-field-tooltip" data-bs-toggle="tooltip" data-bs-placement="top" title="' . esc_attr( (string) $options['tooltip'] ) . '" aria-label="' . esc_attr( (string) $options['tooltip'] ) . '"><i class="' . esc_attr( $icon ) . '" aria-hidden="true"></i></button>';
@@ -973,3 +1019,9 @@ final class FormFieldHelper {
 		return '<option ' . self::attributes_to_string( $attributes ) . '>' . esc_html( $label ) . '</option>';
 	}
 }
+
+
+
+
+
+

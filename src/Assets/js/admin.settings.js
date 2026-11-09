@@ -4,6 +4,50 @@ document.addEventListener('DOMContentLoaded', () => {
   const config = window.wikipressSettingsTabs;
   if (!panel || !config) return;
 
+  const fieldValue = (name, scope = root) => {
+    const source = scope || root;
+    const candidates = source.querySelectorAll('[name]');
+    const match = Array.from(candidates).find((field) => {
+      const fieldName = field.getAttribute('name') || '';
+      return fieldName === name || fieldName === `settings[${name}]`;
+    }) || Array.from(root.querySelectorAll('[name]')).find((field) => {
+      const fieldName = field.getAttribute('name') || '';
+      return fieldName === name || fieldName === `settings[${name}]`;
+    });
+
+    if (!match) return '';
+    if (match.type === 'checkbox') return match.checked ? '1' : '0';
+    if (match.type === 'radio') {
+      const checked = (scope || root).querySelectorAll(`input[name="${match.name}"]:checked`)[0] || root.querySelectorAll(`input[name="${match.name}"]:checked`)[0];
+      return checked ? checked.value : '';
+    }
+    return match.value;
+  };
+
+  const conditionMatches = (condition, scope = root) => {
+    if (!condition || typeof condition !== 'object') return true;
+    return Object.entries(condition).every(([key, expected]) => {
+      const actual = String(fieldValue(key, scope) ?? '');
+      const target = Array.isArray(expected) ? expected.map(String) : String(expected ?? '');
+      if (Array.isArray(expected)) return target.includes(actual);
+      return actual === target;
+    });
+  };
+
+  const updateConditionalFields = () => {
+    root.querySelectorAll('[data-wikipress-visible-when], [data-wikipress-required-when]').forEach((field) => {
+      const visibleRule = field.dataset.wikipressVisibleWhen ? JSON.parse(field.dataset.wikipressVisibleWhen) : null;
+      const requiredRule = field.dataset.wikipressRequiredWhen ? JSON.parse(field.dataset.wikipressRequiredWhen) : null;
+      const visible = (!visibleRule || conditionMatches(visibleRule, field.closest('form') || root)) && (!requiredRule || conditionMatches(requiredRule, field.closest('form') || root));
+      field.hidden = !visible;
+      field.style.display = visible ? '' : 'none';
+      field.querySelectorAll('input, select, textarea, button').forEach((element) => {
+        if (element === field) return;
+        element.disabled = !visible;
+      });
+    });
+  };
+
   const stateFromHash = () => {
     const hash = window.location.hash.replace(/^#/, '') || panel.dataset.currentTab || 'general';
     if (hash.indexOf('layout-') === 0) return { tab: 'layout', section: hash.replace('layout-', '') || 'general' };
@@ -24,6 +68,10 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', () => {
       const submit = form.querySelector('[type="submit"]');
       if (submit) submit.disabled = true;
+    });
+    form.querySelectorAll('input, select, textarea').forEach((input) => {
+      input.addEventListener('change', updateConditionalFields);
+      input.addEventListener('input', updateConditionalFields);
     });
   });
 
@@ -112,5 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (button) activateLayoutTab(button);
   }
   if (window.location.hash && 'layout' !== initial.tab && (initial.tab !== panel.dataset.currentTab || initial.section !== panel.dataset.currentSection)) loadTab(initial.tab, initial.section, false);
+  updateConditionalFields();
   bindForms();
+  updateConditionalFields();
 });

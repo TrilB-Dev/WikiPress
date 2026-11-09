@@ -91,3 +91,5 @@ tinymce.Resource.add('tinymce.html-i18n.help-keynav.ro',
   '\n' +
   '<p>Treceți la o altă filă de dialog focalizând asupra meniului cu file și apoi apăsând <strong>săgeata</strong> corespunzătoare\n' +
   '  pentru a parcurge filele disponibile.</p>\n');
+
+

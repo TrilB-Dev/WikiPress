@@ -1,89 +1,267 @@
 <?php
-
+/**
+ * Database class for managing custom WikiPress database tables.
+ *
+ * @package WikiPress\Includes\Core\WP
+ */
 namespace WikiPress\Includes\Core\WP;
 
+use WikiPress\Includes\Core\Schema;
+
 if ( ! defined( 'ABSPATH' ) ) {
-    exit;
+	exit;
 }
 
-/**
- * Own the WikiPress custom database schema.
- *
- * Extensions can add their own activation callbacks through Activator rather
- * than modifying the core schema registry.
- */
 final class Database {
-    /** @var array<string, callable> */
-    private static array $registered_tables = [];
+	/**
+	 * Registered custom database tables and their schema callbacks.
+	 *
+	 * @var array<string, callable>
+	 */
+	private static array $registered_plugin_tables = array();
+	/**
+	 * Registered core database tables and their schema callbacks.
+	 *
+	 * @var array<string, callable>
+	 */
+	private static array $registered_core_tables = array();
 
-    /**
-     * Register an extension table schema for the next installation/update.
-     *
-     * The callback receives the fully prefixed table name and charset/collation
-     * string, and must return a dbDelta-compatible CREATE TABLE statement.
-     *
-     * @param string   $table    Unprefixed WikiPress table suffix.
-     * @param callable $schema   Schema callback.
-     * @return bool Whether the table was registered.
-     */
-    public static function register_table( string $table, callable $schema ): bool {
-        $table = sanitize_key( $table );
-        if ( '' === $table || in_array( $table, [ 'settings', 'analytics' ], true ) ) {
-            return false;
-        }
+	/**
+	 * Normalize a table slug before registering or resolving it.
+	 *
+	 * @param string $table Unprefixed table suffix.
+	 * @return string The normalized table suffix.
+	 */
+	private static function normalize_table_key( string $table ): string {
+		$table = sanitize_key( $table );
+		return '' === $table ? '' : $table;
+	}
 
-        self::$registered_tables[ $table ] = $schema;
-        return true;
-    }
+	/**
+	 * Register a core table schema for the next installation/update.
+	 *
+	 * The callback receives the fully prefixed table name and charset/collation
+	 * string, and must return a dbDelta-compatible CREATE TABLE statement.
+	 *
+	 * @param string   $table  Unprefixed WikiPress table suffix.
+	 * @param callable $schema Schema callback.
+	 * @return bool Whether the table was registered.
+	 */
+	public static function register_core_table( string $table, callable $schema ): bool {
+		$table = self::normalize_table_key( $table );
+		if ( '' === $table ) {
+			return false;
+		}
 
-    /**
-     * Install or update all WikiPress-owned tables.
-     *
-     * @return void
-     */
-    public static function install(): void {
-        global $wpdb;
+		self::$registered_core_tables[ $table ] = $schema;
+		return true;
+	}
 
-        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+	/**
+	 * Register an extension table schema for the next installation/update.
+	 *
+	 * @param string   $table  Unprefixed WikiPress table suffix.
+	 * @param callable $schema Schema callback.
+	 * @return bool Whether the table was registered.
+	 */
+	public static function register_plugin_table( string $table, callable $schema ): bool {
+		$table = self::normalize_table_key( $table );
+		if ( '' === $table ) {
+			return false;
+		}
 
-        $charset = $wpdb->get_charset_collate();
-        dbDelta( "CREATE TABLE {$wpdb->prefix}wikipress_settings (
-            setting_group varchar(100) NOT NULL,
-            setting_value longtext NOT NULL,
-            autoload varchar(20) NOT NULL DEFAULT 'yes',
-            updated_at datetime NOT NULL,
-            PRIMARY KEY  (setting_group)
-        ) {$charset};" );
+		self::$registered_plugin_tables[ $table ] = $schema;
+		return true;
+	}
 
-        dbDelta( "CREATE TABLE {$wpdb->prefix}wikipress_analytics (
-            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-            post_id bigint(20) unsigned NOT NULL,
-            user_id bigint(20) unsigned NOT NULL DEFAULT 0,
-            viewed_at datetime NOT NULL,
-            PRIMARY KEY  (id),
-            KEY post_id (post_id),
-            KEY viewed_at (viewed_at),
-            KEY post_viewed_at (post_id, viewed_at)
-        ) {$charset};" );
+	/**
+	 * Get the registered core table schema callbacks.
+	 *
+	 * @return array<string, callable>
+	 */
+	public static function get_core_tables(): array {
+		return self::$registered_core_tables;
+	}
 
-        foreach ( self::$registered_tables as $table => $schema ) {
-            $statement = call_user_func( $schema, self::table_name( $table ), $charset );
-            if ( is_string( $statement ) && '' !== trim( $statement ) ) {
-                dbDelta( $statement );
-            }
-        }
+	/**
+	 * Get the registered plugin table schema callbacks.
+	 *
+	 * @return array<string, callable>
+	 */
+	public static function get_plugin_tables(): array {
+		return self::$registered_plugin_tables;
+	}
 
-        update_option( 'wikipress_db_version', defined( 'WIKIPRESS_VERSION' ) ? WIKIPRESS_VERSION : '1.0.0' );
-    }
+	/**
+	 * Determine whether the requested table exists.
+	 *
+	 * @param string $table Unprefixed table suffix.
+	 * @return bool True if the table exists.
+	 */
+	public static function table_exists( string $table ): bool {
+		global $wpdb;
 
-    /**
-     * Return a prefixed WikiPress table name.
-     *
-     * @param string $table Unprefixed table suffix.
-     * @return string Full table name.
-     */
-    public static function table_name( string $table ): string {
-        global $wpdb;
-        return $wpdb->prefix . 'wikipress_' . sanitize_key( $table );
-    }
+		$table_name = self::table_name( $table );
+		return $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name ) ) === $table_name;
+	}
+
+	/**
+	 * Create or update a single table using the registered schema callback.
+	 *
+	 * @param string $table Unprefixed table suffix.
+	 * @return bool Whether the table was created or updated.
+	 */
+	public static function create_table( string $table ): bool {
+		global $wpdb;
+
+		$table = self::normalize_table_key( $table );
+		if ( '' === $table ) {
+			return false;
+		}
+
+		$schema = self::$registered_core_tables[ $table ] ?? self::$registered_plugin_tables[ $table ] ?? null;
+		if ( ! is_callable( $schema ) ) {
+			return false;
+		}
+
+		if ( file_exists( ABSPATH . 'wp-admin/includes/upgrade.php' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+		}
+
+		$statement = call_user_func( $schema, self::table_name( $table ), method_exists( $wpdb, 'get_charset_collate' ) ? $wpdb->get_charset_collate() : '' );
+		if ( ! is_string( $statement ) || '' === trim( $statement ) ) {
+			return false;
+		}
+
+		dbDelta( $statement );
+		return true;
+	}
+
+	/**
+	 * Empty all rows from a table.
+	 *
+	 * @param string $table Unprefixed table suffix.
+	 * @return bool True if the content was dropped.
+	 */
+	public static function drop_table_contents( string $table ): bool {
+		global $wpdb;
+
+		if ( ! self::table_exists( $table ) ) {
+			return false;
+		}
+
+		return false !== $wpdb->query( 'TRUNCATE TABLE ' . self::table_name( $table ) );
+	}
+
+	/**
+	 * Alias for dropping table contents.
+	 *
+	 * @param string $table Unprefixed table suffix.
+	 * @return bool True if the content was dropped.
+	 */
+	public static function truncate_table( string $table ): bool {
+		return self::drop_table_contents( $table );
+	}
+
+	/**
+	 * Drop a WikiPress table entirely.
+	 *
+	 * @param string $table Unprefixed table suffix.
+	 * @return bool True if the table was deleted.
+	 */
+	public static function delete_table( string $table ): bool {
+		global $wpdb;
+
+		if ( ! self::table_exists( $table ) ) {
+			return false;
+		}
+
+		return false !== $wpdb->query( 'DROP TABLE IF EXISTS ' . self::table_name( $table ) );
+	}
+
+	/**
+	 * Alias for dropping a table.
+	 *
+	 * @param string $table Unprefixed table suffix.
+	 * @return bool True if the table was deleted.
+	 */
+	public static function drop_table( string $table ): bool {
+		return self::delete_table( $table );
+	}
+
+	/**
+	 * Install or update all WikiPress Core & Plugin tables.
+	 *
+	 * @return void
+	 */
+	public static function install(): void {
+		Schema::register_tables();
+
+		foreach ( self::$registered_core_tables as $table => $schema ) {
+			if ( self::table_exists( $table ) ) {
+				continue;
+			}
+			self::create_table( $table );
+		}
+
+		foreach ( self::$registered_plugin_tables as $table => $schema ) {
+			if ( self::table_exists( $table ) ) {
+				continue;
+			}
+			self::create_table( $table );
+		}
+
+		if ( function_exists( 'update_option' ) ) {
+			update_option( 'wikipress_db_version', defined( 'WIKIPRESS_VERSION' ) ? WIKIPRESS_VERSION : '1.0.0' );
+		}
+	}
+
+	/**
+	 * Run database upgrade work only after the registered tables exist.
+	 *
+	 * This method intentionally avoids mutating data while the schema is
+	 * incomplete. Any migration work should be guarded by the presence of the
+	 * expected WikiPress tables before inserts, updates, or row-level changes.
+	 *
+	 * @return void
+	 */
+	public static function update(): void {
+		Schema::register_tables();
+
+		$tables = array_merge( self::$registered_core_tables, self::$registered_plugin_tables );
+		if ( empty( $tables ) ) {
+			return;
+		}
+
+		foreach ( array_keys( $tables ) as $table ) {
+			if ( ! self::table_exists( $table ) ) {
+				return;
+			}
+		}
+
+		foreach ( array_keys( $tables ) as $table ) {
+			self::create_table( $table );
+		}
+
+		if ( function_exists( 'update_option' ) ) {
+			update_option( 'wikipress_db_version', defined( 'WIKIPRESS_VERSION' ) ? WIKIPRESS_VERSION : '1.0.0' );
+		}
+	}
+
+	/**
+	 * Return a prefixed WikiPress table name.
+	 *
+	 * @param string $table Unprefixed table suffix.
+	 * @return string Full table name.
+	 */
+	public static function table_name( string $table ): string {
+		global $wpdb;
+		return $wpdb->prefix . 'wikipress_' . self::normalize_table_key( $table );
+	}
 }
+
+
+
+
+
+

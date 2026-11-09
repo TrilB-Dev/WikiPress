@@ -1,10 +1,4 @@
 .wikipress-admin {
-	--wikipress-ink: #152238;
-	--wikipress-navy: #102a43;
-	--wikipress-blue: #2563eb;
-	--wikipress-paper: #f6f8fb;
-	--wikipress-line: #dce4ed;
-	--wikipress-header: #eaf3f7;
 	min-height: 100vh;
 	background: var(--wikipress-paper);
 	color: var(--wikipress-ink);
@@ -229,3 +223,4 @@
 	.wikipress-admin .wikipress-sidebar-link,
 	.wikipress-admin .nav-link { transition: none; }
 }
+

@@ -8,8 +8,12 @@
  */
 namespace WikiPress\Includes\Functions\Admin;
 
+use WikiPress\Includes\Functions\Admin\FunctionsPlugins;
+use WikiPress\Includes\Functions\Helpers\LoaderHelper;
+use WikiPress\Includes\Functions\Helpers\LoggerHelper;
 use WikiPress\Includes\Functions\Helpers\PermalinkHelper;
 use WikiPress\Includes\Settings\Settings;
+use WikiPress\Includes\Settings\SettingsManager;
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
@@ -33,43 +37,313 @@ final class FunctionsSettings {
      * @return void
      */
     public function register_settings(): void {
-        register_setting( 'wikipress_settings', 'wikipress_general', [ 'sanitize_callback' => [ $this, 'sanitize_general' ] ] );
-        register_setting( 'wikipress_settings', 'wikipress_layout', [ 'sanitize_callback' => [ $this, 'sanitize_layout' ] ] );
-        register_setting( 'wikipress_settings', 'wikipress_access', [ 'sanitize_callback' => [ $this, 'sanitize_access' ] ] );
-        register_setting( 'wikipress_settings', 'wikipress_tools', [ 'sanitize_callback' => [ $this, 'sanitize_tools' ] ] );
-
-        foreach ( $this->plugin_functions->plugin_settings_pages() as $page ) {
-            register_setting(
-                'wikipress_settings',
-                'wikipress_' . $page['slug'],
-                [ 'sanitize_callback' => $page['provider']->sanitize_settings( ... ) ]
-            );
-        }
+        // WikiPress stores settings in its own custom table rather than the default
+        // WordPress options table. The regular settings API is intentionally not used
+        // here; form submissions are handled through the custom admin-post flow.
     }
 
+    /**
+	 * Register the WordPress admin-post actions used by the settings forms.
+	 *
+	 * @param LoaderHelper $loader Loader instance used to register hooks.
+	 * @return void
+	 */
+	public function register_admin_post_hooks( LoaderHelper $loader ): void {
+		$loader->register_component(
+			$this,
+			array(
+				array(
+					'type'     => 'action',
+					'hook'     => 'admin_post_wikipress_save_general_settings',
+					'callback' => 'handle_general_save',
+				),
+				array(
+					'type'     => 'action',
+					'hook'     => 'admin_post_wikipress_save_access_settings',
+					'callback' => 'handle_access_save',
+				),
+				array(
+					'type'     => 'action',
+					'hook'     => 'admin_post_wikipress_save_layout_settings',
+					'callback' => 'handle_layout_save',
+				),
+				array(
+					'type'     => 'action',
+					'hook'     => 'admin_post_wikipress_save_billing_invoice_settings',
+					'callback' => 'handle_billing_invoice_save',
+				),
+			)
+		)->run();
+	}
+    /**
+	 * Save settings using the direct admin POST flow used by the custom table store.
+	 *
+	 * @return void
+	 */
+	public function save_settings(): void {
+		$action = isset( $_POST['action'] ) ? sanitize_key( wp_unslash( $_POST['action'] ) ) : '';
+		if ( '' === $action ) {
+			return;
+		}
+
+		if ( 'wikipress_save_general_settings' === $action ) {
+			$this->general_save();
+		}
+
+		if ( in_array( $action, array( 'wikipress_save_access_settings' ), true ) ) {
+			$this->access_save();
+		}
+
+		if ( 'wikipress_save_layout_settings' === $action ) {
+			$this->layout_save();
+		}
+	}
+
+	/**
+	 * Validate a save nonce against the standard WordPress field and the legacy plugin-specific field.
+	 *
+	 * @param string $action Nonce action.
+	 * @return void
+     * @since 1.0.0
+	 */
+	private function validate_save_nonce( string $action ): void {
+		if ( isset( $_REQUEST['_wpnonce'] ) ) {
+			check_admin_referer( $action, '_wpnonce' );
+			return;
+		}
+
+		check_admin_referer( $action );
+	}
+    /**
+	 * Save the general settings.
+	 *
+	 * @return void
+     * @since 1.0.0
+	 */
+	public function general_save(): void {
+		LoggerHelper::write_log( 'WikiPress general settings save started.' );
+		LoggerHelper::write_log( array(
+			'request' => $_POST,
+			'action' => 'wikipress_save_general_settings',
+		) );
+		if ( ! user_can( get_current_user_id(), 'wikipress_settings_general_edit' ) ) {
+			LoggerHelper::write_log( 'WikiPress general settings save denied: missing general_edit capability.' );
+			$this->redirect_after_save( 'general', false, __( 'You are not allowed to save WikiPress general settings.', 'wikipress' ) );
+		}
+
+		$this->validate_save_nonce( 'wikipress_save_general_settings' );
+		$input = isset( $_POST['wikipress_general'] ) && is_array( $_POST['wikipress_general'] ) ? wp_unslash( $_POST['wikipress_general'] ) : array();
+		LoggerHelper::write_log( array(
+			'general_input' => $input,
+			'general_input_keys' => array_keys( $input ),
+		) );
+
+		try {
+			$sanitized = $this->sanitize_general( $input );
+			Settings::set_group( Settings::GENERAL, $sanitized );
+			foreach ( $sanitized as $key => $value ) {
+				Settings::set( $key, $value );
+			}
+			LoggerHelper::write_log( array(
+				'general_sanitized' => $sanitized,
+				'general_db_group' => Settings::get_group( Settings::GENERAL, array() ),
+			) );
+			$this->redirect_after_save( 'general', true, __( 'WikiPress general settings saved successfully.', 'wikipress' ) );
+		} catch ( \Throwable $exception ) {
+			LoggerHelper::write_log( array(
+				'general_save_error' => $exception->getMessage(),
+				'general_save_trace' => $exception->getTraceAsString(),
+			) );
+			$this->redirect_after_save( 'general', false, __( 'Failed to save WikiPress general settings.', 'wikipress' ) );
+		}
+	}
+
+	/**
+	 * Save the access settings.
+	 *
+	 * @return void
+	 */
+	public function access_save(): void {
+		LoggerHelper::write_log( 'WikiPress access settings save started.' );
+		LoggerHelper::write_log( array(
+			'request' => $_POST,
+			'action' => 'wikipress_save_access_settings',
+		) );
+		if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'wikipress_settings_access_edit' ) ) {
+			LoggerHelper::write_log( 'WikiPress access settings save denied: missing access_edit capability.' );
+			$this->redirect_after_save( 'access', false, __( 'You are not allowed to save WikiPress access settings.', 'wikipress' ) );
+		}
+
+		$this->validate_save_nonce( 'wikipress_save_access_settings' );
+		$input = isset( $_POST['wikipress_access'] ) && is_array( $_POST['wikipress_access'] ) ? wp_unslash( $_POST['wikipress_access'] ) : array();
+		LoggerHelper::write_log( array(
+			'access_input' => $input,
+			'access_input_keys' => array_keys( $input ),
+		) );
+
+		try {
+			$sanitized = $this->sanitize_access( $input );
+			Settings::set_group( Settings::ACCESS, $sanitized );
+			foreach ( $sanitized as $key => $value ) {
+				Settings::set( $key, $value );
+			}
+			LoggerHelper::write_log( array(
+				'access_sanitized' => $sanitized,
+				'access_db_group' => Settings::get_group( Settings::ACCESS, array() ),
+			) );
+			$this->redirect_after_save( 'access', true, __( 'WikiPress access settings saved successfully.', 'wikipress' ) );
+		} catch ( \Throwable $exception ) {
+			LoggerHelper::write_log( array(
+				'access_save_error' => $exception->getMessage(),
+				'access_save_trace' => $exception->getTraceAsString(),
+			) );
+			$this->redirect_after_save( 'access', false, __( 'Failed to save WikiPress access settings.', 'wikipress' ) );
+		}
+	}
+
+	/**
+	 * Save the layout settings.
+	 *
+	 * @return void
+	 */
+	public function layout_save(): void {
+		LoggerHelper::write_log( 'WikiPress layout settings save started.' );
+		LoggerHelper::write_log( array(
+			'request' => $_POST,
+			'action' => 'wikipress_save_layout_settings',
+		) );
+		if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'wikipress_settings_layout_edit' ) ) {
+			LoggerHelper::write_log( 'WikiPress layout settings save denied: missing layout_edit capability.' );
+			$this->redirect_after_save( 'layout', false, __( 'You are not allowed to save WikiPress layout settings.', 'wikipress' ) );
+		}
+
+		$this->validate_save_nonce( 'wikipress_save_layout_settings' );
+		$input = isset( $_POST['wikipress_layout'] ) && is_array( $_POST['wikipress_layout'] ) ? wp_unslash( $_POST['wikipress_layout'] ) : array();
+		LoggerHelper::write_log( array(
+			'layout_input' => $input,
+			'layout_input_keys' => array_keys( $input ),
+		) );
+
+		try {
+			$section = sanitize_key( $input['layout_section'] ?? 'general' );
+			$sanitized = $this->sanitize_layout( $input );
+			Settings::set_group( Settings::LAYOUT, $sanitized );
+			foreach ( $sanitized as $key => $value ) {
+				Settings::set( $key, $value );
+			}
+			LoggerHelper::write_log( array(
+				'layout_section' => $section,
+				'layout_sanitized' => $sanitized,
+				'layout_db_group' => Settings::get_group( Settings::LAYOUT, array() ),
+			) );
+			$this->redirect_after_save( 'layout', true, __( 'WikiPress layout settings saved successfully.', 'wikipress' ), array( 'layout_section' => $section ) );
+		} catch ( \Throwable $exception ) {
+			LoggerHelper::write_log( array(
+				'layout_save_error' => $exception->getMessage(),
+				'layout_save_trace' => $exception->getTraceAsString(),
+			) );
+			$this->redirect_after_save( 'layout', false, __( 'Failed to save WikiPress layout settings.', 'wikipress' ) );
+		}
+	}
+    /**
+     * Redirect back to the settings page with a success or error notification flag.
+     *
+     * @param string $tab The settings tab to return to.
+     * @param bool $success Whether the save succeeded.
+     * @param string $message Optional notice message.
+     * @param array<string, string> $extra_query Extra query arguments.
+     * @return void
+     * @since 1.0.0
+     */
+    private function redirect_after_save( string $tab, bool $success, string $message = '', array $extra_query = array() ): void {
+        $query = array(
+            'page' => 'wikipress',
+            'group' => 'settings',
+            'tab' => $tab,
+            $success ? 'settings_saved' : 'settings_failed' => '1',
+        );
+
+        foreach ( $extra_query as $key => $value ) {
+            $query[ $key ] = $value;
+        }
+
+        if ( '' !== $message ) {
+            $query['settings_message'] = rawurlencode( $message );
+        }
+
+        wp_safe_redirect( admin_url( 'admin.php?' . build_query( $query ) ) );
+        exit;
+    }
+
+    /**
+	 * Sanitize the general settings input.
+	 *
+	 * @param array $input The input data to sanitize.
+	 * @return array The sanitized general settings.
+     * @since 1.0.0
+	 */
     public function sanitize_general( $input ): array {
+        LoggerHelper::write_log( 'WikiPress general settings sanitization started.' );
         if ( ! current_user_can( 'wikipress_settings_general_edit' ) ) {
+            LoggerHelper::write_log( 'WikiPress general settings sanitization skipped: missing general_edit capability.' );
             return (array) Settings::get_group( Settings::GENERAL, [] );
         }
-        $input = is_array( $input ) ? $input : [];
+
+        $input = is_array( $input ) ? $input : array();
+        LoggerHelper::write_log( array( 'general_input_to_sanitize' => $input ) );
+
+        $root_name = $input['root_name'] ?? '';
+        $root_description = $input['root_description'] ?? '';
+        $archive_title = $input['archive_title'] ?? '';
+        $archive_description = $input['archive_description'] ?? '';
+        $root_slug = $input['root_slug'] ?? '';
+        $category_slug = $input['category_slug'] ?? '';
+        $tag_slug = $input['tag_slug'] ?? '';
+        $permalink = $input['permalink'] ?? '';
+        $enable_schema = ! empty( $input['enable_schema'] );
         $rewrite_changed = false;
-        foreach ( [ 'root_name', 'root_description', 'archive_title', 'archive_description', 'root_slug', 'category_slug', 'tag_slug', 'permalink', 'enable_schema' ] as $key ) {
-            $value = in_array( $key, [ 'root_slug', 'category_slug', 'tag_slug' ], true ) ? sanitize_title( $input[ $key ] ?? '' ) : ( 'permalink' === $key ? PermalinkHelper::sanitize_pattern( $input[ $key ] ?? '' ) : ( 'enable_schema' === $key ? ! empty( $input[ $key ] ) : sanitize_textarea_field( $input[ $key ] ?? '' ) ) );
-            $rewrite_changed = $rewrite_changed || $value !== (string) Settings::get( $key, '' );
-            $input[ $key ] = $value;
-            Settings::set( $key, $input[ $key ] );
-        }
+
         if ( $rewrite_changed ) {
             flush_rewrite_rules();
         }
-        return $input;
+
+        $general = array(
+            'root_name' => sanitize_text_field( $root_name ),
+            'root_description' => sanitize_textarea_field( $root_description ),
+            'archive_title' => sanitize_text_field( $archive_title ),
+            'archive_description' => sanitize_textarea_field( $archive_description ),
+            'root_slug' => sanitize_title( $root_slug ),
+            'category_slug' => sanitize_title( $category_slug ),
+            'tag_slug' => sanitize_title( $tag_slug ),
+            'permalink' => PermalinkHelper::sanitize_pattern( $permalink ),
+            'enable_schema' => $enable_schema,
+        );
+
+        foreach ( $general as $key => $value ) {
+            $input[ $key ] = $value;
+            Settings::set( $key, $value );
+        }
+
+        Settings::set_group( Settings::GENERAL, $general );
+        LoggerHelper::write_log( array(
+            'general_persisted' => $general,
+            'general_storage_group' => Settings::GENERAL,
+            'general_table_name' => SettingsManager::table_name(),
+        ) );
+
+        return $general;
     }
 
     public function sanitize_layout( $input ): array {
-        if ( ! current_user_can( 'wikipress_settings_layout_edit' ) ) {
+        LoggerHelper::write_log( 'WikiPress layout settings sanitization started.' );
+        if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'wikipress_settings_layout_edit' ) ) {
+            LoggerHelper::write_log( 'WikiPress layout settings sanitization skipped: missing layout_edit capability.' );
             return (array) Settings::get_group( Settings::LAYOUT, [] );
         }
+
         $input = is_array( $input ) ? $input : [];
+        LoggerHelper::write_log( array( 'layout_input_to_sanitize' => $input ) );
+
         $section = sanitize_key( $input['layout_section'] ?? 'general' );
         unset( $input['layout_section'] );
         $section_keys = [
@@ -79,64 +353,78 @@ final class FunctionsSettings {
             'page' => [ 'page_show_title', 'show_breadcrumbs', 'page_show_toc', 'page_toc_position', 'toc_min_level', 'toc_max_level', 'show_last_updated', 'show_author', 'show_reading_time', 'reading_time_wpm', 'show_feedback', 'page_show_navigation', 'show_related_pages', 'related_pages_count' ],
         ];
         $active_keys = $section_keys[ $section ] ?? array_merge( ...array_values( $section_keys ) );
+
         foreach ( [ 'show_search', 'show_toc', 'show_breadcrumbs', 'show_last_updated', 'show_author', 'show_reading_time', 'show_feedback', 'show_related_pages', 'search_live_results', 'show_sidebar', 'sidebar_sticky', 'sidebar_show_categories', 'sidebar_show_category_count', 'sidebar_expand_categories', 'sidebar_show_page_count', 'page_show_title', 'page_show_toc', 'page_show_navigation' ] as $key ) {
             if ( ! in_array( $key, $active_keys, true ) ) {
                 continue;
             }
             $value = ! empty( $input[ $key ] );
             $input[ $key ] = $value;
-            Settings::set( $key, $value );
         }
         foreach ( [ 'search_placeholder', 'search_button_text', 'search_no_results_message' ] as $key ) {
             if ( ! in_array( $key, $active_keys, true ) ) {
                 continue;
             }
             $input[ $key ] = sanitize_text_field( $input[ $key ] ?? '' );
-            Settings::set( $key, $input[ $key ] );
         }
         if ( in_array( 'search_scope', $active_keys, true ) ) {
             $input['search_scope'] = in_array( $input['search_scope'] ?? '', [ 'all', 'title', 'content' ], true ) ? $input['search_scope'] : 'all';
-            Settings::set( 'search_scope', $input['search_scope'] );
         }
         if ( in_array( 'sidebar_position', $active_keys, true ) ) {
             $input['sidebar_position'] = in_array( $input['sidebar_position'] ?? '', [ 'left', 'right' ], true ) ? $input['sidebar_position'] : 'left';
-            Settings::set( 'sidebar_position', $input['sidebar_position'] );
         }
         if ( in_array( 'page_toc_position', $active_keys, true ) ) {
             $input['page_toc_position'] = in_array( $input['page_toc_position'] ?? '', [ 'sidebar', 'content' ], true ) ? $input['page_toc_position'] : 'sidebar';
-            Settings::set( 'page_toc_position', $input['page_toc_position'] );
         }
         foreach ( [ 'related_pages_count' => [ 1, 12 ], 'search_results_count' => [ 1, 50 ], 'search_min_chars' => [ 1, 5 ], 'sidebar_width' => [ 180, 480 ], 'toc_min_level' => [ 1, 5 ], 'toc_max_level' => [ 2, 6 ], 'reading_time_wpm' => [ 100, 400 ] ] as $key => [ $minimum, $maximum ] ) {
             if ( ! in_array( $key, $active_keys, true ) ) {
                 continue;
             }
             $input[ $key ] = max( $minimum, min( $maximum, absint( $input[ $key ] ?? $minimum ) ) );
-            Settings::set( $key, $input[ $key ] );
         }
+
+        LoggerHelper::write_log( array(
+            'layout_section' => $section,
+            'layout_sanitized' => $input,
+        ) );
+
         return $input;
     }
 
     public function sanitize_access( $input ): array {
-        if ( ! current_user_can( 'wikipress_settings_access_edit' ) ) {
+        LoggerHelper::write_log( 'WikiPress access settings sanitization started.' );
+        if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'wikipress_settings_access_edit' ) ) {
+            LoggerHelper::write_log( 'WikiPress access settings sanitization skipped: missing access_edit capability.' );
             return (array) Settings::get_group( Settings::ACCESS, [] );
         }
+
         $input = is_array( $input ) ? $input : [];
+        LoggerHelper::write_log( array( 'access_input_to_sanitize' => $input ) );
+
         $allowed = [ 'manage_options', 'edit_posts', 'publish_posts' ];
-        foreach ( [ 'create_wikis', 'write_pages', 'view_analytics', 'manage_plugins' ] as $key ) {
+        foreach ( [ 'create_mods', 'write_pages', 'view_analytics', 'manage_plugins' ] as $key ) {
             $values = is_array( $input[ $key ] ?? null ) ? $input[ $key ] : [ $input[ $key ] ?? 'manage_options' ];
             $values = array_values( array_unique( array_intersect( $allowed, array_map( 'sanitize_key', $values ) ) ) );
             $input[ $key ] = empty( $values ) ? [ 'manage_options' ] : $values;
-            Settings::set( $key, $input[ $key ] );
         }
+
+        LoggerHelper::write_log( array(
+            'access_sanitized' => $input,
+        ) );
+
         return $input;
     }
 
     public function sanitize_tools( $input ): array {
+        LoggerHelper::write_log( 'WikiPress tools settings sanitization started.' );
         $input = is_array( $input ) ? $input : [];
         foreach ( [ 'debug_logging', 'console_logging' ] as $key ) {
             $input[ $key ] = ! empty( $input[ $key ] );
-            Settings::set( $key, $input[ $key ] );
         }
+        LoggerHelper::write_log( array(
+            'tools_sanitized' => $input,
+        ) );
         return $input;
     }
 }
+

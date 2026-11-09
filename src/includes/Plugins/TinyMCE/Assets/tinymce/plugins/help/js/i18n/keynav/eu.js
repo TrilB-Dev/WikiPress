@@ -91,3 +91,5 @@ tinymce.Resource.add('tinymce.html-i18n.help-keynav.eu',
   '\n' +
   '<p>Aldatu beste elkarrizketa-fitxa batera fitxa-menua fokuratu eta dagokion <strong>Gezia</strong>\n' +
   '  tekla sakatzeko, erabilgarri dauden fitxa batetik bestera txandakatzeko.</p>\n');
+
+

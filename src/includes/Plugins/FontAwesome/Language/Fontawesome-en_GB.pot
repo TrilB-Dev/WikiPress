@@ -136,3 +136,5 @@ msgstr ""
 #: src/includes/Plugins/FontAwesome/Includes/Settings/Settings.php:45
 msgid "Use the base package for the bundled icons or a Kit when you need a custom Font Awesome configuration."
 msgstr ""
+
+

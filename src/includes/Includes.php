@@ -1,14 +1,15 @@
 <?php
-/**
- * Core includes for WikiPress.
- *
- * @package WikiPress\Includes
- */
+
 namespace WikiPress\Includes;
 
-use WikiPress\Includes\Core\Core;
+use WikiPress\Includes\Core\Capabilities;
 use WikiPress\Includes\Core\WP\WPLoader;
 use WikiPress\Includes\Functions\Helpers\LoggerHelper;
+use WikiPress\Includes\TemplateManagement\TemplateManagement;
+use WikiPress\Includes\Pages\CronJobs;
+use WikiPress\Includes\Pages\PostTypes;
+use WikiPress\Includes\Pages\Shortcodes;
+use WikiPress\Includes\Pages\Taxonomies;
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
@@ -16,67 +17,101 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 final class Includes {
     /**
-     * Internal singleton instance of the Includes class.
-     * 
-     * @var self|null Singleton instance.
+     * Instance of the Includes class.
+     *
+     * @var self|null
      */
     private static ?self $instance = null;
+
     /**
-     * Core component for WikiPress.
-     * 
-     * @var Core Core component.
+     * Array of registered extension initializers.
+     *
+     * @var array
      */
-    private Core $core;
-    /**
-     * Array of registered extension callbacks.
-     * 
-     * @var array List of extension callbacks.
-     */
-    private array $extensions = [];
+    private array $extensions = array();
+
     /**
      * Flag indicating whether the Includes instance has been initialized.
-     * 
-     * @var bool Initialization status.
+     *
+     * @var bool
      */
     private bool $initialized = false;
+
     /**
-     * Private constructor to enforce singleton pattern.
+     * Private constructor to prevent direct instantiation.
      */
     private function __construct() {
-        $this->core = new Core();
-        LoggerHelper::write_log( 'WikiPress core includes initialized.' );
+        LoggerHelper::write_log( 'WikiPress includes initialized.' );
     }
+
     /**
      * Get the singleton instance of the Includes class.
      *
-     * @return self Singleton instance.
+     * @return self The singleton instance of the Includes class.
      */
     public static function get_instance(): self {
         return self::$instance ??= new self();
     }
+
     /**
-     * Get the Core component of WikiPress.
+     * Initialize the core WikiPress runtime registrations.
      *
-     * @return Core Core component.
+     * @return void
      */
-    public function init(): void {
+    public function register_core(): void {
         if ( $this->initialized ) {
             return;
         }
 
-        $this->core->register();
+        /**
+         * Capabilities installation.
+         * 
+         * @since 1.0.0
+         */
+        Capabilities::install();
+        /**
+         * Mod management registration.
+         * 
+         * @since 1.0.0
+         */
+        TemplateManagement::register();
+        /**
+         * Post types registration.
+         * 
+         * @since 1.0.0
+         */
+        PostTypes::register();
+        /**
+         * Taxonomies registration.
+         * 
+         * @since 1.0.0
+         */
+        Taxonomies::register();
+        /**
+         * Shortcodes registration.
+         * 
+         * @since 1.0.0
+         */
+        Shortcodes::register();
+        /**
+         * Cron jobs registration.
+         * 
+         * @since 1.0.0
+         */
+        CronJobs::register();
+
+        $this->initialized = true;
+    }
+
+    /**
+     * Initialize the Includes instance and register core and extension functionalities.
+     */
+    public function init(): void {
+        $this->register_core();
+
         foreach ( $this->extensions as $extension ) {
             call_user_func( $extension, $this );
         }
-        $this->initialized = true;
-    }
-    /**
-     * Get the Core component of WikiPress.
-     *
-     * @return Core Core component.
-     */
-    public function core(): Core {
-        return $this->core;
     }
 
     /**
@@ -98,7 +133,7 @@ final class Includes {
     }
 
     /**
-     * Attach Core registration to an external WikiPress loader.
+     * Attach the shared init lifecycle to an external WikiPress loader.
      *
      * @param WPLoader $loader Loader owned by the main runtime or an extension.
      * @param string $hook WordPress action name.
@@ -106,9 +141,10 @@ final class Includes {
      * @return self
      */
     public function register_hooks( WPLoader $loader, string $hook = 'init', int $priority = 10 ): self {
-        $this->core->register_hooks( $loader, $hook, $priority );
+        $loader->add_action( $hook, $this, 'init', $priority, 0 );
         return $this;
     }
+
     /**
      * Check if the Includes instance has been initialized.
      *
@@ -118,3 +154,4 @@ final class Includes {
         return $this->initialized;
     }
 }
+

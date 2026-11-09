@@ -5,185 +5,285 @@
  * @package WikiPress
  * @subpackage Admin
  * @since 1.0.0
- * 
  */
 namespace WikiPress\Admin;
 
 use WikiPress\Includes\Settings\Settings;
-use WikiPress\Includes\Functions\Admin\FunctionsPlugins;
-use WikiPress\Includes\Functions\Admin\FunctionsWiki;
 use WikiPress\Includes\Functions\Helpers\AjaxHelper;
 use WikiPress\Includes\Core\Capabilities;
 use WikiPress\Includes\Functions\Helpers\LoaderHelper;
+use WikiPress\Includes\Functions\Helpers\LoggerHelper;
+use WikiPress\Includes\Functions\Helpers\RequestHelper;
+use WikiPress\Includes\Functions\Helpers\SanitizationHelper;
 use WikiPress\Includes\Functions\Admin\FunctionsSidebar;
 use WikiPress\Assets\Assets;
+use WikiPress\Admin\Manager\Manager;
 use WikiPress\Admin\Manager\Tools\ToolsManager;
 use WikiPress\Admin\Manager\Dashboard\DashboardManager;
+use WikiPress\Admin\Manager\Mods\ModManager;
 use WikiPress\Admin\Manager\Settings\SettingsManager;
-use WikiPress\Admin\Manager\Wiki\WikiManager;
+use WikiPress\Admin\Manager\Tools\Export;
+use WikiPress\Admin\Manager\Tools\General;
+use WikiPress\Admin\Manager\Tools\Import;
+use WikiPress\Admin\Manager\Tools\Reset;
 
 if ( ! defined( 'ABSPATH' ) ) {
-    exit;
+	exit;
 }
 
 final class Admin {
-    /**
-     * The DashboardManager instance for managing the dashboard page. 
-     * 
-     * @var DashboardManager
-     * */
-    private DashboardManager $dashboard_manager;
-    /**
-     * WikiManager instance for managing content-related admin pages.
-     *
-     * @var WikiManager
-     */
-    private WikiManager $wiki_manager;
-    /**
-     * SettingsManager instance for managing settings-related admin pages.
-     *
-     * @var SettingsManager
-     */
-    private SettingsManager $settings_manager;
-    /**
-    * ToolsManager instance for managing tools-related admin pages.
-     *
-    * @var ToolsManager
-     */
-    private ToolsManager $tools_manager;
-    /**
-     * LoaderHelper instance for managing action and filter hooks.
-     *
-     * @var LoaderHelper
-     */
-    private LoaderHelper $loader;
-    /**
-     * FunctionsPlugins instance for managing plugin-related admin functions.
-     *
-     * @var FunctionsPlugins
-     */
-    private FunctionsPlugins $plugin_functions;
-    /** 
-     * Wiki functions instance for managing wiki-related admin functions.
-     * 
-     * @var FunctionsWiki
-     *  */
-    private FunctionsWiki $wiki_functions;
+	/**
+	 * The DashboardManager instance for managing the dashboard page.
+	 *
+	 * @var DashboardManager
+	 * */
+	private DashboardManager $dashboard_manager;
+	/**
+	 * SettingsManager instance for managing settings-related admin pages.
+	 *
+	 * @var SettingsManager
+	 */
+	private SettingsManager $settings_manager;
+	/**
+	 * LicencesManager instance for managing licence-type and issued licence pages.
+	 *
+	 * @var ModManager
+	 */
+	private ModManager $mod_manager;
+	/**
+	 * ToolsManager instance for managing tools-related admin pages.
+	 *
+	 * @var ToolsManager
+	 */
+	private ToolsManager $tools_manager;
+	/**
+	 * Registry of the admin managers.
+	 *
+	 * @var array<string, Manager>
+	 */
+	private array $managers;
+	/**
+	 * LoaderHelper instance for managing action and filter hooks.
+	 *
+	 * @var LoaderHelper
+	 */
+	private LoaderHelper $loader;
+	/**
+	 * Assets instance for managing admin assets.
+	 *
+	 * @var Assets
+	 */
+	private Assets $assets;
+	/**
+	 * Constructor for the Admin class.
+	 *
+	 * Initializes the various admin managers and registers their assets.
+	 *
+	 * @param Assets $assets The Assets instance for managing admin assets.
+	 */
+	public function __construct( Assets $assets ) {
+		$this->managers = array(
+			'dashboard' 		=> new DashboardManager(),
+			'settings'  		=> new SettingsManager(),
+			'mod-manager'      	=> new ModManager(),
+			'tools'     		=> new ToolsManager(),
+		);
+		/**
+		 * Initialize the individual manager instances from the registry.
+		 */
+		$this->dashboard_manager = $this->managers['dashboard'];
+		/**
+		 * Initialize the settings manager instance from the registry.
+		 */
+		$this->settings_manager  = $this->managers['settings'];
+		/**
+		 * Initialize the mod manager instance from the registry.
+		 */
+		$this->mod_manager      = $this->managers['mod-manager'];
+		/**
+		 * Initialize the tools manager instance from the registry.
+		 */
+		$this->tools_manager     = $this->managers['tools'];
+		/**
+		 * Initialize the loader helper.
+		 */
+		$this->loader = new LoaderHelper();
+		new General( $this->loader );
+		new Reset( $this->loader );
+		new Import( $this->loader );
+		new Export( $this->loader );
+		/**
+		 * Initialize the assets manager.
+		 */
+		$this->assets = $assets;
+		/**
+		 * Register assets for the admin managers.
+		 */
+		foreach ( $this->managers as $manager ) {
+			$manager->register_assets( $assets );
+		}
+		/**
+		 * Register assets for the plugin functions manager.
+		 */
+		$this->loader->register_component(
+			$this,
+			array(
+				array(
+					'type'     => 'action',
+					'hook'     => 'wp_ajax_wikipress_dismiss_onboarding',
+					'callback' => 'dismiss_onboarding',
+				),
+			)
+		);
+		$this->loader->run();
+	}
+	/**
+	 * Register admin menu pages and subpages.
+	 *
+	 * @since 1.0.0
+	 */
+	public function register_admin_menu(): void {
+		LoggerHelper::write_log( 'WikiPress admin menu registration started.' );
 
-    public function __construct( Assets $assets ) {
-        $this->dashboard_manager = new DashboardManager();
-        $this->wiki_functions = new FunctionsWiki();
-        $this->wiki_manager = new WikiManager( $this->wiki_functions );
-        $this->settings_manager = new SettingsManager();
-        $this->tools_manager = new ToolsManager();
-        $this->plugin_functions = new FunctionsPlugins();
-        $this->loader = new LoaderHelper();
-        $this->dashboard_manager->register_assets( $assets );
-        $this->wiki_manager->register_assets( $assets );
-        $this->settings_manager->register_assets( $assets );
-        $this->tools_manager->register_assets( $assets );
-        $this->loader->register_component( $this, [
-            [ 'type' => 'action', 'hook' => 'wp_ajax_wikipress_load_settings_tab', 'callback' => 'load_settings_tab' ],
-        ] );
-        $this->loader->register_component( $this->wiki_functions, [
-            [ 'type' => 'action', 'hook' => 'wp_ajax_wikipress_save_wiki_settings', 'callback' => 'save_wiki_settings' ],
-            [ 'type' => 'action', 'hook' => 'wp_ajax_wikipress_delete_wiki', 'callback' => 'delete_wiki' ],
-            [ 'type' => 'action', 'hook' => 'wp_ajax_wikipress_delete_wiki_page', 'callback' => 'delete_wiki_page' ],
-            [ 'type' => 'action', 'hook' => 'wp_ajax_wikipress_save_wiki_term', 'callback' => 'save_wiki_term' ],
-            [ 'type' => 'action', 'hook' => 'wp_ajax_wikipress_delete_wiki_term', 'callback' => 'delete_wiki_term' ],
-        ] );
-        $this->loader->register_component( $this->plugin_functions, [
-            [ 'type' => 'action', 'hook' => 'wp_ajax_wikipress_toggle_plugin', 'callback' => 'toggle_plugin' ],
-            [ 'type' => 'action', 'hook' => 'wp_ajax_wikipress_save_plugin_settings', 'callback' => 'save_plugin_settings' ],
-        ] )->run();
-    }
-    /**
-     * Register admin menu pages and subpages.
-     * @since 1.0.0
-     */
-    public function register_admin_menu(): void {
-        FunctionsSidebar::register_admin_menu( $this );
-    }
+		try {
+			FunctionsSidebar::register_admin_menu( $this );
+			LoggerHelper::write_log( 'WikiPress admin menu registration complete.' );
+		} catch ( \Throwable $e ) {
+			LoggerHelper::write_log( 'WikiPress admin menu registration failed: ' . $e->getMessage() );
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				wp_die( esc_html( $e->getMessage() ), __( 'WikiPress admin menu error', 'wikipress' ), array( 'back_link' => true ) );
+			}
+		}
+	}
+	/**
+	 * Render the dashboard page.
+	 *
+	 * This method is responsible for rendering the dashboard page of the WikiPress plugin.
+	 * It delegates the rendering to the DashboardManager instance.
+	 */
+	public function render_dashboard(): void {
+		$group = RequestHelper::get_key( 'group', '' );
+		$tab   = RequestHelper::get_key( 'tab', '' );
+		$this->route_manager( $group, $tab );
+	}
 
-    /**
-     * Render the dashboard page.
-     *
-     * This method is responsible for rendering the dashboard page of the WikiPress plugin.
-     * It delegates the rendering to the DashboardManager instance.
-     */
-    public function render_dashboard(): void {
-        $this->dashboard_manager->render();
-    }
-    /**
-     * Render the manage wikis page.
-     *
-     * This method is responsible for rendering the manage wikis page of the WikiPress plugin.
-     * It delegates the rendering to the WikiManager instance.
-     */
-    public function render_wikis(): void {
-        $this->wiki_manager->render();
-    }
-    /**
-     * Render the settings page.
-     *
-     * This method is responsible for rendering the settings page of the WikiPress plugin.
-     * It delegates the rendering to the SettingsManager instance.
-     */
-    public function render_settings(): void {
-        $this->settings_manager->render();
-    }
-    /**
-     * Render the tools page.
-     *
-     * @return void
-     */
-    public function render_tools(): void {
-        $this->tools_manager->render();
-    }
-    /**
-     * Render the analytics page.
-     *
-     * This method is responsible for rendering the analytics page of the WikiPress plugin.
-     * It delegates the rendering to the AnalyticsManager instance.
-     */
-    public function load_settings_tab(): void {
-        $tab = sanitize_key( $_POST['tab'] ?? 'general' );
-        $view_capability = [
-            'general' => 'wikipress_settings_general_view',
-            'layout' => 'wikipress_settings_layout_view',
-            'access' => 'wikipress_settings_access_view',
-            'plugins' => 'wikipress_settings_plugins_view',
-            'third-party' => 'wikipress_settings_plugins_ext_view',
-        ][ $tab ] ?? 'wikipress_settings_general_view';
-        if ( ! AjaxHelper::authorized( 'wikipress_settings_tabs', $view_capability ) ) {
-            AjaxHelper::unauthorized( __( 'You are not authorized to load WikiPress settings.', 'wikipress' ) );
-        }
+	/**
+	 * Dispatch the admin request to the correct manager.
+	 *
+	 * @param string $group Requested group slug.
+	 * @param string $tab Requested tab slug.
+	 * @return void
+	 */
+	public function route_manager( string $group, string $tab = '', string $form = '' ): void {
+		$group = sanitize_key( $group );
+		$tab = sanitize_key( $tab );
+		$form = sanitize_key( $form );
+		$normalized_group = array(
+			'wikipress'        => 'dashboard',
+			'dashboard'       => 'dashboard',
+			'mods'            => 'mods',
+			'mod-manager'     => 'mods',
+			'manage-mod'      => 'mods',
+			'manage-mods'     => 'mods',
+			'settings'        => 'settings',
+			'tools'           => 'tools',
+			'reports'         => 'reports',
+		)[ $group ] ?? 'dashboard';
 
-        $layout_section = sanitize_key( $_POST['layout_section'] ?? 'general' );
-        ob_start();
-        $this->settings_manager->render_tab_content( $tab, $layout_section );
-        $html = (string) ob_get_clean();
-        AjaxHelper::success( [ 'html' => $html, 'tab' => $tab, 'layout_section' => $layout_section ] );
-    }
+		LoggerHelper::write_log( sprintf( 'WikiPress dashboard render triggered. Group=%s Tab=%s Form=%s', $group, $tab, $form ) );
 
-    /**
-     * Get the capability for a given key, with a fallback.
-     *
-     * @param string $key The settings key to retrieve the capability for.
-     * @param string $fallback The fallback capability if the key is not set or invalid.
-     * @return string The capability associated with the key, or the fallback if not valid.
-     */
-    public function capability( string $key, string $fallback ): string {
-        $value = Settings::get( $key, $fallback );
-        $values = is_array( $value ) ? $value : [ $value ];
-        $allowed = array_merge( [ 'manage_options', 'edit_posts', 'publish_posts', 'manage_categories', 'delete_posts' ], array_keys( Capabilities::definitions() ) );
-        foreach ( $values as $value ) {
-            $capability = sanitize_key( (string) $value );
-            if ( in_array( $capability, $allowed, true ) ) {
-                return $capability;
-            }
-        }
-        return $fallback;
-    }
+		try {
+			switch ( $normalized_group ) {
+				case 'mods':
+					LoggerHelper::write_log( 'WikiPress dashboard routed to mods page.' );
+					$this->render_mods( $tab, $form );
+					return;
+				case 'settings':
+					LoggerHelper::write_log( 'WikiPress dashboard routed to settings page.' );
+					$this->render_settings();
+					return;
+				case 'tools':
+					LoggerHelper::write_log( 'WikiPress dashboard routed to tools page.' );
+					$this->render_tools();
+					return;
+				default:
+					LoggerHelper::write_log( 'WikiPress dashboard default render path selected.' );
+					$this->dashboard_manager->render();
+			}
+		} catch ( \Throwable $e ) {
+			LoggerHelper::write_log( 'WikiPress dashboard render failed: ' . $e->getMessage() );
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				wp_die( esc_html( $e->getMessage() ), __( 'WikiPress dashboard error', 'wikipress' ), array( 'back_link' => true ) );
+			}
+		}
+	}
+	/**
+	 * Dismiss the onboarding modal.
+	 *
+	 * This method handles the AJAX request to dismiss the onboarding modal for the WikiPress plugin.
+	 */
+	public function dismiss_onboarding(): void {
+		if ( ! AjaxHelper::authorized( 'wikipress_dismiss_onboarding', 'manage_options' ) ) {
+			AjaxHelper::unauthorized( __( 'You are not authorized to dismiss the WikiPress onboarding modal.', 'wikipress' ) );
+		}
 
+		Settings::register_group( 'setup', array( 'first_install_complete' => false ) );
+		Settings::set( 'first_install_complete', true );
+		Settings::set( 'onboarding_steps_complete', 3 );
+
+		AjaxHelper::success( array( 'dismissed' => true ) );
+	}
+	/**
+	 * Render WikiPress mods page.
+	 *
+	 * This method is responsible for rendering the mods page of the WikiPress plugin.
+	 * It delegates the rendering to the ModManager instance.
+	 */
+	public function render_mods( string $tab = '', string $form = '' ): void {
+		LoggerHelper::write_log( 'WikiPress mods render started.' );
+		$this->mod_manager->render( $tab, $form );
+		LoggerHelper::write_log( 'WikiPress mods render complete.' );
+	}
+	/**
+	 * Render the settings page.
+	 *
+	 * This method is responsible for rendering the settings page of the WikiPress plugin.
+	 * It delegates the rendering to the SettingsManager instance.
+	 */
+	public function render_settings(): void {
+		LoggerHelper::write_log( 'WikiPress settings page render started.' );
+		$this->settings_manager->render();
+		LoggerHelper::write_log( 'WikiPress settings page render complete.' );
+	}
+	/**
+	 * Render the tools page.
+	 *
+	 * @return void
+	 */
+	public function render_tools(): void {
+		LoggerHelper::write_log( 'WikiPress tools page render started.' );
+		$this->tools_manager->render();
+		LoggerHelper::write_log( 'WikiPress tools page render complete.' );
+	}
+	/**
+	 * Get the capability for a given key, with a fallback.
+	 *
+	 * @param string $key The settings key to retrieve the capability for.
+	 * @param string $fallback The fallback capability if the key is not set or invalid.
+	 * @return string The capability associated with the key, or the fallback if not valid.
+	 */
+	public function capability( string $key, string $fallback ): string {
+		$value   = Settings::get( $key, $fallback );
+		$values  = is_array( $value ) ? $value : array( $value );
+		$allowed = array_merge( array( 'manage_options', 'edit_posts', 'publish_posts', 'manage_categories', 'delete_posts' ), array_keys( Capabilities::definitions() ) );
+		foreach ( $values as $value ) {
+			$capability = SanitizationHelper::key( $value, $fallback );
+			if ( in_array( $capability, $allowed, true ) ) {
+				return $capability;
+			}
+		}
+		return $fallback;
+	}
 }
+
+

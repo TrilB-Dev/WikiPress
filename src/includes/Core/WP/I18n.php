@@ -10,49 +10,51 @@
  * @since      1.0.0
  *
  * @package    Wikipress
- * @subpackage Wikipress/includes
+ * @subpackage Wikipress/Includes
  */
 namespace WikiPress\Includes\Core\WP;
 
-/**
- * Define the internationalization functionality.
- *
- * Loads and defines the internationalization files for this plugin
- * so that it is ready for translation.
- *
- * @since      1.0.0
- * @package    Wikipress
- * @subpackage Wikipress/includes
- * @author     MrTrilB <mrtrilb@trilb.dev>
- */
 final class I18n {
 	/**
 	 * Default Local Translation of WikiPress
 	 * 
+	 * @since 1.0.0
 	 */
 	public const DEFAULT_LOCALE = 'en_GB';
 
-	/** @var string */
+	/**
+	 * Text domain for the plugin.
+	 *
+	 * @since 1.0.0
+	 */
 	private string $domain;
 
-	/** @var string */
+	/**
+	 * Languages path for the plugin.
+	 *
+	 * @since 1.0.0
+	 */
 	private string $languages_path;
 
-	/** @var string */
+	/**
+	 * Default locale for the plugin.
+	 *
+	 * @since 1.0.0
+	 */
 	private string $default_locale;
 
 	/**
 	 * Configure a text domain and its language directory.
 	 *
-	 * @param string $domain Text domain.
+	 * @param string      $domain Text domain.
 	 * @param string|null $languages_path Relative languages directory.
 	 * @param string|null $plugin_file Plugin file used to derive the default path.
-	 * @param string $default_locale Authoring and translation baseline locale.
+	 * @param string      $default_locale Authoring and translation baseline locale.
 	 */
 	public function __construct( string $domain = 'wikipress', ?string $languages_path = null, ?string $plugin_file = null, string $default_locale = self::DEFAULT_LOCALE ) {
-		$this->domain = sanitize_key( $domain );
-		$plugin_basename = defined( 'WIKIPRESS_BASENAME' ) ? WIKIPRESS_BASENAME : ( $plugin_file && function_exists( 'plugin_basename' ) ? plugin_basename( $plugin_file ) : null );
-		$default_path = $plugin_basename ? dirname( $plugin_basename ) . '/src/languages' : 'src/languages';
+		$this->domain         = sanitize_key( $domain );
+		$plugin_basename      = defined( 'WIKIPRESS_BASENAME' ) ? WIKIPRESS_BASENAME : ( $plugin_file && function_exists( 'plugin_basename' ) ? plugin_basename( $plugin_file ) : null );
+		$default_path         = $plugin_basename ? dirname( $plugin_basename ) . '/src/languages' : 'src/languages';
 		$this->languages_path = trim( $languages_path ?? $default_path, '/' );
 		$this->default_locale = str_replace( '-', '_', $default_locale );
 	}
@@ -88,6 +90,14 @@ final class I18n {
 	public function load_plugin_textdomain(): bool {
 
 		return load_plugin_textdomain( $this->domain, false, $this->languages_path );
-
 	}
 }
+
+
+
+
+
+
+
+
+

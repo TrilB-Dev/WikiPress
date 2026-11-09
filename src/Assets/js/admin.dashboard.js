@@ -4,3 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		element.classList.add('wikipress-count-ready');
 	});
 });
+
+
+

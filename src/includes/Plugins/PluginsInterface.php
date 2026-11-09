@@ -7,9 +7,6 @@
  */
 namespace WikiPress\Includes\Plugins;
 
-if ( ! defined( 'ABSPATH' ) ) {
-    exit;
-}
 /**
  * Plugin interface for all plugins.
  */
@@ -129,7 +126,7 @@ interface DatabaseProviderInterface {
  */
 interface ShortcodeProviderInterface {
     /**
-     * Return definitions created with ShortcodeHelper::define().
+     * Return definitions created with Shortcodes::define().
      *
      * @return array<int, array<string, mixed>>
      */
@@ -186,7 +183,7 @@ interface AdminSidebarProviderInterface extends PluginInterface {
     /**
      * Return sidebar item and group definitions.
      *
-     * An item uses `type => item` and a `parent` of `manage-wiki`, `settings`,
+     * An item uses `type => item` and a `parent` of `manage-mod`, `settings`,
      * or `tools`. A group uses `type => group` and an `items` array.
      *
      * @return array<int, array<string, mixed>>

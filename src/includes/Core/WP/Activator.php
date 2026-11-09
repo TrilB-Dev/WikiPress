@@ -1,47 +1,72 @@
 <?php
-
+/**
+ * Define the activation functionality for the plugin.
+ *
+ * Handles the registration and execution of activation callbacks.
+ *
+ * @since 1.0.0
+ *
+ * @package    WikiPress
+ * @subpackage WikiPress/Includes/Core/WP
+ */
 namespace WikiPress\Includes\Core\WP;
 
 use WikiPress\Includes\Core\Capabilities;
+use WikiPress\Includes\Core\Roles;
+use WikiPress\Includes\ModManagement\GroupsManager;
 use WikiPress\Includes\Plugins\Plugins;
 use WikiPress\Includes\Settings\SettingsManager;
+use WikiPress\Includes\Settings\Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
-    exit;
+	exit;
 }
 
 final class Activator {
-    /** @var array<int, callable> */
-    private static array $callbacks = array();
+	/**
+	 * Registered activation callbacks.
+	 *
+	 * @var array<int, callable>
+	 */
+	private static array $callbacks = array();
 
-    /**
-     * Register extension activation callbacks.
-     *
-     * @param callable $callback Callback invoked during activation.
-     * @return void
-     */
-    public static function register( callable $callback ): void {
-        self::$callbacks[] = $callback;
-    }
+	/**
+	 * Register extension activation callbacks.
+	 *
+	 * @param callable $callback Callback invoked during activation.
+	 * @return void
+	 */
+	public static function register( callable $callback ): void {
+		self::$callbacks[] = $callback;
+	}
 
-    /**
-     * Run WikiPress and extension activation tasks.
-     *
-     * @param array<int, callable>|null $callbacks Optional callbacks for this run.
-     * @return void
-     */
-    public static function activate( ?array $callbacks = null ): void {
-        Plugins::get_instance()->init();
-        Capabilities::install();
-        Database::install();
-        SettingsManager::install();
-        ( new \WikiPress\Includes\Core\PostType() )->register();
-        ( new \WikiPress\Includes\Core\Taxonomy() )->register();
+	/**
+	 * Run WikiPress and extension activation tasks.
+	 *
+	 * @param array<int, callable>|null $callbacks Optional callbacks for this run.
+	 * @return void
+	 */
+	public static function activate( ?array $callbacks = null ): void {
+		Settings::register_group(
+			'setup',
+			array(
+				'first_install_complete'    => false,
+				'onboarding_steps_complete' => 0,
+			)
+		);
 
-        foreach ( $callbacks ?? self::$callbacks as $callback ) {
-            call_user_func( $callback );
-        }
+		Plugins::get_instance()->init();
+		Database::install();
+		Database::update();
+		GroupsManager::create_default_group();
+		Roles::install();
+		Capabilities::install();
+		SettingsManager::install();
 
-        flush_rewrite_rules();
-    }
+		foreach ( $callbacks ?? self::$callbacks as $callback ) {
+			call_user_func( $callback );
+		}
+
+		flush_rewrite_rules();
+	}
 }

@@ -1,10 +1,8 @@
-# Internal WikiPress Plugins
+# Internal Plugins
 
-Internal plugins are modular extensions stored in the configured WikiPress plugin directory. The default directory is `WIKIPRESS_PLUGINS`; the `wikipress_plugin_directory` setting can override it with an absolute path or a path relative to the WikiPress root.
+Internal plugins are modular extensions stored in the host plugin's configured extension directory. The directory constant, setting name, and discovery rules are host implementation details and should be documented by the host.
 
 ## Required Structure
-
-The loader discovers a plugin only when its directory has the required structure:
 
 ```text
 MyPlugin/
@@ -22,9 +20,9 @@ MyPlugin/
 `- MyPlugin.php
 ```
 
-The main file must be named after the directory, declare a namespace, define a class with the same filename, and implement `PluginInterface`.
+The main file should be named after the directory, declare a namespace, define a matching class, and implement `PluginInterface`.
 
-## Required Contract
+## Contract and Providers
 
 ```php
 namespace WikiPress\Includes\Plugins\MyPlugin;
@@ -32,7 +30,6 @@ namespace WikiPress\Includes\Plugins\MyPlugin;
 use WikiPress\Includes\Plugins\PluginInterface;
 
 final class MyPlugin implements PluginInterface {
-    
     public function get_slug(): string { return 'my-plugin'; }
     public function get_name(): string { return 'My Plugin'; }
     public function get_version(): string { return '1.0.0'; }
@@ -42,79 +39,33 @@ final class MyPlugin implements PluginInterface {
     public function get_uri(): string { return 'https://example.com/my-plugin'; }
     public function get_license(): string { return 'GPL-2.0-or-later'; }
     public function is_active(): bool { return true; }
-
-    public function init(): void {
-        // Feature initialization belongs here.
-    }
+    public function init(): void {}
 }
 ```
 
-The slug must be unique. The loader ignores duplicate slugs and logs initialization failures.
+Implement only the optional interfaces needed by the extension: settings, database, shortcodes, assets, admin pages, admin menus, admin sidebars, REST routes, frontend behavior, and translations. The loader invokes provider methods before `init()` according to the host lifecycle.
 
-## Optional Capabilities
+Admin menu parent slugs, sidebar sections, activation settings, and discovery timing are host-specific. Use parent values exposed by the host, or create an extension-owned top-level menu where supported.
 
-Implement these interfaces only when the extension needs the capability:
+## Composition, Assets, and Localization
 
-- `SettingsProviderInterface::register_settings()`
-- `SettingsPageProviderInterface::get_settings_page()` and `sanitize_settings()`
-- `DatabaseProviderInterface::register_tables()`
-- `ShortcodeProviderInterface::get_shortcodes()`
-- `AssetsProviderInterface::register_assets()`
-- `AdminPageProviderInterface::register_admin_pages()`
-- `AdminMenuProviderInterface::get_admin_menu()`
-- `AdminSidebarProviderInterface::get_admin_sidebar()`
-- `RestRouteProviderInterface::register_rest_routes()`
-- `FrontendProviderInterface::register_frontend()`
-- `I18nProviderInterface::load_textdomain()`
+Core service classes may be final. Compose them from the extension rather than extending them. Use `Includes/Includes.php` to load feature classes and `LoaderHelper` to register hooks.
 
-The loader invokes provider methods in this order for an active plugin: settings, database tables, shortcodes, assets, admin pages, REST routes, frontend behavior, translations, then `init()`.
-
-Admin menu definitions are registered by WikiPress during `admin_menu`, after plugin initialization. Use `wikipress-manage`, `wikipress-settings`, or `wikipress-tools` as `parent` for submenu entries, or use `type => menu` with a `children` array for a plugin-owned top-level menu. See [WORDPRESS_PLUGINS.md](WORDPRESS_PLUGINS.md) for the definition schema.
-
-Sidebar definitions are read when WikiPress renders an admin page. Use `type => item` with `parent` set to `manage-wiki`, `settings`, or `tools`, or use `type => group` to add a new collapsible WikiPress sidebar group.
-
-Shortcode providers should return definitions created with `ShortcodeHelper::define()` from `get_shortcodes()`. The loader registers them with the shared shortcode registry.
-
-## Composition and Includes
-
-WikiPress core service classes are final. Compose them from the plugin rather than extending them. Use `Includes/Includes.php` to load feature classes and `Includes/I18n.php` for the text domain loader.
-
-Use `LoaderHelper` to register hooks from component classes:
-
-```php
-$this->loader->register_component($this, [
-    [ 'type' => 'action', 'hook' => 'init', 'callback' => 'register_feature' ],
-])->run();
-```
-
-`Includes/Shortcodes.php` is loaded automatically when present, alongside `Includes/Includes.php` and `Includes/I18n.php`.
-
-## Assets
-
-Register page-specific assets through the shared `Assets` service or the plugin's own `Assets` component. Keep source JavaScript and Sass under `Assets/js` and `Assets/scss`; compiled output belongs under `Assets/dist/js` and `Assets/dist/css`.
-
-Build the repository assets from the WikiPress root:
+Register page-specific assets through the shared `Assets` service. Keep source JavaScript and Sass under `Assets/js` and `Assets/scss`; compiled output belongs under `Assets/dist/js` and `Assets/dist/css`.
 
 ```bash
 npm run build
 ```
 
-## Discovery and Activation
+Run `npm run i18n:pot` and `npm run i18n:mo` from the host root when those scripts cover internal extensions. Keep extension strings in the owning text domain and language directory.
 
-WikiPress discovers top-level PHP files and structurally valid plugin subdirectories during `Plugins::init()`. Auto-activation is controlled by the `wiki_plugin_auto_activate` setting. A plugin can also return `false` from `is_active()` to remain registered but uninitialized.
+## Discovery and Registry
 
-For debugging, use `LoggerHelper`; the loader logs invalid plugin classes and thrown initialization errors.
+`Plugins::get_instance()` returns the manager singleton. `get_loaded_plugins()` returns discovered class names and `get_registered_plugins()` returns registered instances. Use `register_plugin_instance()` inside the host registration callback, or `Plugins::register_plugin()` as a convenience method. Duplicate slugs should be ignored.
 
-## Discovery and Registry APIs
+Use `LoggerHelper` for diagnostics. The loader should log invalid plugin classes and initialization failures without exposing sensitive data.
 
-`Plugins::get_instance()` returns the manager singleton. `get_loaded_plugins()` returns discovered class names and `get_registered_plugins()` returns registered instances. Use `register_plugin_instance()` inside the `wikipress_register_plugin` callback, or `Plugins::register_plugin()` as the static convenience method. Duplicate slugs are ignored.
 
-`is_plugin_enabled()` reads the persisted enabled state, defaulting to enabled when no state exists. `set_plugin_enabled()` persists a registered plugin's state. A plugin initializes only when auto-activation is enabled, its persisted state is enabled, and `is_active()` returns true.
 
-## Shared Assets
 
-Use `Assets::register_page( $page, $assets )` for page-specific styles and scripts. Asset descriptors support `handle`, `src`, `deps`, `version`, `in_footer`, and `media` where applicable. The shared asset service exposes `wikipress_base_assets`, `wikipress_admin_assets`, and `wikipress_frontend_assets` filters for generic extension of the asset bundle.
 
-## Localization
-
-Run `npm run i18n:pot` to scan WikiPress core and every internal plugin, writing the core catalog under `src/languages` and plugin catalogs under each plugin's `Language` directory. Run `npm run i18n:mo` to compile `.mo` files, using a matching `.po` file when present and otherwise the `.pot` template. Keep plugin strings in the owning plugin's text domain and language directory.

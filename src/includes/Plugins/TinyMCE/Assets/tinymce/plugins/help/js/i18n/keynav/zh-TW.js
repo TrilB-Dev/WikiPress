@@ -91,3 +91,5 @@ tinymce.Resource.add('tinymce.html-i18n.help-keynav.zh-TW',
   '\n' +
   '<p>先跳至索引標籤式功能表，然後按適當的<strong>方向</strong>鍵，即可切換至另一個對話方塊索引標籤，\n' +
   '  以循環瀏覽可用的索引標籤。</p>\n');
+
+

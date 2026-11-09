@@ -1,1 +1,0 @@
-document.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll(".wikipress-analytics-table tbody tr").forEach((e,t)=>{e.style.animationDelay=35*t+"ms",e.classList.add("wikipress-analytics-row")})});

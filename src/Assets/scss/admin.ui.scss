@@ -1,8 +1,10 @@
+@import "theme";
 @import "ui";
 @import "settings";
 @import "plugins";
 @import "page";
 @import "dashboard";
-@import "wiki";
-@import "analytics";
+@import "mod";
+//@import "analytics";
 @import "navbuilder";
+@import "mod-group";
