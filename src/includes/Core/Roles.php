@@ -72,10 +72,9 @@ final class Roles {
 				__( 'Mod Author', 'wikipress' ),
 				array(
 					'read' => true,
-					'wikipress_manager_mods_view' => true,
-					'wikipress_manager_mods_edit' => true,
-					'wikipress_manager_mods_delete' => true,
-					'wikipress_manager_groups_view' => true,
+					'wikipress_manager_wiki_view' => true,
+					'wikipress_manager_wiki_edit' => true,
+					'wikipress_manager_wiki_delete' => true,
 				)
 			);
 		}

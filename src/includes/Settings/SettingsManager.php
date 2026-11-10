@@ -153,13 +153,13 @@ final class SettingsManager {
         return [
             'general' => [
                 'root_name' => 'WikiPress',
-                'root_description' => __( 'A searchable catalogue powered by WikiPress.', 'wikipress' ),
-                'archive_title' => __( 'WikiPress Catalogue', 'wikipress' ),
-                'archive_description' => __( 'Browse the WikiPress catalogue.', 'wikipress' ),
+                'root_description' => '',
+                'archive_title' => '',
+                'archive_description' => '',
                 'root_slug' => 'catalogue',
-                'category_slug' => 'catalogue-group',
-                'tag_slug' => 'catalogue-tag',
-                'permalink' => '%root%/%mod_group%/%mod_tag%/%mod_page%',
+                'category_slug' => '',
+                'tag_slug' => '',
+                'permalink' => '%root%/%wiki_parent%/%wiki_category%/%wiki_tag%/%wiki_page%',
                 'enable_schema' => true,
             ],
             'layout' => [

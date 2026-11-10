@@ -59,7 +59,7 @@ final class DataTransfer {
 				'content'    => $post->post_content,
 				'excerpt'    => $post->post_excerpt,
 				'status'     => $post->post_status,
-				'wiki_id'    => absint( get_post_meta( $post->ID, '_wikipress_wiki_id', true ) ),
+				'wiki_id'    => $post->post_parent > 0 ? (int) $post->post_parent : 0,
 				'categories' => TaxonomyHelper::names( TaxonomyHelper::terms( Taxonomy::CATEGORY, $post->ID ) ),
 				'tags'       => TaxonomyHelper::names( TaxonomyHelper::terms( Taxonomy::TAG, $post->ID ) ),
 			);
@@ -184,8 +184,14 @@ final class DataTransfer {
 			);
 			if ( ! is_wp_error( $id ) ) {
 				++$result['pages'];
-				if ( ! empty( $wiki_map[ absint( $page['wiki_id'] ?? 0 ) ] ) ) {
-					update_post_meta( (int) $id, '_wikipress_wiki_id', $wiki_map[ absint( $page['wiki_id'] ?? 0 ) ] );
+				$wiki_parent = $wiki_map[ absint( $page['wiki_id'] ?? 0 ) ] ?? 0;
+				if ( $wiki_parent > 0 ) {
+					wp_update_post(
+						array(
+							'ID'          => (int) $id,
+							'post_parent' => (int) $wiki_parent,
+						)
+					);
 				}
 				self::set_terms( (int) $id, $page['categories'] ?? array(), Taxonomy::CATEGORY );
 				self::set_terms( (int) $id, $page['tags'] ?? array(), Taxonomy::TAG );

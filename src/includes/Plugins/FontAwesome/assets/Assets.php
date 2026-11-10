@@ -118,13 +118,13 @@ final class Assets extends RootAssets {
         if ( FontAwesomeSettings::enable_icon_picker() ) {
             $assets['styles'][] = array(
                 'handle' => 'wikipress-fontawesome-icon-picker',
-                'src' => WIKIPRESS_PLUGINS_URL . '/FontAwesome/Assets/dist/css/icon-picker.css',
+                'src' => WIKIPRESS_PLUGINS_URL . '/FontAwesome/Assets/dist/css/admin.plugins.fontawesome.icon-picker.css',
                 'deps' => array( 'wikipress-bootstrap' ),
                 'version' => WIKIPRESS_VERSION,
             );
             $assets['scripts'][] = array(
                 'handle' => 'wikipress-fontawesome-icon-picker',
-                'src' => WIKIPRESS_PLUGINS_URL . '/FontAwesome/Assets/dist/js/icon-picker.js',
+                'src' => WIKIPRESS_PLUGINS_URL . '/FontAwesome/Assets/dist/js/admin.plugins.fontawesome.icon-picker.js',
                 'deps' => array( 'jquery' ),
                 'version' => WIKIPRESS_VERSION,
                 'in_footer' => true,

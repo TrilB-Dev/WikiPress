@@ -1,0 +1,1 @@
+document.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll("[data-wikipress-count]").forEach(e=>{e.classList.add("wikipress-count-ready")})});

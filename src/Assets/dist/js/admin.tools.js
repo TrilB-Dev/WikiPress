@@ -1,0 +1,1 @@
+document.addEventListener("DOMContentLoaded",()=>{const e=document,t=e.querySelector("#wikipress-reset-scope"),n=e.querySelector("#wikipress-reset-plugins");if(!t||!n)return;const r=()=>{const e="plugins"===t.value;n.hidden=!e,n.querySelectorAll('input[type="checkbox"]').forEach(t=>{t.disabled=!e})};t.addEventListener("change",r),r()});

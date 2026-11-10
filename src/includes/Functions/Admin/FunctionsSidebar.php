@@ -118,10 +118,10 @@ final class FunctionsSidebar {
 				'capability' => 'wikipress_admin_view',
 			],
 			[
-				'name'       => __( 'Manage Mods', 'wikipress' ),
-				'slug'       => 'wikipress&group=mod-manager&tab=dashboard',
+				'name'       => __( 'Manage Wikis', 'wikipress' ),
+				'slug'       => 'wikipress&group=wiki-manager&tab=dashboard',
 				'parent'     => 'wikipress',
-				'callback'   => [ $admin, 'render_mods' ],
+				'callback'   => [ $admin, 'render_wikis' ],
 				'capability' => 'wikipress_admin_view',
 			],
 			[
@@ -149,52 +149,34 @@ final class FunctionsSidebar {
 	 */
 	private static function core_sidebar_groups(): array {
 		return [
-			'mod-manager' => [
-				'label' => __( 'Manage Mods', 'wikipress' ),
+			'wiki-manager' => [
+				'label' => __( 'Manage Wikis', 'wikipress' ),
 				'icon'  => 'fa-solid fa-file-lines',
 				'items' => [
 					'dashboard' => [
 						'label'      => __( 'Overview', 'wikipress' ),
 						'icon'       => 'fa-solid fa-gauge',
-						'link'       => 'wikipress&group=mod-manager&tab=dashboard',
+						'link'       => 'wikipress&group=wiki-manager&tab=dashboard',
 						'capability' => 'wikipress_manager_dashboard',
 					],
-					'mods' => [
-						'label'      => __( 'Mods', 'wikipress' ),
+					'wikis' => [
+						'label'      => __( 'Wikis', 'wikipress' ),
 						'icon'       => 'fa-solid fa-cubes',
-						'link'       => 'wikipress&group=mod-manager&tab=mods',
-						'capability' => 'wikipress_manager_mods_view',
+						'link'       => 'wikipress&group=wiki-manager&tab=wikis',
+						'capability' => 'wikipress_manager_wikis_view',
 					],
-					'changelog' => [
-						'label'      => __( 'Change Logs', 'wikipress' ),
-						'icon'       => 'fa-solid fa-file-lines',
-						'link'       => 'wikipress&group=mod-manager&tab=changelog',
-						'capability' => 'wikipress_manager_mods_view',
-					],
-					'files' => [
-						'label'      => __( 'Files', 'wikipress' ),
-						'icon'       => 'fa-solid fa-file',
-						'link'       => 'wikipress&group=mod-manager&tab=files',
-						'capability' => 'wikipress_manager_mods_view',
-					],
-					'groups' => [
-						'label'      => __( 'Groups', 'wikipress' ),
+					'categories' => [
+						'label'      => __( 'Categories', 'wikipress' ),
 						'icon'       => 'fa-solid fa-layer-group',
-						'link'       => 'wikipress&group=mod-manager&tab=groups',
-						'capability' => 'wikipress_manager_groups_view',
+						'link'       => 'wikipress&group=wiki-manager&tab=categories',
+						'capability' => 'wikipress_manager_categories_view',
 					],
 					'tags' => [
 						'label'      => __( 'Tags', 'wikipress' ),
 						'icon'       => 'fa-solid fa-tag',
-						'link'       => 'wikipress&group=mod-manager&tab=tags',
+						'link'       => 'wikipress&group=wiki-manager&tab=tags',
 						'capability' => 'wikipress_manager_tags_view',
-					],
-					'new' => [
-						'label'      => __( 'New Mod', 'wikipress' ),
-						'icon'       => 'fa-solid fa-plus',
-						'link'       => 'wikipress&group=mod-manager&tab=new',
-						'capability' => 'wikipress_manager_mods_edit',
-					],
+					]
 				],
 			],
 			'settings' => [

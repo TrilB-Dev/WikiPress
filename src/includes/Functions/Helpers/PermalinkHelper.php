@@ -122,22 +122,22 @@ final class PermalinkHelper {
 			$object_name = sanitize_title( $page->post_title );
 		}
 
-		$mod_type   = self::term_path_for_post( $page, true );
-		$mod_groups = self::term_path_for_post( $page, true );
-		$mod_tags   = self::term_path_for_post( $page, false );
-		$mod_post   = $object_name;
+		$wiki_parent   = self::term_path_for_post( $page, true );
+		$wiki_category = self::term_path_for_post( $page, true );
+		$wiki_tag   = self::term_path_for_post( $page, false );
+		$wiki_page   = $object_name;
 		$values     = array(
-			'%mod_root%'   => $root_slug,
-			'%mod_type%'   => $mod_type,
-			'%mod_tags%'   => $mod_tags,
-			'%mod_groups%' => $mod_groups,
-			'%mod_post%'   => $mod_post,
+			'%wiki_root%'   => $root_slug,
+			'%wiki_parent%'   => $wiki_parent,
+			'%wiki_tag%'   => $wiki_tag,
+			'%wiki_category%' => $wiki_category,
+			'%wiki_page%'   => $wiki_page,
 		);
 
 		$normalized = self::sanitize_pattern( $pattern );
 		$path       = strtr( $normalized, $values );
 		if ( '' === trim( $path ) ) {
-			$path = $object_slug;
+			$path = $object_name;
 		}
 		return trim( preg_replace( '#/+#', '/', trim( $path, '/' ) ), '/' );
 	}

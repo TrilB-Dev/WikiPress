@@ -1,0 +1,218 @@
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof window.wp === 'undefined' || !window.wp.media) {
+        console.error('WikiPress media picker: WordPress media library is not available.');
+        return;
+    }
+
+    const getMediaTarget = (button) => {
+        const wrapper = button.closest('[data-wikipress-media-wrapper="true"]');
+        if (!wrapper) {
+            return null;
+        }
+
+        const targetName = button.dataset.mediaTarget || button.dataset.mediaFieldName || '';
+        const targetId = button.dataset.mediaFieldId || '';
+
+        const targetByName = targetName ? wrapper.querySelector(`[name="${CSS.escape(targetName)}"]`) : null;
+        const targetById = targetId ? wrapper.querySelector(`#${CSS.escape(targetId)}`) : null;
+        const targetField = wrapper.querySelector('[data-media-field="true"]') || targetByName || targetById || null;
+
+        return {
+            wrapper,
+            field: targetField,
+        };
+    };
+
+    const syncMediaPreview = (wrapper, nextValue) => {
+        const previewContainer = wrapper.querySelector('[data-wikipress-media-preview-container="true"]');
+        const previewImage = wrapper.querySelector('[data-wikipress-media-preview-image="true"]');
+        const removeButton = wrapper.querySelector('[data-wikipress-media-remove]');
+
+        if (previewImage) {
+            previewImage.src = nextValue || '';
+        }
+
+        if (previewContainer) {
+            previewContainer.classList.toggle('d-none', !nextValue);
+        }
+
+        if (removeButton) {
+            removeButton.classList.toggle('d-none', !nextValue);
+        }
+    };
+
+    let activeMediaFrame = null;
+
+    const closeMediaFrame = (mediaFrame) => {
+        if (!mediaFrame) {
+            return;
+        }
+
+        try {
+            if (typeof mediaFrame.close === 'function') {
+                mediaFrame.close();
+            }
+
+            const frameRoot = mediaFrame.$el ||
+                (mediaFrame.content && mediaFrame.content.get ? mediaFrame.content.get().$el : null) ||
+                document.querySelector('.media-modal');
+
+            if (frameRoot && typeof frameRoot.hide === 'function') {
+                frameRoot.hide();
+            }
+
+            if (frameRoot && typeof frameRoot.modal === 'function') {
+                frameRoot.modal('hide');
+            }
+
+            const modalBackdrop = document.querySelector('.media-modal-backdrop');
+            if (modalBackdrop && modalBackdrop.parentNode) {
+                modalBackdrop.parentNode.removeChild(modalBackdrop);
+            }
+
+            const modalElement = document.querySelector('.media-modal');
+            if (modalElement) {
+                modalElement.style.display = 'none';
+                modalElement.classList.remove('open');
+                modalElement.setAttribute('aria-hidden', 'true');
+            }
+
+            if (typeof mediaFrame.dispose === 'function') {
+                mediaFrame.dispose();
+            }
+        } catch (error) {
+            console.error('WikiPress media picker: could not close media frame.', error);
+        }
+    };
+
+    const openMediaPicker = (button) => {
+        const mediaTarget = getMediaTarget(button);
+        if (!mediaTarget || !mediaTarget.field) {
+            console.error('WikiPress media picker: no target field found for this button.');
+            return;
+        }
+
+        const { wrapper, field } = mediaTarget;
+        const mediaFrame = window.wp.media({
+            title: button.dataset.mediaTitle || 'Select Media',
+            button: {
+                text: button.dataset.mediaButtonText || 'Use Media',
+            },
+            multiple: false,
+            library: {
+                type: button.dataset.mediaType || 'image',
+            },
+        });
+
+        activeMediaFrame = mediaFrame;
+
+        mediaFrame.on('select', () => {
+            const attachment = mediaFrame.state().get('selection').first();
+            if (!attachment) {
+                console.error('WikiPress media picker: no media selected.');
+                return;
+            }
+
+            const selected = attachment.toJSON();
+            const nextValue = button.dataset.returnValue === 'id'
+                ? String(selected.id || '')
+                : (selected.url || selected.sizes?.full?.url || selected.icon || '');
+
+            field.value = nextValue;
+            field.dataset.mediaValueType = button.dataset.returnValue || 'url';
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+
+            syncMediaPreview(wrapper, nextValue);
+
+            window.setTimeout(() => {
+                closeMediaFrame(mediaFrame);
+                activeMediaFrame = null;
+            }, 0);
+        });
+
+        mediaFrame.on('close', () => {
+            if (activeMediaFrame === mediaFrame) {
+                activeMediaFrame = null;
+            }
+        });
+
+        mediaFrame.open();
+    };
+
+    document.addEventListener('click', (event) => {
+        const pickerButton = event.target.closest('[data-wikipress-media-picker="true"]');
+        if (pickerButton) {
+            event.preventDefault();
+            event.stopPropagation();
+            openMediaPicker(pickerButton);
+            return;
+        }
+
+        const removeButton = event.target.closest('[data-wikipress-media-remove]');
+        if (!removeButton) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        const wrapper = removeButton.closest('[data-wikipress-media-wrapper="true"]');
+        if (!wrapper) {
+            return;
+        }
+
+        const hiddenField = wrapper.querySelector('[data-media-field="true"]');
+        if (hiddenField) {
+            hiddenField.value = '';
+        }
+
+        syncMediaPreview(wrapper, '');
+    });
+
+    document.querySelectorAll('[data-wikipress-media-wrapper="true"]').forEach((wrapper) => {
+        const hiddenField = wrapper.querySelector('[data-media-field="true"]');
+        if (!hiddenField) {
+            return;
+        }
+
+        const value = String(hiddenField.value || '').trim();
+        const previewContainer = wrapper.querySelector('[data-wikipress-media-preview-container="true"]');
+        const previewImage = wrapper.querySelector('[data-wikipress-media-preview-image="true"]');
+
+        if (!value) {
+            if (previewContainer) {
+                previewContainer.classList.add('d-none');
+            }
+            return;
+        }
+
+        if (/^\d+$/.test(value)) {
+            const attachment = window.wp.media.attachment(value);
+            attachment.fetch({
+                success: (model) => {
+                    const url = model && model.attributes && model.attributes.url ? model.attributes.url : '';
+                    if (!url) {
+                        return;
+                    }
+
+                    if (previewImage) {
+                        previewImage.src = url;
+                    }
+
+                    if (previewContainer) {
+                        previewContainer.classList.remove('d-none');
+                    }
+                },
+            });
+            return;
+        }
+
+        if (previewImage) {
+            previewImage.src = value;
+        }
+
+        if (previewContainer) {
+            previewContainer.classList.remove('d-none');
+        }
+    });
+});

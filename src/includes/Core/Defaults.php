@@ -31,19 +31,7 @@ final class Defaults {
      * @since 1.0.0
      */
 	public static function install_defaults(): void {
-		self::default_types();
-		self::default_mod_status();
-		self::default_changelog_category();
-		self::default_file_type();
-		self::default_softwares();
-		self::default_web();
-		self::default_games();
-		self::default_platforms();
-		self::default_assets();
-		self::default_languages();
-		self::default_tags();
-		self::default_licences();
-		self::default_groups();
+
 	}
     /**
      * Reset the default groups by deleting and recreating the groups table.

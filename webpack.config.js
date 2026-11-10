@@ -33,21 +33,26 @@ const entries = {
     './src/Assets/js/bootstrap.js',
     './src/Assets/scss/bootstrap.scss',
   ],
-  'admin.ui': [
+   'admin.ui': [
     './src/Assets/js/admin.ui.js',
-    './src/Assets/js/admin.settings.js',
-    './src/Assets/js/admin.plugins.js',
-    './src/Assets/js/admin.page.js',
-    './src/Assets/js/admin.dashboard.js',
-    './src/Assets/scss/admin.ui.scss',
+    './src/Assets/scss/admin.ui.scss'
   ],
-  'wpoverride': './src/Assets/scss/wpoverride.scss',
+  'admin.dashboard': './src/Assets/js/admin.dashboard.js',
+  'admin.page': './src/Assets/js/admin.page.js',
+  'admin.plugins': './src/Assets/js/admin.plugins.js',
+  'admin.settings': './src/Assets/js/admin.settings.js',
+  'admin.tools': './src/Assets/js/admin.tools.js',
+  'admin.wpmedia': './src/Assets/js/admin.wpmedia.js',
+  'admin.wiki': './src/Assets/js/admin.wiki.js',
+  'admin.ajax': './src/Assets/js/admin.ajax.js',
+    
+  'wpoverride': './src/Assets/scss/wpoverride.scss'
 };
 
 const fontAwesomeEntries = {
-  'icon-picker': [
-    './src/Includes/Plugins/FontAwesome/Assets/js/fontawesome.icon-picker.js',
-    './src/Includes/Plugins/FontAwesome/Assets/scss/fontawesome.icon-picker.scss',
+  'admin.plugins.fontawesome.icon-picker': [
+    './src/Includes/Plugins/FontAwesome/Assets/js/admin.plugins.fontawesome.icon-picker.js',
+    './src/Includes/Plugins/FontAwesome/Assets/scss/admin.plugins.fontawesome.icon-picker.scss',
   ],
   'admin.plugins.fontawesome': [
     './src/Includes/Plugins/FontAwesome/Assets/js/admin.plugins.fontawesome.js',
@@ -141,11 +146,11 @@ module.exports = [
           to: 'src/Assets/dist/js/bootstrap-select.min.js',
         },
         {
-          from: 'node_modules/@trilbdev/boostrap-select-country-data/dist/js/bs-country-data.min.js',
+          from: 'node_modules/@trilbdev/bootstrap-select-country-data/dist/js/bs-country-data.min.js',
           to: 'src/Assets/dist/js/bs-country-data.min.js',
         },
         {
-          from: 'node_modules/@trilbdev/boostrap-select-country-data/dist/css/bs-country-data.min.css',
+          from: 'node_modules/@trilbdev/bootstrap-select-country-data/dist/css/bs-country-data.min.css',
           to: 'src/Assets/dist/css/bs-country-data.min.css',
         },
       ]),
