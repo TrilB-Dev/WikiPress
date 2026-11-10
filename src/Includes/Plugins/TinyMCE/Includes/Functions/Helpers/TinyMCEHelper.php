@@ -1,0 +1,108 @@
+<?php
+/**
+ * TinyMCE Editor Plugin Helper Functions
+ *
+ * @package WikiPress
+ * @subpackage Plugins\TinyMCE\Includes\Functions\Helpers
+ * @since 1.0.0
+ */
+namespace WikiPress\Includes\Plugins\TinyMCE\Includes\Functions\Helpers;
+
+use WikiPress\Includes\Plugins\TinyMCE\Includes\Settings\Settings;
+
+final class TinyMCEHelper {
+	/**
+	 * Render a TinyMCE editor.
+	 *
+	 * @param string $id The ID of the editor.
+	 * @param string $name The name of the editor.
+	 * @param string $label The label for the editor.
+	 * @param string $value The initial content of the editor.
+	 * @param int    $rows The number of rows for the textarea.
+	 * @param bool   $media_buttons Whether to show media buttons.
+	 * @param array  $options Additional TinyMCE options.
+	 */
+	public static function render( string $id, string $name, string $label, string $value = '', int $rows = 8, bool $media_buttons = false, array $options = array() ): void {
+		$editor_id    = sanitize_key( $id );
+		$rows         = max( 1, $rows );
+		$plugins      = Settings::plugins();
+		$content_skin = Settings::content_skin();
+		$ui_skin      = Settings::ui_skin();
+		$locale       = 'en_GB';
+		if ( function_exists( 'get_user_locale' ) ) {
+			$locale = get_user_locale();
+		}
+		$language_path     = '';
+		$language_dir      = dirname( WIKIPRESS_FILE ) . '/src/Includes/Plugins/TinyMCE/Assets/tinymce/langs';
+		$locale_candidates = array( $locale, str_replace( '-', '_', $locale ), str_replace( '_', '-', $locale ), strtolower( $locale ) );
+		$language_files    = glob( $language_dir . '/*.js' );
+		if ( false === $language_files ) {
+			$language_files = array();
+		}
+		foreach ( $language_files as $candidate_path ) {
+			$candidate_locale = pathinfo( $candidate_path, PATHINFO_FILENAME );
+			if ( in_array( strtolower( $candidate_locale ), array_map( 'strtolower', $locale_candidates ), true ) ) {
+				$language_path = $candidate_path;
+				$locale        = $candidate_locale;
+				break;
+			}
+		}
+		$language_url = '';
+		if ( file_exists( $language_path ) ) {
+			$language_url = WIKIPRESS_URL . 'src/Includes/Plugins/TinyMCE/Assets/tinymce/langs/' . basename( $language_path );
+		}
+		$toolbar   = array( 'blocks' );
+		$toolbar[] = '|';
+		$toolbar[] = 'bold italic underline strikethrough';
+		$toolbar[] = '|';
+		if ( in_array( 'lists', $plugins, true ) || in_array( 'advlist', $plugins, true ) ) {
+			$toolbar[] = 'bullist numlist';
+		}
+		$toolbar[] = 'blockquote';
+		$toolbar[] = '|';
+		if ( in_array( 'link', $plugins, true ) ) {
+			$toolbar[] = 'link';
+		}
+		if ( $media_buttons ) {
+			$toolbar[] = 'wikipressmedia';
+		}
+		foreach ( array( 'image', 'media', 'table' ) as $button ) {
+			if ( in_array( $button, $plugins, true ) ) {
+				$toolbar[] = $button;
+			}
+		}
+		$toolbar[] = '|';
+		$toolbar[] = 'undo redo removeformat';
+		if ( in_array( 'code', $plugins, true ) ) {
+			$toolbar[] = 'code';
+		}
+		$settings = array(
+			'selector'      => '#' . $editor_id,
+			'height'        => max( 120, $rows * 24 ),
+			'menubar'       => false,
+			'branding'      => false,
+			'promotion'     => false,
+			'license_key'   => 'gpl',
+			'plugins'       => implode( ' ', $plugins ),
+			'toolbar'       => implode( ' ', $toolbar ),
+			'base_url'      => WIKIPRESS_URL . 'src/Includes/Plugins/TinyMCE/Assets/tinymce',
+			'skin'          => $ui_skin,
+			'skin_url'      => WIKIPRESS_URL . 'src/Includes/Plugins/TinyMCE/Assets/tinymce/skins/ui/' . $ui_skin,
+			'content_css'   => WIKIPRESS_URL . 'src/Includes/Plugins/TinyMCE/Assets/tinymce/skins/content/' . $content_skin . '/content.min.css',
+			'media_buttons' => $media_buttons,
+		);
+		if ( $language_url ) {
+			$settings['language']     = $locale;
+			$settings['language_url'] = $language_url;
+		}
+
+		$settings = apply_filters( 'wikipress_tinymce_settings', array_merge( $settings, $options ), $editor_id );
+
+		printf( '<label class="form-label" for="%1$s">%2$s</label>', esc_attr( $editor_id ), esc_html( $label ) );
+		printf( '<textarea class="form-control wikipress-tinymce" id="%1$s" name="%2$s" rows="%3$d">%4$s</textarea>', esc_attr( $editor_id ), esc_attr( $name ), $rows, esc_textarea( $value ) );
+		printf( '<script type="application/json" class="wikipress-tinymce-config" data-editor="%1$s">%2$s</script>', esc_attr( $editor_id ), wp_json_encode( $settings ) );
+	}
+}
+
+
+

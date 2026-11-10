@@ -6,6 +6,7 @@
  * @copyright  2010-2018 Ignas Rudaitis
  * @license    http://www.opensource.org/licenses/mit-license.html
  */
+
 namespace Patchwork\CodeManipulation\Actions\RedefinitionOfInternals;
 
 use Patchwork\Config;
@@ -19,13 +20,14 @@ const DYNAMIC_CALL_REPLACEMENT = '\Patchwork\CallRerouting\dispatchDynamic(%s, \
 function spliceNamedFunctionCalls()
 {
     if (Config\getRedefinableInternals() === []) {
-        return function() {};
+        return function () {
+        };
     }
     $names = [];
     foreach (Config\getRedefinableInternals() as $name) {
         $names[strtolower($name)] = true;
     }
-    return function(Source $s) use ($names) {
+    return function (Source $s) use ($names) {
         foreach (Namespaces\collectNamespaceBoundaries($s) as $namespace => $boundaryList) {
             foreach ($boundaryList as $boundaries) {
                 list($begin, $end) = $boundaries;
@@ -46,6 +48,17 @@ function spliceNamedFunctionCalls()
 
 function spliceNamedCallsWithin(Source $s, $begin, $end, array $names, array $aliases)
 {
+    $tokenList = [
+        T_FUNCTION,
+        T_OBJECT_OPERATOR,
+        T_DOUBLE_COLON,
+        T_STRING,
+        T_NEW,
+        Generic\NAME_FULLY_QUALIFIED,
+        Generic\NAME_QUALIFIED,
+        Generic\NAME_RELATIVE,
+    ];
+
     foreach ($s->within([T_STRING, Generic\NAME_FULLY_QUALIFIED, Generic\NAME_QUALIFIED, Generic\NAME_RELATIVE], $begin, $end) as $string) {
         $original = strtolower($s->read($string));
         if ($original[0] == '\\') {
@@ -65,7 +78,7 @@ function spliceNamedCallsWithin(Source $s, $begin, $end, array $names, array $al
                 }
                 $hadBackslash = true;
             }
-            if ($s->is([T_FUNCTION, T_OBJECT_OPERATOR, T_DOUBLE_COLON, T_STRING, T_NEW, Generic\NAME_FULLY_QUALIFIED, Generic\NAME_QUALIFIED, Generic\NAME_RELATIVE], $previous)) {
+            if ($s->is($tokenList, $previous)) {
                 continue;
             }
             $next = $s->skip(Source::junk(), $string);
@@ -92,9 +105,10 @@ function spliceNamedCallsWithin(Source $s, $begin, $end, array $names, array $al
 function spliceDynamicCalls()
 {
     if (Config\getRedefinableInternals() === []) {
-        return function() {};
+        return function () {
+        };
     }
-    return function(Source $s) {
+    return function (Source $s) {
         spliceDynamicCallsWithin($s, 0, count($s->tokens) - 1);
     };
 }

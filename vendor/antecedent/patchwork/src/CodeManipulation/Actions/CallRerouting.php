@@ -6,6 +6,7 @@
  * @copyright  2010-2018 Ignas Rudaitis
  * @license    http://www.opensource.org/licenses/mit-license.html
  */
+
 namespace Patchwork\CodeManipulation\Actions\CallRerouting;
 
 use Patchwork\CodeManipulation\Actions\Generic;
@@ -20,7 +21,14 @@ const CALL_INTERCEPTION_CODE = '
         $__pwFrame = \count(\debug_backtrace(0));
         $__pwRefs = %s;
         $__pwRefOffset = 0;
-        if (\Patchwork\CallRerouting\dispatch($__pwClass, $__pwCalledClass, __FUNCTION__, $__pwFrame, $__pwResult, \array_merge(\array_slice($__pwRefs, $__pwRefOffset, \func_num_args()), \array_slice(\func_get_args(), \count($__pwRefs))))) {
+        if (\Patchwork\CallRerouting\dispatch(
+            $__pwClass,
+            $__pwCalledClass,
+            __FUNCTION__,
+            $__pwFrame,
+            $__pwResult,
+            \array_merge(\array_slice($__pwRefs, $__pwRefOffset, \func_num_args()), \array_slice(\func_get_args(), \count($__pwRefs)))
+        )) {
             return $__pwResult;
         }
     }
@@ -35,12 +43,19 @@ const CALL_INTERCEPTION_CODE_VOID_TYPED = '
         $__pwFrame = \count(\debug_backtrace(0));
         $__pwRefs = %s;
         $__pwRefOffset = 0;
-        if (\Patchwork\CallRerouting\dispatch($__pwClass, $__pwCalledClass, __FUNCTION__, $__pwFrame, $__pwResult, \array_merge(\array_slice($__pwRefs, $__pwRefOffset, \func_num_args()), \array_slice(\func_get_args(), \count($__pwRefs))))) {
-			if ($__pwResult !== null) {
-				throw new \Patchwork\Exceptions\NonNullToVoid;
-			}
-			return;
-		}
+        if (\Patchwork\CallRerouting\dispatch(
+            $__pwClass,
+            $__pwCalledClass,
+            __FUNCTION__,
+            $__pwFrame,
+            $__pwResult,
+            \array_merge(\array_slice($__pwRefs, $__pwRefOffset, \func_num_args()), \array_slice(\func_get_args(), \count($__pwRefs)))
+        )) {
+            if ($__pwResult !== null) {
+                throw new \Patchwork\Exceptions\NonNullToVoid;
+            }
+            return;
+        }
     }
     unset($__pwClass, $__pwCalledClass, $__pwResult, $__pwClosureName, $__pwFrame, $__pwRefOffset);
 ';
@@ -53,7 +68,14 @@ const CALL_INTERCEPTION_CODE_NEVER_TYPED = '
         $__pwFrame = \count(\debug_backtrace(0));
         $__pwRefs = %s;
         $__pwRefOffset = 0;
-        if (\Patchwork\CallRerouting\dispatch($__pwClass, $__pwCalledClass, __FUNCTION__, $__pwFrame, $__pwResult, \array_merge(\array_slice($__pwRefs, $__pwRefOffset, \func_num_args()), \array_slice(\func_get_args(), \count($__pwRefs))))) {
+        if (\Patchwork\CallRerouting\dispatch(
+            $__pwClass,
+            $__pwCalledClass,
+            __FUNCTION__,
+            $__pwFrame,
+            $__pwResult,
+            \array_merge(\array_slice($__pwRefs, $__pwRefOffset, \func_num_args()), \array_slice(\func_get_args(), \count($__pwRefs)))
+        )) {
             throw new \Patchwork\Exceptions\ReturnFromNever;
         }
     }

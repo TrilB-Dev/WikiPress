@@ -6,6 +6,7 @@
  * @copyright  2010-2018 Ignas Rudaitis
  * @license    http://www.opensource.org/licenses/mit-license.html
  */
+
 namespace Patchwork\Stack;
 
 use Patchwork\Exceptions;
@@ -51,7 +52,7 @@ function top($property = null)
 function topOffset()
 {
     if (empty(State::$items)) {
-        throw new Exceptions\StackEmpty;
+        throw new Exceptions\StackEmpty();
     }
     list($offset, $calledClass) = end(State::$items);
     return $offset;
@@ -60,7 +61,7 @@ function topOffset()
 function topCalledClass()
 {
     if (empty(State::$items)) {
-        throw new Exceptions\StackEmpty;
+        throw new Exceptions\StackEmpty();
     }
     list($offset, $calledClass) = end(State::$items);
     return $calledClass;
@@ -69,7 +70,7 @@ function topCalledClass()
 function topArgsOverride()
 {
     if (empty(State::$items)) {
-        throw new Exceptions\StackEmpty;
+        throw new Exceptions\StackEmpty();
     }
     list($offset, $calledClass, $argsOverride) = end(State::$items);
     return $argsOverride;
@@ -83,7 +84,7 @@ function all()
 
 function allCalledClasses()
 {
-    return array_map(function($item) {
+    return array_map(function ($item) {
         list($offset, $calledClass) = $item;
         return $calledClass;
     }, State::$items);
@@ -91,5 +92,5 @@ function allCalledClasses()
 
 class State
 {
-    static $items = [];
+    public static $items = [];
 }

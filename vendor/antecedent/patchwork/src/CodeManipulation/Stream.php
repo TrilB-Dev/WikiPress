@@ -6,15 +6,16 @@
  * @copyright  2010-2023 Ignas Rudaitis
  * @license    http://www.opensource.org/licenses/mit-license.html
  */
+
 namespace Patchwork\CodeManipulation;
 
 use Patchwork\Utils;
 
 class Stream
 {
-    const STREAM_OPEN_FOR_INCLUDE = 128;
-    const STAT_MTIME_NUMERIC_OFFSET = 9;
-    const STAT_MTIME_ASSOC_OFFSET = 'mtime';
+    public const STREAM_OPEN_FOR_INCLUDE = 128;
+    public const STAT_MTIME_NUMERIC_OFFSET = 9;
+    public const STAT_MTIME_ASSOC_OFFSET = 'mtime';
 
     protected static $protocols = ['file', 'phar'];
     protected static $otherWrapperClass;
@@ -42,7 +43,8 @@ class Stream
     public static function unwrap()
     {
         foreach (static::$protocols as $protocol) {
-            set_error_handler(function() {});
+            set_error_handler(function () {
+            });
             stream_wrapper_restore($protocol);
             restore_error_handler();
         }
@@ -80,7 +82,7 @@ class Stream
     {
         if (isset(static::$otherWrapperClass)) {
             $class = static::$otherWrapperClass;
-            $otherWrapper = new $class;
+            $otherWrapper = new $class();
             if ($context !== null) {
                 $otherWrapper->context = $context;
             }
@@ -88,8 +90,15 @@ class Stream
         }
     }
 
-    public static function alternate(callable $internal, $resource, $wrapped, array $args = [], array $extraArgs = [], $context = null, $shouldReturnResource = false)
-    {
+    public static function alternate(
+        callable $internal,
+        $resource,
+        $wrapped,
+        array $args = [],
+        array $extraArgs = [],
+        $context = null,
+        $shouldReturnResource = false
+    ) {
         $shouldAddResourceArg = true;
         if ($resource === null) {
             $resource = static::getOtherWrapper($context);
@@ -97,7 +106,7 @@ class Stream
         }
         if (is_object($resource)) {
             $args = array_merge($args, $extraArgs);
-            $ladder = function() use ($resource, $wrapped, $args) {
+            $ladder = function () use ($resource, $wrapped, $args) {
                 switch (count($args)) {
                     case 0:
                         return $resource->$wrapped();
@@ -119,7 +128,7 @@ class Stream
             if ($context !== null) {
                 $args[] = $context;
             }
-            $result = static::bypass(function() use ($internal, $args) {
+            $result = static::bypass(function () use ($internal, $args) {
                 switch (count($args)) {
                     case 0:
                         return $internal();
@@ -136,7 +145,7 @@ class Stream
             return ($result !== false) ? $resource : false;
         }
         return $result;
-    } 
+    }
 
     public static function fopen($path, $mode, $options, $context = null)
     {
@@ -146,7 +155,7 @@ class Stream
             $result = $otherWrapper->stream_open($path, $mode, $options, $openedPath);
             return $result !== false ? $otherWrapper : false;
         }
-        return static::bypass(function() use ($path, $mode, $options, $context) {
+        return static::bypass(function () use ($path, $mode, $options, $context) {
             if ($context === null) {
                 return fopen($path, $mode, $options);
             }
@@ -225,11 +234,12 @@ class Stream
 
     public function url_stat($path, $flags)
     {
-        $internal = function($path, $flags) {
+        $internal = function ($path, $flags) {
             $func = ($flags & STREAM_URL_STAT_LINK) ? 'lstat' : 'stat';
             clearstatcache();
             if ($flags & STREAM_URL_STAT_QUIET) {
-                set_error_handler(function() {});
+                set_error_handler(function () {
+                });
                 try {
                     $result = call_user_func($func, $path);
                 } catch (\Exception $e) {
@@ -287,7 +297,7 @@ class Stream
 
     public function stream_cast($castAs)
     {
-        return static::alternate(function() {
+        return static::alternate(function () {
             return $this->resource;
         }, null, __FUNCTION__, [$castAs]);
     }
@@ -302,7 +312,7 @@ class Stream
 
     public function stream_set_option($option, $arg1, $arg2)
     {
-        $internal = function($option, $arg1, $arg2) {
+        $internal = function ($option, $arg1, $arg2) {
             switch ($option) {
                 case STREAM_OPTION_BLOCKING:
                     return stream_set_blocking($this->resource, $arg1);
@@ -334,7 +344,7 @@ class Stream
 
     public function stream_metadata($path, $option, $value)
     {
-        $internal = function($path, $option, $value) {
+        $internal = function ($path, $option, $value) {
             switch ($option) {
                 case STREAM_META_TOUCH:
                     if (empty($value)) {
