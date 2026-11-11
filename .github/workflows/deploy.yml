@@ -1,4 +1,4 @@
-name: Build WikiPress Deploy Branch
+name: Build AccessPress Deploy Branch
 
 on:
   push:
@@ -8,12 +8,35 @@ on:
 jobs:
   deploy:
     runs-on: self-hosted
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['8.3', '8.4', '8.5']
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: Master
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: mbstring, xml, curl, zip, intl
+          tools: composer:v2
+          coverage: none
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.composer/cache
+            vendor
+          key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ matrix.php-version }}-
 
       - name: Configure Git
         shell: bash
@@ -31,7 +54,7 @@ jobs:
 
       - name: Install Node dependencies
         shell: bash
-        run: npm install
+        run: npm install --no-fund --no-audit
 
       - name: Build Node frontend assets
         shell: bash
@@ -52,9 +75,9 @@ jobs:
             git commit -m "Build Node frontend assets"
           fi
 
-      - name: Install Composer production dependencies
+      - name: Install Composer dependencies
         shell: bash
-        run: composer install --no-dev --optimize-autoloader
+        run: composer install --prefer-dist --no-progress --no-interaction --no-scripts
 
       - name: Add Composer changes
         shell: bash
@@ -88,29 +111,32 @@ jobs:
       - name: Remove Root Non Production Folders
         shell: bash
         run: |
-          # Force removal of directories
           rm -rf .vscode || true
           rm -rf .github || true
           rm -rf .kiota || true
           rm -rf dev-stubs || true
           rm -rf node_modules || true
           rm -rf Test || true
-          rm -rf scripts || true
+          rm -rf Scripts || true
           rm -rf Docs || true
           rm -rf PluginBackup || true
-          
+          rm -rf Old || true
+
       - name: Remove Root Non Production Files
         shell: bash
         run: |
-          # Force removal of files    
           rm -f .deployignore || true
           rm -f .gitignore || true
           rm -f package-lock.json || true
-          #rm -f package.json || true
           rm -f phpunit.xml.dist || true
+          rm -f .phpunit.result.cache || true
           rm -f phpcs.xml.dist || true
           rm -f webpack.config.js || true
           rm -f .wp-env.json || true
+          rm -f composer.lock || true
+          rm -f composer.json || true
+          rm -f package-lock.json || true
+          rm -f package.json || true
 
       - name: Add all remaining files
         shell: bash
@@ -128,6 +154,3 @@ jobs:
       - name: Push Deploy
         shell: bash
         run: git push --force origin Deploy
-
-
-
