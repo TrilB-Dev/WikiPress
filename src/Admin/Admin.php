@@ -20,12 +20,12 @@ use WikiPress\Assets\Assets;
 use WikiPress\Admin\Manager\Manager;
 use WikiPress\Admin\Manager\Tools\ToolsManager;
 use WikiPress\Admin\Manager\Dashboard\DashboardManager;
-use WikiPress\Admin\Manager\Mods\ModManager;
 use WikiPress\Admin\Manager\Settings\SettingsManager;
 use WikiPress\Admin\Manager\Tools\Export;
 use WikiPress\Admin\Manager\Tools\General;
 use WikiPress\Admin\Manager\Tools\Import;
 use WikiPress\Admin\Manager\Tools\Reset;
+use WikiPress\Admin\Manager\Wiki\WikiManager;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -45,17 +45,17 @@ final class Admin {
 	 */
 	private SettingsManager $settings_manager;
 	/**
-	 * LicencesManager instance for managing licence-type and issued licence pages.
-	 *
-	 * @var ModManager
-	 */
-	private ModManager $mod_manager;
-	/**
 	 * ToolsManager instance for managing tools-related admin pages.
 	 *
 	 * @var ToolsManager
 	 */
 	private ToolsManager $tools_manager;
+	/**
+	 * WikiManager instance for managing wiki-related admin pages.
+	 *
+	 * @var WikiManager
+	 */
+	private WikiManager $wiki_manager;
 	/**
 	 * Registry of the admin managers.
 	 *
@@ -85,7 +85,7 @@ final class Admin {
 		$this->managers = array(
 			'dashboard' 		=> new DashboardManager(),
 			'settings'  		=> new SettingsManager(),
-			'mod-manager'      	=> new ModManager(),
+			'wiki-manager'      	=> new WikiManager(),
 			'tools'     		=> new ToolsManager(),
 		);
 		/**
@@ -97,9 +97,9 @@ final class Admin {
 		 */
 		$this->settings_manager  = $this->managers['settings'];
 		/**
-		 * Initialize the mod manager instance from the registry.
+		 * Initialize the wiki manager instance from the registry.
 		 */
-		$this->mod_manager      = $this->managers['mod-manager'];
+		$this->wiki_manager      = $this->managers['wiki-manager'];
 		/**
 		 * Initialize the tools manager instance from the registry.
 		 */
@@ -179,12 +179,9 @@ final class Admin {
 		$tab = sanitize_key( $tab );
 		$form = sanitize_key( $form );
 		$normalized_group = array(
-			'wikipress'        => 'dashboard',
+			'wikipress'       => 'dashboard',
 			'dashboard'       => 'dashboard',
-			'mods'            => 'mods',
-			'mod-manager'     => 'mods',
-			'manage-mod'      => 'mods',
-			'manage-mods'     => 'mods',
+			'wiki-manager'    => 'wikis',
 			'settings'        => 'settings',
 			'tools'           => 'tools',
 			'reports'         => 'reports',
@@ -194,9 +191,9 @@ final class Admin {
 
 		try {
 			switch ( $normalized_group ) {
-				case 'mods':
-					LoggerHelper::write_log( 'WikiPress dashboard routed to mods page.' );
-					$this->render_mods( $tab, $form );
+				case 'wikis':
+					LoggerHelper::write_log( 'WikiPress dashboard routed to wikis page.' );
+					$this->render_wikis( $tab );
 					return;
 				case 'settings':
 					LoggerHelper::write_log( 'WikiPress dashboard routed to settings page.' );
@@ -239,10 +236,10 @@ final class Admin {
 	 * This method is responsible for rendering the mods page of the WikiPress plugin.
 	 * It delegates the rendering to the ModManager instance.
 	 */
-	public function render_mods( string $tab = '', string $form = '' ): void {
-		LoggerHelper::write_log( 'WikiPress mods render started.' );
-		$this->mod_manager->render( $tab, $form );
-		LoggerHelper::write_log( 'WikiPress mods render complete.' );
+	public function render_wikis( string $tab = '' ): void {
+		LoggerHelper::write_log( 'WikiPress wikis render started.' );
+		$this->wiki_manager->render( $tab );
+		LoggerHelper::write_log( 'WikiPress wikis render complete.' );
 	}
 	/**
 	 * Render the settings page.
