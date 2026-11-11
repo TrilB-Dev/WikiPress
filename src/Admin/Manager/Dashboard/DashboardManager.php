@@ -8,8 +8,6 @@ namespace WikiPress\Admin\Manager\Dashboard;
 
 use WikiPress\Admin\Manager\Manager;
 use WikiPress\Assets\Assets;
-use WikiPress\Includes\UserManagement\Groups\Groups;
-use WikiPress\Includes\UserManagement\Roles\Roles;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
