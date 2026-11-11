@@ -1,11 +1,13 @@
 <?php
-
+/**
+ * WikiPress Includes class.
+ *
+ * @since 1.0.0
+ */
 namespace WikiPress\Includes;
 
-use WikiPress\Includes\Core\Capabilities;
 use WikiPress\Includes\Core\WP\WPLoader;
 use WikiPress\Includes\Functions\Helpers\LoggerHelper;
-use WikiPress\Includes\TemplateManagement\TemplateManagement;
 use WikiPress\Includes\Pages\CronJobs;
 use WikiPress\Includes\Pages\PostTypes;
 use WikiPress\Includes\Pages\Shortcodes;
@@ -62,19 +64,6 @@ final class Includes {
         if ( $this->initialized ) {
             return;
         }
-
-        /**
-         * Capabilities installation.
-         * 
-         * @since 1.0.0
-         */
-        Capabilities::install();
-        /**
-         * Mod management registration.
-         * 
-         * @since 1.0.0
-         */
-        TemplateManagement::register();
         /**
          * Post types registration.
          * 
@@ -99,7 +88,11 @@ final class Includes {
          * @since 1.0.0
          */
         CronJobs::register();
-
+        /**
+         * Mark the Includes instance as initialized.
+         * 
+         * @since 1.0.0
+         */
         $this->initialized = true;
     }
 
@@ -121,6 +114,7 @@ final class Includes {
      *
      * @param callable $extension Callback receiving this Includes instance.
      * @return self
+     * @since 1.0.0
      */
     public function register_extension( callable $extension ): self {
         if ( $this->initialized ) {
@@ -139,6 +133,7 @@ final class Includes {
      * @param string $hook WordPress action name.
      * @param int $priority Hook priority.
      * @return self
+     * @since 1.0.0
      */
     public function register_hooks( WPLoader $loader, string $hook = 'init', int $priority = 10 ): self {
         $loader->add_action( $hook, $this, 'init', $priority, 0 );
@@ -149,6 +144,7 @@ final class Includes {
      * Check if the Includes instance has been initialized.
      *
      * @return bool True if initialized, false otherwise.
+     * @since 1.0.0
      */
     public function is_initialized(): bool {
         return $this->initialized;
