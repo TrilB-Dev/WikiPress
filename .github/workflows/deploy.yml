@@ -1,4 +1,4 @@
-name: Build AccessPress Deploy Branch
+name: Build WikiPress Deploy Branch
 
 on:
   push:
