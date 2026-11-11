@@ -263,6 +263,23 @@ class WikiManager extends Manager {
     }
 
     /**
+     * Normalize a managed form state to a supported value.
+     *
+     * @param string $value Raw form state.
+     * @return string
+     * @since 1.0.0
+     */
+    protected function normalize_form_state( string $value ): string {
+        $value = sanitize_key( $value );
+
+        if ( in_array( $value, array( 'new', 'edit' ), true ) ) {
+            return $value;
+        }
+
+        return '';
+    }
+
+    /**
      * Get the page title for a given tab.
      *
      * @param string $tab Tab slug.
