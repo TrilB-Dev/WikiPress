@@ -157,7 +157,7 @@ final class Settings {
      */
     public static function set_group( string $group, array $settings ): bool {
         return SettingsManager::set_group( $group, $settings );
-    }
+    } 
 
     /**
      * Register a new settings group with default values.
