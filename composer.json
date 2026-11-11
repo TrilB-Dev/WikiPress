@@ -11,7 +11,7 @@
             "WikiPress\\": "src/"
         },
         "classmap": [
-            "src/WikiPress.php"
+            "src/Plugin.php"
         ],
         "exclude-from-classmap": [
             "src/Includes/Plugins/"
