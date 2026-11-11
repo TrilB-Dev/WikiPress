@@ -68,14 +68,6 @@ final class Settings {
         return SettingsManager::set_group( $group, $settings );
     }
 
-    public static function register_group( string $group, array $defaults = [] ): bool {
-        return SettingsManager::register_group( $group, $defaults );
-    }
-
-    public static function register_key( string $key, string $group, $default = null ): bool {
-        return SettingsManager::register_key( $key, $group, $default );
-    }
-
     public static function get_all(): array {
         return SettingsManager::get_all();
     }
