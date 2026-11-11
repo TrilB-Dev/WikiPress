@@ -49,7 +49,7 @@ final class SettingsManager {
      * @return boolean
      */
     public static function set( string $key, $value ): bool {
-        $group = self::group_for_key( $key );
+        $group = 'general';
         $settings = self::get_group( $group ) ?? [];
         $settings[ $key ] = $value;
         return self::set_group( $group, $settings );
@@ -61,7 +61,7 @@ final class SettingsManager {
      * @return boolean
      */
     public static function delete( string $key ): bool {
-        $group = self::group_for_key( $key );
+        $group = 'general';
         $settings = self::get_group( $group );
         if ( ! is_array( $settings ) || ! array_key_exists( $key, $settings ) ) {
             return false;
@@ -110,9 +110,10 @@ final class SettingsManager {
         return $settings;
     }
     /**
-     * Get the default settings.
+     * Get the settings for a specific group.
      *
-     * @return array
+     * @param string $group
+     * @return array|null
      * @since 1.0.0
      */
     public static function get_group( string $group ): ?array {
@@ -166,33 +167,6 @@ final class SettingsManager {
     private static function logical_group( string $group ): string {
         return str_starts_with( $group, 'wikipress_' ) ? substr( $group, 10 ) : $group;
     }
-    /**
-     * Get the logical group name for a given setting key.
-     *
-     * @param string $key
-     * @return string
-     * @since 1.0.0
-     */
-    private static function group_for_key( string $key ): string {
-        $key = sanitize_key( $key );
-        if ( isset( self::$registered_keys[ $key ] ) ) {
-            return self::$registered_keys[ $key ];
-        }
-        if ( in_array( $key, [ 'create_mods', 'write_pages', 'view_analytics', 'manage_plugins' ], true ) ) {
-            return 'access';
-        }
-        if ( str_contains( $key, 'layout' ) ) {
-            return 'layout';
-        }
-        if ( str_contains( $key, 'access' ) ) {
-            return 'access';
-        }
-        if ( str_contains( $key, 'tool' ) ) {
-            return 'tools';
-        }
-        return 'general';
-    }
-
     /**
      * Normalize a group name by replacing dashes and spaces with underscores and removing the 'wikipress_' prefix if present.
      *

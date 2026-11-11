@@ -24,7 +24,7 @@ final class Defaults {
 	public static function install_defaults(): void {
 		foreach ( self::default_settings() as $group => $values ) {
 			if ( is_array( $values ) ) {
-				Settings::register_group( $group, $values );
+				Settings::set_group( $group, $values );
 			}
 		}
 	}

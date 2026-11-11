@@ -224,7 +224,6 @@ final class Admin {
 			AjaxHelper::unauthorized( __( 'You are not authorized to dismiss the WikiPress onboarding modal.', 'wikipress' ) );
 		}
 
-		Settings::register_group( 'setup', array( 'first_install_complete' => false ) );
 		Settings::set( 'first_install_complete', true );
 		Settings::set( 'onboarding_steps_complete', 3 );
 
