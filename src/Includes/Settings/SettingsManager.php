@@ -17,20 +17,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 final class SettingsManager {
     /**
-     * Registered setting groups.
-     *
-     * @var array<string, array<string, mixed>>
-     * @since 1.0.0
-     */
-    private static array $registered_groups = [];
-    /**
-     * Registered setting keys.
-     *
-     * @var array<string, string>
-     * @since 1.0.0
-     */
-    private static array $registered_keys = [];
-    /**
      * Get the name of the settings table.
      *
      * @return string
@@ -38,26 +24,6 @@ final class SettingsManager {
      */
     public static function table_name(): string {
         return Database::table_name( 'settings' );
-    }
-    /**
-     * Install the settings table and initialize default settings.
-     *
-     * @return void
-     * @since 1.0.0
-     */
-    public static function install(): void {
-        Database::install();
-
-        foreach ( self::registered_defaults() as $group => $settings ) {
-            $stored_settings = self::get_group( $group );
-            if ( null === $stored_settings ) {
-                $legacy_settings = self::get_legacy_group( $group );
-                $stored_settings = is_array( $legacy_settings ) ? $legacy_settings : [];
-            }
-
-            self::set_group( $group, array_merge( $settings, $stored_settings ) );
-            self::delete_legacy_group( $group );
-        }
     }
     /**
      * Get a setting by its key.
@@ -72,7 +38,8 @@ final class SettingsManager {
                 return $settings[ $key ];
             }
         }
-        return self::registered_default( $key, $default );
+
+        return $default;
     }
     /**
      * Set a setting by its key.
@@ -127,7 +94,7 @@ final class SettingsManager {
     public static function get_all(): array {
         global $wpdb;
         $rows = $wpdb->get_results( 'SELECT setting_group, setting_value FROM ' . self::table_name(), ARRAY_A );
-        $settings = self::registered_defaults();
+        $settings = [];
 
         foreach ( $rows ?: [] as $row ) {
             $group = self::logical_group( $row['setting_group'] );
@@ -137,72 +104,11 @@ final class SettingsManager {
                 continue;
             }
 
-            $defaults = self::registered_defaults()[ $group ] ?? [];
-            $settings[ $group ] = array_merge( $defaults, $stored );
+            $settings[ $group ] = $stored;
         }
 
         return $settings;
     }
-    /**
-     * Get the default settings.
-     *
-     * @return array
-     * @since 1.0.0
-     */
-    public static function defaults(): array {
-        return [
-            'general' => [
-                'root_name' => 'WikiPress',
-                'root_description' => '',
-                'archive_title' => '',
-                'archive_description' => '',
-                'root_slug' => 'catalogue',
-                'category_slug' => '',
-                'tag_slug' => '',
-                'permalink' => '%root%/%wiki_parent%/%wiki_category%/%wiki_tag%/%wiki_page%',
-                'enable_schema' => true,
-            ],
-            'layout' => [
-                'show_search' => true,
-                'show_toc' => true,
-                'show_breadcrumbs' => true,
-                'show_last_updated' => true,
-                'show_author' => false,
-                'show_reading_time' => false,
-                'show_feedback' => true,
-                'show_related_pages' => true,
-                'related_pages_count' => 4,
-                'search_placeholder' => __( 'Search the catalogue', 'wikipress' ),
-                'search_button_text' => __( 'Search', 'wikipress' ),
-                'search_scope' => 'all',
-                'search_no_results_message' => __( 'No catalogue entries found.', 'wikipress' ),
-                'search_results_count' => 10,
-                'search_min_chars' => 2,
-                'search_live_results' => true,
-                'show_sidebar' => true,
-                'sidebar_position' => 'left',
-                'sidebar_width' => 280,
-                'sidebar_sticky' => true,
-                'sidebar_show_categories' => true,
-                'sidebar_show_category_count' => false,
-                'sidebar_expand_categories' => true,
-                'sidebar_show_page_count' => false,
-                'page_show_title' => true,
-                'page_show_toc' => true,
-                'page_toc_position' => 'sidebar',
-                'toc_min_level' => 2,
-                'toc_max_level' => 4,
-                'page_show_navigation' => true,
-                'reading_time_wpm' => 200,
-            ],
-            'access' => [],
-            'tools' => [ 
-                'debug_logging' => false,
-                'console_logging' => false 
-            ],
-        ];
-    }
-
     /**
      * Get the default settings.
      *
@@ -216,11 +122,10 @@ final class SettingsManager {
         $settings = $value === null ? null : maybe_unserialize( $value );
 
         if ( ! is_array( $settings ) ) {
-            return self::registered_defaults()[ $group ] ?? null;
+            return null;
         }
 
-        $defaults = self::registered_defaults()[ $group ] ?? [];
-        return array_merge( $defaults, $settings );
+        return $settings;
     }
     /**
      * Set the settings for a specific group.
@@ -238,49 +143,6 @@ final class SettingsManager {
             'autoload' => 'yes',
             'updated_at' => current_time( 'mysql' ),
         ], [ '%s', '%s', '%s', '%s' ] );
-    }
-    /**
-     * Register a settings group with default values.
-     *
-     * @param string $group
-     * @param array $defaults
-     * @return bool
-     * @since 1.0.0
-     */
-    public static function register_group( string $group, array $defaults = [] ): bool {
-        $group = self::normalize_group( $group );
-        if ( '' === $group ) {
-            return false;
-        }
-
-        self::$registered_groups[ $group ] = array_merge( self::$registered_groups[ $group ] ?? [], $defaults );
-        foreach ( $defaults as $key => $default ) {
-            $key = sanitize_key( (string) $key );
-            if ( '' !== $key ) {
-                self::$registered_keys[ $key ] = $group;
-            }
-        }
-        return true;
-    }
-    /**
-     * Register a single setting key with a default value.
-     *
-     * @param string $key
-     * @param string $group
-     * @param mixed $default
-     * @return bool
-     * @since 1.0.0
-     */
-    public static function register_key( string $key, string $group, $default = null ): bool {
-        $key = sanitize_key( $key );
-        if ( '' === $key || ! self::register_group( $group ) ) {
-            return false;
-        }
-
-        $group = self::normalize_group( $group );
-        self::$registered_keys[ $key ] = $group;
-        self::$registered_groups[ $group ][ $key ] = $default;
-        return true;
     }
     /**
      * Get the storage group name for a logical group.
@@ -331,38 +193,6 @@ final class SettingsManager {
         return 'general';
     }
 
-    /**
-     * Return core and extension defaults for activation and fallback reads.
-     *
-     * @return array<string, array<string, mixed>>
-     * @since 1.0.0
-     */
-    private static function registered_defaults(): array {
-        $defaults = self::defaults();
-        foreach ( self::$registered_groups as $group => $settings ) {
-            $defaults[ $group ] = array_merge( $defaults[ $group ] ?? [], $settings );
-        }
-
-        return $defaults;
-    }
-    /**
-     * Get the registered default for a specific setting key.
-     *
-     * @param string $key
-     * @param mixed $fallback
-     * @return mixed
-     * @since 1.0.0
-     */
-    private static function registered_default( string $key, $fallback ) {
-        $key = sanitize_key( $key );
-        foreach ( self::registered_defaults() as $settings ) {
-            if ( array_key_exists( $key, $settings ) ) {
-                return $settings[ $key ];
-            }
-        }
-
-        return $fallback;
-    }
     /**
      * Normalize a group name by replacing dashes and spaces with underscores and removing the 'wikipress_' prefix if present.
      *

@@ -12,11 +12,11 @@
 namespace WikiPress\Includes\Core\WP;
 
 use WikiPress\Includes\Core\Capabilities;
+use WikiPress\Includes\Core\Defaults;
 use WikiPress\Includes\Core\Roles;
 use WikiPress\Includes\ModManagement\GroupsManager;
 use WikiPress\Includes\Plugins\Plugins;
 use WikiPress\Includes\Settings\SettingsManager;
-use WikiPress\Includes\Settings\Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -47,20 +47,13 @@ final class Activator {
 	 * @return void
 	 */
 	public static function activate( ?array $callbacks = null ): void {
-		Settings::register_group(
-			'setup',
-			array(
-				'first_install_complete'    => false,
-				'onboarding_steps_complete' => 0,
-			)
-		);
-
 		Plugins::get_instance()->init();
 		Database::install();
 		Database::update();
 		Roles::install();
 		Capabilities::install();
-		SettingsManager::install();
+		Defaults::install_defaults();
+
 
 		foreach ( $callbacks ?? self::$callbacks as $callback ) {
 			call_user_func( $callback );
