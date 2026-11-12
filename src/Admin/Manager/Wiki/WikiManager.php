@@ -137,7 +137,7 @@ class WikiManager extends Manager {
         }
         $capabilities = array(
             'dashboard' => 'wikipress_manager_dashboard',
-            'wikis'    => 'wikipress_manager_wikis_view',
+            'wikis'    => 'wikipress_manager_wiki_view',
             'tags'      => 'wikipress_manager_tags_view',
             'categories' => 'wikipress_manager_categories_view',
         );

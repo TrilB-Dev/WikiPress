@@ -23,24 +23,24 @@ class Capabilities {
 		return array_merge(
 			array(
 				'wikipress_admin_view'                => array(
-					'group'       => 'WikiPress Licence',
-					'label'       => __( 'View Licence Administration', 'wikipress' ),
+					'group'       => 'WikiPress',
+					'label'       => __( 'View WikiPress Administration', 'wikipress' ),
 					'description' => __( 'Allows access to the WikiPress dashboard and admin pages.', 'wikipress' ),
 				),
 				'wikipress_dashboard_view'            => array(
-					'group'       => 'WikiPress Licence',
-					'label'       => __( 'View Licence Dashboard', 'wikipress' ),
+					'group'       => 'WikiPress',
+					'label'       => __( 'View WikiPress Dashboard', 'wikipress' ),
 					'description' => __( 'Allows viewing the WikiPress dashboard and summary status.', 'wikipress' ),
 				),
 				'wikipress_settings_general_view'     => array(
 					'group'       => 'WikiPress Settings',
-					'label'       => __( 'View Licence Settings', 'wikipress' ),
-					'description' => __( 'Allows viewing the general licence management settings.', 'wikipress' ),
+					'label'       => __( 'View WikiPress Settings', 'wikipress' ),
+					'description' => __( 'Allows viewing the general WikiPress settings.', 'wikipress' ),
 				),
 				'wikipress_settings_general_edit'     => array(
 					'group'       => 'WikiPress Settings',
-					'label'       => __( 'Edit Licence Settings', 'wikipress' ),
-					'description' => __( 'Allows editing the licence management settings.', 'wikipress' ),
+					'label'       => __( 'Edit WikiPress Settings', 'wikipress' ),
+					'description' => __( 'Allows editing the general WikiPress settings.', 'wikipress' ),
 				),
 				'wikipress_settings_layout_view'      => array(
 					'group'       => 'WikiPress Settings',
@@ -60,17 +60,7 @@ class Capabilities {
 				'wikipress_settings_access_edit'      => array(
 					'group'       => 'WikiPress Settings',
 					'label'       => __( 'Edit Access Controls', 'wikipress' ),
-					'description' => __( 'Allows changing licence access roles and permission boundaries.', 'wikipress' ),
-				),
-				'wikipress_settings_security_view'    => array(
-					'group'       => 'WikiPress Settings',
-					'label'       => __( 'View Security Settings', 'wikipress' ),
-					'description' => __( 'Allows viewing security and export protection settings.', 'wikipress' ),
-				),
-				'wikipress_settings_security_edit'    => array(
-					'group'       => 'WikiPress Settings',
-					'label'       => __( 'Edit Security Settings', 'wikipress' ),
-					'description' => __( 'Allows editing export passwords, encryption controls, and security flags.', 'wikipress' ),
+					'description' => __( 'Allows changing WikiPress access roles and permission boundaries.', 'wikipress' ),
 				),
 				'wikipress_tools_general'              => array(
 					'group'       => 'WikiPress Tools',
@@ -85,7 +75,7 @@ class Capabilities {
 				'wikipress_tools_export'              => array(
 					'group'       => 'WikiPress Tools',
 					'label'       => __( 'Export Licence Data', 'wikipress' ),
-					'description' => __( 'Allows exporting licence records using encryption and a password.', 'wikipress' ),
+					'description' => __( 'Allows exporting WikiPress records using encryption and a password.', 'wikipress' ),
 				),
 				'wikipress_tools_debug'               => array(
 					'group'       => 'WikiPress Tools',
@@ -95,7 +85,7 @@ class Capabilities {
 				'wikipress_tools_reset'               => array(
 					'group'       => 'WikiPress Tools',
 					'label'       => __( 'Reset Licence Data', 'wikipress' ),
-					'description' => __( 'Allows resetting or clearing licence records and related data.', 'wikipress' ),
+					'description' => __( 'Allows resetting or clearing WikiPress records and related data.', 'wikipress' ),
 				),
 				'wikipress_settings_plugins_view'     => array(
 					'group'       => 'WikiPress Settings',
@@ -123,44 +113,59 @@ class Capabilities {
 					'description' => __( 'Allows editing settings for external WikiPress plugins.', 'wikipress' ),
 				),
 				'wikipress_manager_dashboard' => array(
-					'group'       => 'Mod Management',
-					'label'       => __( 'View Mod Management Dashboard', 'wikipress' ),
-					'description' => __( 'Allows viewing the WikiPress Mod Management Dashboard.', 'wikipress' ),
+					'group'       => 'Wiki Manager',
+					'label'       => __( 'View Wiki Manager Dashboard', 'wikipress' ),
+					'description' => __( 'Allows viewing the WikiPress Wiki Manager Dashboard.', 'wikipress' ),
 				),
-				'wikipress_manager_mods_view' => array(
-					'group'       => 'Mod Management',
-					'label'       => __( 'Manage Mods', 'wikipress' ),
-					'description' => __( 'Allows viewing mods within Mod Management.', 'wikipress' ),
+				'wikipress_manager_wiki_view' => array(
+					'group'       => 'Wiki Manager',
+					'label'       => __( 'View Wikis', 'wikipress' ),
+					'description' => __( 'Allows viewing wikis within Wiki Manager.', 'wikipress' ),
 				),
-				'wikipress_manager_mods_edit' => array(
-					'group'       => 'Mod Management',
-					'label'       => __( 'Edit Mods', 'wikipress' ),
-					'description' => __( 'Allows editing mods within Mod Management.', 'wikipress' ),
+				'wikipress_manager_wiki_edit' => array(
+					'group'       => 'Wiki Manager',
+					'label'       => __( 'Edit Wikis', 'wikipress' ),
+					'description' => __( 'Allows editing wikis within Wiki Manager.', 'wikipress' ),
 				),
-				'wikipress_manager_mods_edit_others' => array(
-					'group'       => 'Mod Management',
-					'label'       => __( 'Edit Other Mods', 'wikipress' ),
-					'description' => __( 'Allows editing mods created by other users within Mod Management.', 'wikipress' ),
+				'wikipress_manager_wiki_edit_others' => array(
+					'group'       => 'Wiki Manager',
+					'label'       => __( 'Edit Others\' Wikis', 'wikipress' ),
+					'description' => __( 'Allows editing wikis created by other users within Wiki Manager.', 'wikipress' ),
 				),
-				'wikipress_manager_groups_view' => array(
-					'group'       => 'Mod Management',
-					'label'       => __( 'Manage Groups', 'wikipress' ),
-					'description' => __( 'Allows viewing user groups within Mod Management.', 'wikipress' ),
+				'wikipress_manager_wiki_page_view' => array(
+					'group'       => 'Wiki Manager',
+					'label'       => __( 'View Wiki Pages', 'wikipress' ),
+					'description' => __( 'Allows viewing wiki pages within Wiki Manager.', 'wikipress' ),
 				),
-				'wikipress_manager_groups_edit' => array(
-					'group'       => 'Mod Management',
-					'label'       => __( 'Edit Groups', 'wikipress' ),
-					'description' => __( 'Allows editing user groups within Mod Management.', 'wikipress' ),
+				'wikipress_manager_wiki_page_edit' => array(
+					'group'       => 'Wiki Manager',
+					'label'       => __( 'Edit Wiki Pages', 'wikipress' ),
+					'description' => __( 'Allows editing wiki pages within Wiki Manager.', 'wikipress' ),
+				),
+				'wikipress_manager_wiki_page_edit_others' => array(
+					'group'       => 'Wiki Manager',
+					'label'       => __( 'Edit Others\' Wiki Pages', 'wikipress' ),
+					'description' => __( 'Allows editing wiki pages created by other users within Wiki Manager.', 'wikipress' ),
+				),
+				'wikipress_manager_categories_view' => array(
+					'group'       => 'Wiki Manager',
+					'label'       => __( 'View Categories', 'wikipress' ),
+					'description' => __( 'Allows viewing categories within Wiki Manager.', 'wikipress' ),
+				),
+				'wikipress_manager_categories_edit' => array(
+					'group'       => 'Wiki Manager',
+					'label'       => __( 'Edit Categories', 'wikipress' ),
+					'description' => __( 'Allows editing categories within Wiki Manager.', 'wikipress' ),
 				),
 				'wikipress_manager_tags_view' => array(
-					'group'       => 'Mod Management',
+					'group'       => 'Wiki Manager',
 					'label'       => __( 'View Tags', 'wikipress' ),
-					'description' => __( 'Allows viewing tags within Mod Management.', 'wikipress' ),
+					'description' => __( 'Allows viewing tags within Wiki Manager.', 'wikipress' ),
 				),
 				'wikipress_manager_tags_edit' => array(
-					'group'       => 'Mod Management',
+					'group'       => 'Wiki Manager',
 					'label'       => __( 'Edit Tags', 'wikipress' ),
-					'description' => __( 'Allows editing tags within Mod Management.', 'wikipress' ),
+					'description' => __( 'Allows editing tags within Wiki Manager.', 'wikipress' ),
 				),
 			),
 			self::$extensions
