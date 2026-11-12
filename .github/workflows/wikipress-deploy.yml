@@ -42,6 +42,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-php-${{ matrix.php-version }}-
 
+      - name: Fix vendor permissions
+        shell: bash
+        run: |
+          if [ -d vendor ]; then
+            chmod -R u+rwX,go+rX vendor 2>/dev/null || true
+          fi
+
       - name: Install dependencies
         shell: bash
         run: composer install --prefer-dist --no-progress --no-interaction --no-scripts
