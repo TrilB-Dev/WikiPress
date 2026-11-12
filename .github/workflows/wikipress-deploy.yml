@@ -5,8 +5,12 @@ on:
     branches:
       - Master
 
+concurrency:
+  group: deploy-master-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
-  deploy:
+  php-test:
     runs-on: self-hosted
     strategy:
       fail-fast: false
@@ -37,6 +41,43 @@ jobs:
           key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-php-${{ matrix.php-version }}-
+
+      - name: Install dependencies
+        shell: bash
+        run: composer install --prefer-dist --no-progress --no-interaction --no-scripts
+
+      - name: Validate Composer
+        shell: bash
+        run: composer validate --no-check-publish
+
+      - name: Run PHPCS if configured
+        shell: bash
+        run: |
+          if [ -f phpcs.xml.dist ] || [ -f .phpcs.xml ] || [ -f phpcs.xml ]; then
+            vendor/bin/phpcs --standard=phpcs.xml.dist . || vendor/bin/phpcs .
+          else
+            echo "No PHPCS config found; skipping static analysis."
+          fi
+
+  deploy:
+    needs: php-test
+    runs-on: self-hosted
+    if: github.ref == 'refs/heads/Master'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: Master
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: mbstring, xml, curl, zip, intl
+          tools: composer:v2
+          coverage: none
 
       - name: Configure Git
         shell: bash
@@ -117,10 +158,9 @@ jobs:
           rm -rf dev-stubs || true
           rm -rf node_modules || true
           rm -rf Test || true
-          rm -rf Scripts || true
+          rm -rf scripts || true
           rm -rf Docs || true
           rm -rf PluginBackup || true
-          rm -rf Old || true
 
       - name: Remove Root Non Production Files
         shell: bash
@@ -129,14 +169,9 @@ jobs:
           rm -f .gitignore || true
           rm -f package-lock.json || true
           rm -f phpunit.xml.dist || true
-          rm -f .phpunit.result.cache || true
           rm -f phpcs.xml.dist || true
           rm -f webpack.config.js || true
           rm -f .wp-env.json || true
-          rm -f composer.lock || true
-          rm -f composer.json || true
-          rm -f package-lock.json || true
-          rm -f package.json || true
 
       - name: Add all remaining files
         shell: bash
@@ -154,3 +189,4 @@ jobs:
       - name: Push Deploy
         shell: bash
         run: git push --force origin Deploy
+        
