@@ -18,55 +18,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Wikis extends WikiManager {
 	/**
-	 * Render a complete set of table rows for a settings section.
-	 *
-	 * @param array $rows Row definitions with name, label, renderer, description, hint and optional field_id.
-	 * @return void
-	 */
-	private function render_form_table_rows( array $rows ): void {
-		if ( empty( $rows ) ) {
-			return;
-		}
-		?>
-		<table class="table table-borderless mb-0">
-			<tbody>
-				<?php foreach ( $rows as $row ) : ?>
-					<?php
-					$field_name = $row['name'] ?? '';
-					$field_label = $row['label'] ?? '';
-					$field_renderer = $row['renderer'] ?? null;
-					$field_description = $row['description'] ?? '';
-					$field_hint = $row['hint'] ?? '';
-					$field_id = $row['field_id'] ?? 'wikipress-' . str_replace( array( '[', ']', '_' ), '-', sanitize_key( str_replace( 'wikipress_', '', $field_name ) ) );
-					$field_html = is_callable( $field_renderer ) ? (string) call_user_func( $field_renderer ) : '';
-					?>
-					<tr>
-						<th scope="row" class="align-top pe-3" style="width: 32%;">
-							<label for="<?php echo esc_attr( $field_id ); ?>" class="form-label mb-0 fw-semibold"><?php echo esc_html( $field_label ); ?></label>
-						</th>
-						<td>
-							<div class="d-flex flex-column gap-2">
-								<div><?php echo $field_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
-								<?php if ( '' !== $field_description || '' !== $field_hint ) : ?>
-									<div class="text-secondary small">
-										<?php if ( '' !== $field_description ) : ?>
-											<div><?php echo esc_html( $field_description ); ?></div>
-										<?php endif; ?>
-										<?php if ( '' !== $field_hint ) : ?>
-											<div><?php echo esc_html( $field_hint ); ?></div>
-										<?php endif; ?>
-									</div>
-								<?php endif; ?>
-							</div>
-						</td>
-					</tr>
-				<?php endforeach; ?>
-			</tbody>
-		</table>
-		<?php
-	}
-
-/**
      * Renders the content for the Wiki Wikis page.
      *
      * @since 1.0.0
@@ -592,6 +543,52 @@ class Wikis extends WikiManager {
 				<input type="hidden" name="wikipress_wiki_id" value="<?php echo esc_attr( (string) $wiki_id ); ?>" />
 			</form>
 		<?php endif; ?>
+		<?php
+	}
+
+    /**
+	 * Render a complete set of table rows for a settings section.
+	 *
+	 * @param array $rows Row definitions with name, label, renderer, description, hint and optional field_id.
+	 * @return void
+	 */
+	private function render_form_table_rows( array $rows ): void {
+		if ( empty( $rows ) ) {
+			return;
+		}
+		?>
+		<table class="table table-borderless mb-0">
+			<tbody>
+				<?php foreach ( $rows as $row ) : ?>
+					<?php
+					$field_name = $row['name'] ?? '';
+					$field_label = $row['label'] ?? '';
+					$field_renderer = $row['renderer'] ?? null;
+					$field_description = $row['description'] ?? '';
+					$field_hint = $row['hint'] ?? '';
+					$field_id = $row['field_id'] ?? 'wikipress-' . str_replace( array( '[', ']', '_' ), '-', sanitize_key( str_replace( 'wikipress_', '', $field_name ) ) );
+					$field_html = is_callable( $field_renderer ) ? (string) call_user_func( $field_renderer ) : '';
+					?>
+                    <tr>
+                        <th scope="row" class="align-top text-nowrap pe-4">
+                            <?php echo wp_kses_post(
+                                FormFieldHelper::label(
+                                    $field_id ?? '',
+                                    $field_label ?? '',
+                                    array(
+                                        'description' => $field_description ?? '',
+                                        'tooltip'     => $field_hint ?? '',
+                                    )
+                                )
+                            ); ?>
+                        </th>
+                        <td>
+                            <?php echo $field_html; ?>
+                        </td>
+                    </tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
 		<?php
 	}
 }
