@@ -284,6 +284,37 @@ class Wikis extends WikiManager {
 			$settings = array();
 		}
 
+		$category_selected = $is_edit ? wp_get_post_terms( $wiki_id, 'wikipress_category', array( 'fields' => 'ids' ) ) : array();
+		$tag_selected      = $is_edit ? wp_get_post_terms( $wiki_id, 'wikipress_tag', array( 'fields' => 'ids' ) ) : array();
+		$category_selected = array_map( 'absint', (array) $category_selected );
+		$tag_selected      = array_map( 'absint', (array) $tag_selected );
+		$category_options  = array();
+		$tag_options       = array();
+		$category_terms    = get_terms(
+			array(
+				'taxonomy'   => 'wikipress_category',
+				'hide_empty' => false,
+			)
+		);
+		$tag_terms         = get_terms(
+			array(
+				'taxonomy'   => 'wikipress_tag',
+				'hide_empty' => false,
+			)
+		);
+
+		if ( ! is_wp_error( $category_terms ) ) {
+			foreach ( $category_terms as $category_term ) {
+				$category_options[ (string) $category_term->term_id ] = $category_term->name;
+			}
+		}
+
+		if ( ! is_wp_error( $tag_terms ) ) {
+			foreach ( $tag_terms as $tag_term ) {
+				$tag_options[ (string) $tag_term->term_id ] = $tag_term->name;
+			}
+		}
+
 		$wiki_data = array(
 			'title'   => $is_edit ? $wiki->post_title : '',
 			'slug'    => $is_edit ? $wiki->post_name : '',
@@ -294,6 +325,7 @@ class Wikis extends WikiManager {
 			array(
 				'logo'                => '',
 				'navigation_position' => 'top',
+				'internal_wiki'       => false,
 				'permalink_override'  => false,
 				'permalink'           => '',
 			),
@@ -354,6 +386,50 @@ class Wikis extends WikiManager {
 				'description' => __( 'Short summary that explains the purpose of the wiki.', 'wikipress' ),
 				'hint'        => __( 'This text is used as the brief description for the wiki listing and overview panel.', 'wikipress' ),
 			),
+            array(
+                'name'        => 'wikipress_wiki[category]',
+                'label'       => __( 'Wiki Category', 'wikipress' ),
+                'field_id'    => 'wikipress-wiki-category',
+                'renderer'    => function () use ( $wiki_data ) {
+                    return FormFieldHelper::bootstrap_multiselect(
+                        'wikipress_wiki[category]',
+                        array(
+                            'data' => $category_options,
+							'selected' => $category_selected,
+							'id' => 'wikipress-wiki-category',
+							'live_search' => true,
+							'show_selected_tags' => true,
+							'open_options' => true,
+							'live_search_placeholder' => 'Search forcategories',
+							'placeholder' => 'Search for categories',
+                        )
+                    );
+                },
+                'description' => __( 'Main content of the wiki.', 'wikipress' ),
+                'hint'        => __( 'Provide the detailed content for this wiki.', 'wikipress' ),
+            ),
+            array(
+                'name'        => 'wikipress_wiki[tags]',
+                'label'       => __( 'Wiki Tags', 'wikipress' ),
+                'field_id'    => 'wikipress-wiki-tags',
+                'renderer'    => function () use ( $wiki_data ) {
+                    return FormFieldHelper::bootstrap_multiselect(
+                        'wikipress_wiki[tags]',
+                        array(
+                            'data' => $tag_options,
+							'selected' => $tag_selected,
+							'id' => 'wikipress-wiki-tags',
+							'live_search' => true,
+							'show_selected_tags' => true,
+							'open_options' => true,
+							'live_search_placeholder' => 'Search or create tags',
+							'placeholder' => 'Search or create tags',
+                        )
+                    );
+                },
+                'description' => __( 'Tags associated with the wiki.', 'wikipress' ),
+                'hint'        => __( 'Select or create relevant tags for this wiki.', 'wikipress' ),
+            ),
 		);
 
 		$settings_rows = array(
@@ -400,6 +476,24 @@ class Wikis extends WikiManager {
 				'description' => __( 'Choose where the wiki navigation appears.', 'wikipress' ),
 				'hint'        => __( 'This affects the position of the wiki navigation around the content.', 'wikipress' ),
 			),
+            array(
+				'name'        => 'wikipress_wiki[settings][internal_wiki]',
+				'label'       => __( 'Internal Wiki', 'wikipress' ),
+				'field_id'    => 'wikipress-wiki-internal-wiki',
+				'renderer'    => function () use ( $settings ) {
+					return FormFieldHelper::switch(
+						'wikipress_wiki[settings][internal_wiki]',
+						'1',
+						__( 'Enabled', 'wikipress' ),
+						array(
+							'id'      => 'wikipress-wiki-internal-wiki',
+							'checked' => ! empty( $settings['internal_wiki'] ),
+						)
+					);
+				},
+				'description' => __( 'Mark this wiki as internal.', 'wikipress' ),
+				'hint'        => __( 'When enabled, this wiki is considered internal and may have restricted access.', 'wikipress' ),
+			),
 			array(
 				'name'        => 'wikipress_wiki[settings][permalink_override]',
 				'label'       => __( 'Custom Permalink Override', 'wikipress' ),
@@ -438,7 +532,7 @@ class Wikis extends WikiManager {
 		);
 		?>
 		<div class="modal fade" id="wikipress-wiki-modal" tabindex="-1" aria-labelledby="wikipress-wiki-modal-title" aria-hidden="true">
-			<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+			<div class="modal-dialog modal-dialog-centered modal-xl" role="document">
 				<div class="modal-content">
 					<form id="wikipress-wiki-save-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 						<input type="hidden" name="action" value="wikipress_save_wiki" />

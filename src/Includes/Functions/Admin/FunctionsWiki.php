@@ -151,6 +151,8 @@ final class FunctionsWiki {
         $title     = isset( $wiki_data['title'] ) ? sanitize_text_field( wp_unslash( $wiki_data['title'] ) ) : '';
         $slug      = isset( $wiki_data['slug'] ) ? sanitize_title( wp_unslash( $wiki_data['slug'] ) ) : '';
         $excerpt   = isset( $wiki_data['excerpt'] ) ? wp_kses_post( wp_unslash( $wiki_data['excerpt'] ) ) : '';
+        $category_ids = isset( $wiki_data['category'] ) ? array_map( 'absint', (array) wp_unslash( $wiki_data['category'] ) ) : array();
+        $tag_ids      = isset( $wiki_data['tags'] ) ? array_map( 'absint', (array) wp_unslash( $wiki_data['tags'] ) ) : array();
 
         if ( '' === $title ) {
             $error_redirect = add_query_arg( 'wikipress_notice', 'wiki_missing_title', admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wikis' ) );
@@ -176,13 +178,26 @@ final class FunctionsWiki {
         }
 
         $settings = array(
-            'logo'               => isset( $settings['logo'] ) ? sanitize_text_field( wp_unslash( $settings['logo'] ) ) : '',
+            'logo'                => isset( $settings['logo'] ) ? sanitize_text_field( wp_unslash( $settings['logo'] ) ) : '',
             'navigation_position' => isset( $settings['navigation_position'] ) ? sanitize_key( wp_unslash( $settings['navigation_position'] ) ) : 'top',
+            'internal_wiki'       => ! empty( $settings['internal_wiki'] ),
             'permalink_override'  => ! empty( $settings['permalink_override'] ),
             'permalink'           => isset( $settings['permalink'] ) ? sanitize_text_field( wp_unslash( $settings['permalink'] ) ) : '',
         );
 
         update_post_meta( $saved_id, '_wikipress_wiki_settings', $settings );
+
+        if ( ! empty( $category_ids ) ) {
+            wp_set_object_terms( $saved_id, array_map( 'absint', $category_ids ), 'wikipress_category', false );
+        } else {
+            wp_set_object_terms( $saved_id, array(), 'wikipress_category', false );
+        }
+
+        if ( ! empty( $tag_ids ) ) {
+            wp_set_object_terms( $saved_id, array_map( 'absint', $tag_ids ), 'wikipress_tag', false );
+        } else {
+            wp_set_object_terms( $saved_id, array(), 'wikipress_tag', false );
+        }
 
         if ( ! empty( $settings['permalink'] ) && ! empty( $settings['permalink_override'] ) ) {
             update_post_meta( $saved_id, PermalinkHelper::OVERRIDE_META, $settings['permalink'] );
