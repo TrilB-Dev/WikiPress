@@ -270,10 +270,14 @@ class WikiManager extends Manager {
      * @since 1.0.0
      */
     protected function normalize_form_state( string $value ): string {
-        $value = sanitize_key( $value );
+        $normalized = sanitize_key( $value );
+        $allowed    = array(
+            'new',
+            'edit',
+        );
 
-        if ( in_array( $value, array( 'new', 'edit' ), true ) ) {
-            return $value;
+        if ( in_array( $normalized, $allowed, true ) ) {
+            return $normalized;
         }
 
         return '';

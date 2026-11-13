@@ -146,6 +146,7 @@ final class FunctionsWiki {
         check_admin_referer( 'wikipress_save_wiki', 'wikipress_wiki_nonce' );
 
         $wiki_data = isset( $_POST['wikipress_wiki'] ) && is_array( $_POST['wikipress_wiki'] ) ? wp_unslash( $_POST['wikipress_wiki'] ) : array();
+        $settings  = isset( $wiki_data['settings'] ) && is_array( $wiki_data['settings'] ) ? wp_unslash( $wiki_data['settings'] ) : array();
         $wiki_id   = absint( $_POST['wikipress_wiki_id'] ?? 0 );
         $title     = isset( $wiki_data['title'] ) ? sanitize_text_field( wp_unslash( $wiki_data['title'] ) ) : '';
         $slug      = isset( $wiki_data['slug'] ) ? sanitize_title( wp_unslash( $wiki_data['slug'] ) ) : '';
@@ -172,6 +173,21 @@ final class FunctionsWiki {
             $error_redirect = add_query_arg( 'wikipress_notice', 'wiki_error', admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wikis' ) );
             wp_safe_redirect( $error_redirect );
             exit;
+        }
+
+        $settings = array(
+            'logo'               => isset( $settings['logo'] ) ? sanitize_text_field( wp_unslash( $settings['logo'] ) ) : '',
+            'navigation_position' => isset( $settings['navigation_position'] ) ? sanitize_key( wp_unslash( $settings['navigation_position'] ) ) : 'top',
+            'permalink_override'  => ! empty( $settings['permalink_override'] ),
+            'permalink'           => isset( $settings['permalink'] ) ? sanitize_text_field( wp_unslash( $settings['permalink'] ) ) : '',
+        );
+
+        update_post_meta( $saved_id, '_wikipress_wiki_settings', $settings );
+
+        if ( ! empty( $settings['permalink'] ) && ! empty( $settings['permalink_override'] ) ) {
+            update_post_meta( $saved_id, PermalinkHelper::OVERRIDE_META, $settings['permalink'] );
+        } else {
+            delete_post_meta( $saved_id, PermalinkHelper::OVERRIDE_META );
         }
 
         $redirect = admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wikis' );
