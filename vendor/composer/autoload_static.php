@@ -13,6 +13,7 @@ class ComposerStaticInite6f69f8956ab7824cf2c0b2e178a3cb9
         'ec07570ca5a812141189b1fa81503674' => __DIR__ . '/..' . '/phpunit/phpunit/src/Framework/Assert/Functions.php',
         '051bafe20e2674435a162870efa2d2a7' => __DIR__ . '/..' . '/brain/monkey/inc/api.php',
         '7d3b315c4f303f2fc14aca642a738e50' => __DIR__ . '/..' . '/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php',
+        'c0d40b57dd66690950261575793373fe' => __DIR__ . '/../..' . '/src/Includes/Plugins/PluginsInterface.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -822,7 +823,7 @@ class ComposerStaticInite6f69f8956ab7824cf2c0b2e178a3cb9
         'TheSeer\\Tokenizer\\TokenCollectionException' => __DIR__ . '/..' . '/theseer/tokenizer/src/TokenCollectionException.php',
         'TheSeer\\Tokenizer\\Tokenizer' => __DIR__ . '/..' . '/theseer/tokenizer/src/Tokenizer.php',
         'TheSeer\\Tokenizer\\XMLSerializer' => __DIR__ . '/..' . '/theseer/tokenizer/src/XMLSerializer.php',
-        'WikiPress\\WikiPress' => __DIR__ . '/../..' . '/src/WikiPress.php',
+        'WikiPress\\Plugin' => __DIR__ . '/../..' . '/src/Plugin.php',
         'Yoast\\WPTestUtils\\BrainMonkey\\TestCase' => __DIR__ . '/..' . '/yoast/wp-test-utils/src/BrainMonkey/TestCase.php',
         'Yoast\\WPTestUtils\\BrainMonkey\\YoastTestCase' => __DIR__ . '/..' . '/yoast/wp-test-utils/src/BrainMonkey/YoastTestCase.php',
         'Yoast\\WPTestUtils\\Helpers\\ExpectOutputHelper' => __DIR__ . '/..' . '/yoast/wp-test-utils/src/Helpers/ExpectOutputHelper.php',
