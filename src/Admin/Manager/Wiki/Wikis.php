@@ -483,7 +483,7 @@ class Wikis extends WikiManager {
 		);
 		?>
 		<div class="modal fade" id="wikipress-wiki-modal" tabindex="-1" aria-labelledby="wikipress-wiki-modal-title" aria-hidden="true">
-			<div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+			<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
 				<div class="modal-content">
 					<form id="wikipress-wiki-save-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 						<input type="hidden" name="action" value="wikipress_save_wiki" />
@@ -523,13 +523,38 @@ class Wikis extends WikiManager {
 						</div>
 						<div class="modal-footer d-flex justify-content-between align-items-center">
 							<?php if ( $wiki_id > 0 ) : ?>
+                                <?php echo FormFieldHelper::button( 
+                                    FAHelper::faicon( 'trash' ) . ' ' . esc_html__( 'Delete', 'wikipress' ), 
+                                    array( 
+                                        'type' => 'button', 
+                                        'class' => 'btn btn-outline-danger', 
+                                        'raw' => true,
+                                        'data-bs-dismiss' => 'modal',
+                                        'onclick' => "if (confirm('" . esc_js( __( 'Delete this wiki? This action cannot be undone.', 'wikipress' ) ) . "')) { document.getElementById('wikipress-delete-wiki-form-" . esc_attr( (string) $wiki_id ) . "').submit(); }"
+                                    ) 
+                                ); ?>
 								<button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal" onclick="if (confirm('<?php echo esc_js( __( 'Delete this wiki? This action cannot be undone.', 'wikipress' ) ); ?>')) { document.getElementById('wikipress-delete-wiki-form-<?php echo esc_attr( (string) $wiki_id ); ?>').submit(); }">
 									<?php esc_html_e( 'Delete', 'wikipress' ); ?>
 								</button>
 							<?php endif; ?>
 							<div class="d-flex gap-2 ms-auto">
-								<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><?php esc_html_e( 'Cancel', 'wikipress' ); ?></button>
-								<?php echo FormFieldHelper::button( FAHelper::faicon( 'floppy-disk' ) . ' ' . __( 'Save', 'wikipress' ), array( 'type' => 'submit', 'class' => 'btn btn-primary', 'raw' => true ) ); ?>
+                                <?php echo FormFieldHelper::button( 
+                                    FAHelper::faicon( 'circle-xmark' ) . ' ' . esc_html__( 'Cancel', 'wikipress' ), 
+                                    array( 
+                                        'type' => 'button', 
+                                        'class' => 'btn btn-outline-secondary', 
+                                        'raw' => true,
+                                        'data-bs-dismiss' => 'modal'
+                                    ) 
+                                ); ?>
+								<?php echo FormFieldHelper::button( 
+                                    FAHelper::faicon( 'floppy-disk' ) . ' ' . __( 'Save', 'wikipress' ), 
+                                    array( 
+                                        'type' => 'submit', 
+                                        'class' => 'btn btn-primary', 
+                                        'raw' => true 
+                                    ) 
+                                ); ?>
 							</div>
 						</div>
 					</form>
@@ -570,7 +595,7 @@ class Wikis extends WikiManager {
 					$field_html = is_callable( $field_renderer ) ? (string) call_user_func( $field_renderer ) : '';
 					?>
                     <tr>
-                        <th scope="row" class="align-top text-nowrap pe-4">
+                        <th scope="row" class="align-top text-wrap pe-4 w-25">
                             <?php echo wp_kses_post(
                                 FormFieldHelper::label(
                                     $field_id ?? '',
@@ -582,7 +607,7 @@ class Wikis extends WikiManager {
                                 )
                             ); ?>
                         </th>
-                        <td>
+                        <td class="w-75">
                             <?php echo $field_html; ?>
                         </td>
                     </tr>
