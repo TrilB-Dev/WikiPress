@@ -67,7 +67,7 @@ class Wikis extends WikiManager {
 		}
 		?>
 		<div class="card shadow-sm border-0 mb-4">
-			<div class="card-body p-4">
+			<div class="card-body p-1">
 				<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
 					<div>
 						<h2 class="h2 mb-1"><?php esc_html_e( 'Wiki Manager', 'wikipress' ); ?></h2>
@@ -88,26 +88,43 @@ class Wikis extends WikiManager {
 				</div>
 			</div>
 		</div>
-
-		<div class="card shadow-sm border-0">
-			<div class="card-body p-4">
-				<div class="d-flex align-items-center justify-content-between gap-3 mb-3">
-					<h3 class="h5 mb-0"><?php esc_html_e( 'Existing wikis', 'wikipress' ); ?></h3>
-					<div class="btn-group" role="group" aria-label="<?php esc_attr_e( 'Wiki view toggle', 'wikipress' ); ?>">
-						<a href="<?php echo esc_url( admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wikis&view=cards' ) ); ?>" class="btn btn-sm <?php echo 'cards' === $view ? 'btn-primary' : 'btn-outline-secondary'; ?>"><?php esc_html_e( 'Cards', 'wikipress' ); ?></a>
-						<a href="<?php echo esc_url( admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wikis&view=table' ) ); ?>" class="btn btn-sm <?php echo 'table' === $view ? 'btn-primary' : 'btn-outline-secondary'; ?>"><?php esc_html_e( 'Table', 'wikipress' ); ?></a>
-					</div>
-				</div>
-
-				<?php if ( empty( $wikis ) ) : ?>
-					<p class="text-secondary mb-0"><?php esc_html_e( 'No wikis have been created yet.', 'wikipress' ); ?></p>
-				<?php elseif ( 'table' === $view ) : ?>
-					<?php $this->render_wiki_table( $wikis ); ?>
-				<?php else : ?>
-					<?php $this->render_wiki_cards( $wikis ); ?>
-				<?php endif; ?>
+        <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+			<h3 class="h5 mb-0"><?php esc_html_e( 'Wikis', 'wikipress' ); ?></h3>
+			<div class="btn-group" role="group" aria-label="<?php esc_attr_e( 'Wiki view toggle', 'wikipress' ); ?>">
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wikis&view=cards' ) ); ?>" class="btn btn-sm <?php echo 'cards' === $view ? 'btn-primary' : 'btn-outline-secondary'; ?>"><?php esc_html_e( 'Cards', 'wikipress' ); ?></a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wikis&view=table' ) ); ?>" class="btn btn-sm <?php echo 'table' === $view ? 'btn-primary' : 'btn-outline-secondary'; ?>"><?php esc_html_e( 'Table', 'wikipress' ); ?></a>
 			</div>
 		</div>
+        <?php if ( empty( $wikis ) ) : ?>
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h2 class="h5"><?php esc_html_e( 'No Wikis created yet', 'wikipress' ); ?></h2>
+                        <p class="text-secondary mb-3"><?php esc_html_e( 'Create your first Wiki to start organising your knowledge.', 'wikipress' ); ?></p>
+                        <?php echo FormFieldHelper::button(
+                            FAHelper::faicon( 'plus' ) . ' ' . __( 'Create New Wiki', 'wikipress' ),
+                            array(
+                                'type'      => 'button',
+                                'class'     => 'btn btn-primary btn-sm',
+                                'raw'       => true,
+                                'attributes' => array(
+                                    'data-bs-toggle' => 'modal',
+                                    'data-bs-target' => '#wikipress-wiki-modal',
+                                ),
+                            )
+                        ); ?>
+                    </div>
+                </div>
+            </div>
+        <?php else: ?>
+            <?php if ( 'table' === $view ) : ?>
+                <?php $this->render_layout_table( $wikis ); ?>
+            <?php elseif ( 'cards' === $view ) : ?>
+                <?php $this->render_layout_cards( $wikis ); ?>
+            <?php endif; ?>
+				
+        <?php endif; ?>
+
 
 		<?php $this->render_wiki_modal( $wiki_id > 0 ? get_post( $wiki_id ) : null ); ?>
 
@@ -123,6 +140,21 @@ class Wikis extends WikiManager {
 		<?php endif; ?>
 		<?php
 	}
+
+    private function render_layout_cards( array $wikis ): void {
+        // This function can be used to render the layout for the wiki cards if needed.
+            $this->render_wiki_cards( $wikis );
+    }
+    private function render_layout_table(array $wikis ): void {
+        // This function can be used to render the layout for the wiki table if needed.
+        ?>
+        <div class="card shadow-sm border-0">
+			<div class="card-body p-4">
+				<?php $this->render_wiki_table( $wikis ); ?>
+			</div>
+		</div>
+    <?php
+    }
 
 	/**
 	 * Render the wiki list as cards.
@@ -595,7 +627,7 @@ class Wikis extends WikiManager {
 					$field_html = is_callable( $field_renderer ) ? (string) call_user_func( $field_renderer ) : '';
 					?>
                     <tr>
-                        <th scope="row" class="align-top text-wrap pe-4 w-25">
+                        <th scope="row" class="align-top text-wrap pe-4" style="width: 35%;" >
                             <?php echo wp_kses_post(
                                 FormFieldHelper::label(
                                     $field_id ?? '',
@@ -607,7 +639,7 @@ class Wikis extends WikiManager {
                                 )
                             ); ?>
                         </th>
-                        <td class="w-75">
+                        <td style="width: 65%;" >
                             <?php echo $field_html; ?>
                         </td>
                     </tr>
