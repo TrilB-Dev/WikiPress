@@ -20,6 +20,7 @@ class Wikis extends WikiManager {
 	/**
      * Renders the content for the Wiki Wikis page.
      *
+     * @return void
      * @since 1.0.0
      */
     public function render_page_content(): void {
@@ -140,11 +141,24 @@ class Wikis extends WikiManager {
 		<?php endif; ?>
 		<?php
 	}
-
+    /**
+     * Render the layout for the wiki cards.
+     *
+     * @param array $wikis Wiki posts.
+     * @return void
+     * @since 1.0.0
+     */
     private function render_layout_cards( array $wikis ): void {
         // This function can be used to render the layout for the wiki cards if needed.
             $this->render_wiki_cards( $wikis );
     }
+    /**
+     * Render the layout for the wiki table.
+     *
+     * @param array $wikis Wiki posts.
+     * @return void
+     * @since 1.0.0
+     */
     private function render_layout_table(array $wikis ): void {
         // This function can be used to render the layout for the wiki table if needed.
         ?>
@@ -155,40 +169,68 @@ class Wikis extends WikiManager {
 		</div>
     <?php
     }
-
 	/**
 	 * Render the wiki list as cards.
 	 *
 	 * @param array $wikis Wiki posts.
 	 * @return void
+	 * @since 1.0.0
 	 */
 	private function render_wiki_cards( array $wikis ): void {
 		?>
-		<div class="row g-4">
+		<div class="row g-4 p-3">
 			<?php foreach ( $wikis as $wiki ) : ?>
 				<?php $author = get_userdata( $wiki->post_author ); ?>
 				<div class="col-12 col-md-6 col-xl-4">
 					<div class="card h-100 shadow-sm border-0">
 						<div class="card-body d-flex flex-column gap-3">
 							<div class="d-flex align-items-center gap-3">
-								<div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width:48px;height:48px;">
-									<span class="fw-bold text-secondary"><?php echo esc_html( strtoupper( substr( get_the_title( $wiki ), 0, 1 ) ) ); ?></span>
-								</div>
+								<img src="<?php echo esc_url( get_the_post_thumbnail_url( $wiki, 'thumbnail' ) ); ?>" alt="<?php echo esc_attr( get_the_title( $wiki ) ); ?>" style="max-width:150px;">
 								<div class="flex-grow-1 min-w-0">
-									<h4 class="h6 mb-1 text-truncate"><?php echo esc_html( get_the_title( $wiki ) ); ?></h4>
-									<p class="small text-secondary mb-0"><?php echo esc_html( $wiki->post_name ); ?></p>
+									<h4 class="h4 mb-1 text-truncate">
+                                        <?php echo esc_html( get_the_title( $wiki ) ); ?>
+                                    </h4>
+									<p class="small text-secondary mb-0">
+                                        <?php echo esc_html( $wiki->post_name ); ?>
+                                    </p>
 								</div>
 							</div>
-							<p class="text-secondary mb-0"><?php echo esc_html( $wiki->post_excerpt ?: __( 'No description provided.', 'wikipress' ) ); ?></p>
+							<p class="text-secondary mb-0">
+                                <?php echo esc_html( $wiki->post_excerpt ?: __( 'No description provided.', 'wikipress' ) ); ?>
+                            </p>
 							<div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
-								<span class="small text-secondary"><?php echo esc_html( $author ? $author->display_name : __( 'Unknown owner', 'wikipress' ) ); ?></span>
+								<span class="small text-secondary">
+                                    <?php echo esc_html( $author ? $author->display_name : __( 'Unknown owner', 'wikipress' ) ); ?>
+                                </span>
 								<div class="btn-group" role="group" aria-label="<?php esc_attr_e( 'Wiki actions', 'wikipress' ); ?>">
-									<a href="<?php echo esc_url( admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wikis&view=cards&wiki_id=' . absint( $wiki->ID ) ) ); ?>" class="btn btn-sm btn-outline-primary"><?php esc_html_e( 'Edit', 'wikipress' ); ?></a>
+                                    <?php echo FormFieldHelper::button(
+                                        FAHelper::faicon( 'pen-to-square' ) . ' ' . __( 'Edit', 'wikipress' ),
+                                        array(
+                                            'type'       => 'button',
+                                            'class'      => 'btn btn-primary btn-sm',
+                                            'raw'        => true,
+                                            'attributes' => array(
+                                                'id'    => 'wikipress-create-wiki-button',
+                                                'href'  => esc_url( admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wikis&view=cards&wiki_id=' . absint( $wiki->ID ) ) ),
+                                            ),
+                                        )
+                                    ); ?>
+
 									<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="d-inline">
 										<?php wp_nonce_field( 'wikipress_delete_wiki', 'wikipress_wiki_nonce' ); ?>
 										<input type="hidden" name="action" value="wikipress_delete_wiki" />
 										<input type="hidden" name="wikipress_wiki_id" value="<?php echo esc_attr( (string) $wiki->ID ); ?>" />
-										<button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('<?php echo esc_js( __( 'Delete this wiki? This action cannot be undone.', 'wikipress' ) ); ?>');"><?php esc_html_e( 'Delete', 'wikipress' ); ?></button>
+                                        <?php echo FormFieldHelper::button(
+                                            FAHelper::faicon( 'trash' ) . ' ' . __( 'Delete', 'wikipress' ),
+                                            array(
+                                                'type'      => 'submit',
+                                                'class'     => 'btn btn-sm btn-outline-danger',
+                                                'raw'       => true,
+                                                'attributes' => array(
+                                                    'onclick' => "return confirm('" . esc_js( __( 'Delete this wiki? This action cannot be undone.', 'wikipress' ) ) . "');",
+                                                ),
+                                            )
+                                        ); ?>
 									</form>
 								</div>
 							</div>
@@ -199,12 +241,12 @@ class Wikis extends WikiManager {
 		</div>
 		<?php
 	}
-
 	/**
 	 * Render the wiki list as a table.
 	 *
 	 * @param array $wikis Wiki posts.
 	 * @return void
+	 * @since 1.0.0
 	 */
 	private function render_wiki_table( array $wikis ): void {
 		?>
@@ -258,6 +300,7 @@ class Wikis extends WikiManager {
 	 *
 	 * @param \WP_Post|null $wiki The wiki post being edited.
 	 * @return void
+	 * @since 1.0.0
 	 */
 	public function render_wiki_modal( $wiki = null ): void {
 		$wiki_id = $wiki instanceof \WP_Post ? absint( $wiki->ID ) : 0;
@@ -608,6 +651,7 @@ class Wikis extends WikiManager {
 	 *
 	 * @param array $rows Row definitions with name, label, renderer, description, hint and optional field_id.
 	 * @return void
+	 * @since 1.0.0
 	 */
 	private function render_form_table_rows( array $rows ): void {
 		if ( empty( $rows ) ) {
