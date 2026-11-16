@@ -12,8 +12,7 @@
     "replace": "powershell -ExecutionPolicy Bypass -File ./scripts/search-replace.ps1",
     "rename": "node Scripts/rename-plugin.js",
     "i18n:pot": "node scripts/generate-pot.js",
-    "i18n:mo": "node scripts/generate-mo.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "i18n:mo": "node scripts/generate-mo.js"
   },
   "dependencies": {
     "@crestapps/bootstrap-select": "^1.2.1",
@@ -25,6 +24,11 @@
     "tinymce": "^8.8.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "@types/node": "^26.6.6",
+    "@wordpress/e2e-test-utils-playwright": "^3.2.0",
+    "@wordpress/env": "^12.1.0",
+    "@wordpress/scripts": "^37.1.0",
     "autoprefixer": "^10.5.4",
     "css-loader": "^7.1.4",
     "gettext-parser": "^9.1.1",
@@ -37,5 +41,9 @@
     "webpack": "^5.109.2",
     "webpack-cli": "^7.2.2",
     "webpack-dev-server": "^6.0.0"
+  },
+  "allowScripts": {
+    "@parcel/watcher@2.6.0": true,
+    "fs-ext-extra-prebuilt@2.2.17": true
   }
 }

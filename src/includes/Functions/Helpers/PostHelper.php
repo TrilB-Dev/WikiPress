@@ -102,6 +102,35 @@ final class PostHelper {
 		$post_id = self::id( $post );
 		return $post_id > 0 ? (string) get_permalink( $post_id ) : '';
 	}
+	/**
+	 * Count the number of pages associated with a post.
+	 *
+	 * @param int $post_id The ID of the post.
+	 * @param string $post_type The post type to count.
+	 * @param string $meta_key The meta key to filter by.
+	 * @param string $meta_value The meta value to filter by.
+	 * @return int The number of pages found.
+	 * @since 1.0.0
+	 */
+	public static function count_pages( int $post_id, string $post_type, string $post_status = 'any', string $meta_key = '', string $meta_value = '' ): int {
+		if ( $post_id <= 0 ) {
+			return 0;
+		}
+		if( ( '' === $meta_value ) && ( '' !== $meta_key ) ) {
+			$meta_value = $post_id;
+		}
+
+		$query = QueryHelper::posts( [
+			'post_type'      => $post_type,
+			'post_status'    => $post_status,
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
+			'no_found_rows'  => false,
+			'meta_key'       => $meta_key,
+			'meta_value'     => $meta_value,
+		] );
+		return $query->found_posts;
+	}
 }
 
 

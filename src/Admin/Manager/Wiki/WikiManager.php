@@ -68,6 +68,7 @@ class WikiManager extends Manager {
         $this->tabs = array(
             'dashboard',
             'wikis',
+            'wiki-pages',
             'categories',
             'tags',
         );
@@ -138,6 +139,7 @@ class WikiManager extends Manager {
         $capabilities = array(
             'dashboard' => 'wikipress_manager_dashboard',
             'wikis'    => 'wikipress_manager_wiki_view',
+            'wiki-pages' => 'wikipress_manager_wiki_pages_view',
             'tags'      => 'wikipress_manager_tags_view',
             'categories' => 'wikipress_manager_categories_view',
         );
@@ -168,6 +170,9 @@ class WikiManager extends Manager {
             ],
             'wikis' => [
                 'wikipress_manager_wikis_view',
+            ],
+            'wiki-pages' => [
+                'wikipress_manager_wiki_pages_view',
             ],
             'categories' => [
                 'wikipress_manager_categories_view',
@@ -221,6 +226,7 @@ class WikiManager extends Manager {
             case 'dashboard':
                 return new Dashboard();
             case 'wikis':
+            case 'wiki-pages':
                 return new Wikis();
             case 'categories':
                 return new Categories();
@@ -251,7 +257,8 @@ class WikiManager extends Manager {
     protected function normalize_tab( string $tab ): string {
         $allowed = [ 
             'dashboard', 
-            'wikis', 
+            'wikis',
+            'wiki-pages',
             'categories', 
             'tags' 
         ];
@@ -293,8 +300,9 @@ class WikiManager extends Manager {
     protected function title( string $tab ): string {
         $labels = array(
             'dashboard'     => __( 'Wiki Manager - Dashboard', 'wikipress' ),
-            'wikis'        => __( 'Wiki Manager - Wikis', 'wikipress' ),
-            'categories'     => __( 'Wiki Manager - Categories', 'wikipress' ),
+            'wikis'         => __( 'Wiki Manager - Wikis', 'wikipress' ),
+            'wiki-pages'    => __( 'Wiki Manager - Wiki Pages', 'wikipress' ),
+            'categories'    => __( 'Wiki Manager - Categories', 'wikipress' ),
             'tags'          => __( 'Wiki Manager - Tags', 'wikipress' )
         );
 

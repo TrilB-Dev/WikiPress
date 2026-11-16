@@ -1,6 +1,7 @@
 # Dependencies
 *node_modules*
 package-lock.json
+.node-version
 
 # Explicitly include widget entry bundles even if a global ignore excludes `Public`
 !src/Public
@@ -81,3 +82,11 @@ src/Assets/images/logo/*@3x.png
 src/Assets/images/logo/copilot/*
 Old/*
 #src/Includes/Elementor/Assets/images/widgets/post-list/
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
