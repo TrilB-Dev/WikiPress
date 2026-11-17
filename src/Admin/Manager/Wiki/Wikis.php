@@ -125,9 +125,9 @@ class Wikis extends WikiManager {
                 </div>
             <?php else: ?>
                 <?php if ( 'table' === $view ) : ?>
-                    <?php $this->render_layout_table( $wikis ); ?>
+                    <?php $this->render_wiki_table( $wikis ); ?>
                 <?php elseif ( 'cards' === $view ) : ?>
-                    <?php $this->render_layout_cards( $wikis ); ?>
+                    <?php $this->render_wiki_cards( $wikis ); ?>
                 <?php endif; ?>
                     
             <?php endif; ?>
@@ -152,34 +152,6 @@ class Wikis extends WikiManager {
         <?php endif; ?>
 		<?php
 	}
-    /**
-     * Render the layout for the wiki cards.
-     *
-     * @param array $wikis Wiki posts.
-     * @return void
-     * @since 1.0.0
-     */
-    private function render_layout_cards( array $wikis ): void {
-        // This function can be used to render the layout for the wiki cards if needed.
-            $this->render_wiki_cards( $wikis );
-    }
-    /**
-     * Render the layout for the wiki table.
-     *
-     * @param array $wikis Wiki posts.
-     * @return void
-     * @since 1.0.0
-     */
-    private function render_layout_table(array $wikis ): void {
-        // This function can be used to render the layout for the wiki table if needed.
-        ?>
-        <div class="card shadow-sm border-0">
-			<div class="card-body p-4">
-				<?php $this->render_wiki_table( $wikis ); ?>
-			</div>
-		</div>
-    <?php
-    }
 	/**
 	 * Render the wiki list as cards.
 	 *
@@ -295,81 +267,85 @@ class Wikis extends WikiManager {
 	 */
 	private function render_wiki_table( array $wikis ): void {
 		?>
-		<div class="table-responsive">
-			<table class="table table-hover align-middle mb-0">
-				<thead>
-					<tr>
-						<th scope="col">
-                            <?php esc_html_e( 'Logo', 'wikipress' ); ?>
-                        </th>
-						<th scope="col">
-                            <?php esc_html_e( 'Name', 'wikipress' ); ?>
-                        </th>
-						<th scope="col">
-                            <?php esc_html_e( 'Author', 'wikipress' ); ?>
-                        </th>
-						<th scope="col">
-                            <?php esc_html_e( 'Pages', 'wikipress' ); ?>
-                        </th>
-						<th scope="col" class="text-end">
-                            <?php esc_html_e( 'Actions', 'wikipress' ); ?>
-                        </th>
-					</tr>
-				</thead>
-				<tbody>
-					<?php foreach ( $wikis as $wiki ) : ?>
-						<?php $author = get_userdata( $wiki->post_author ); ?>
-						<tr>
-							<td style="width: 80px;">
-								<div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width:42px;height:42px;">
-									<span class="fw-bold text-secondary">
-                                        <?php echo esc_html( strtoupper( substr( get_the_title( $wiki ), 0, 1 ) ) ); ?>
-                                    </span>
-								</div>
-							</td>
-							<td>
-								<div class="fw-semibold">
-                                    <?php echo esc_html( get_the_title( $wiki ) ); ?>
-                                </div>
-								<div class="small text-secondary">
-                                    <?php echo esc_html( $wiki->post_name ); ?>
-                                </div>
-							</td>
-							<td class="text-secondary">
-                                <?php echo esc_html( $wiki->post_excerpt ?: __( 'No description provided.', 'wikipress' ) ); ?>
-                            </td>
-							<td>
-                                <?php echo esc_html( $author ? $author->display_name : __( 'Unknown owner', 'wikipress' ) ); ?>
-                            </td>
-							<td class="text-end">
-								<div class="btn-group" role="group" aria-label="<?php esc_attr_e( 'Wiki actions', 'wikipress' ); ?>">
-                                    <?php echo FormFieldHelper::button( 
-                                        FAHelper::faicon( 'pen-to-square'),
-                                        array(
-                                            'href'   => admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wikis&view=table&wiki_id=' . absint( $wiki->ID ) ),
-                                            'size'  => 'sm',
-                                            'style' => 'btn btn-sm btn-outline-secondary',
-                                        ) 
-                                    ); ?>
-									<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="d-inline">
-										<?php wp_nonce_field( 'wikipress_delete_wiki', 'wikipress_wiki_nonce' ); ?>
-										<input type="hidden" name="action" value="wikipress_delete_wiki" />
-										<input type="hidden" name="wikipress_wiki_id" value="<?php echo esc_attr( (string) $wiki->ID ); ?>" />
-                                        <?php echo FormFieldHelper::button(
-                                            FAHelper::faicon( 'trash'),
-                                            array(
-                                                'size'  => 'sm',
-                                                'style' => 'btn btn-sm btn-outline-danger',
-                                                'onclick' => "return confirm('" . esc_js( __( 'Delete this wiki? This action cannot be undone.', 'wikipress' ) ) . "');"
-                                            )
-                                        ); ?>
-									</form>
-								</div>
-							</td>
-						</tr>
-					<?php endforeach; ?>
-				</tbody>
-			</table>
+		<div class="card shadow-sm border-0">
+			<div class="card-body p-4">
+				<div class="table-responsive">
+					<table class="table table-hover align-middle mb-0">
+						<thead>
+							<tr>
+								<th scope="col">
+									<?php esc_html_e( 'Logo', 'wikipress' ); ?>
+								</th>
+								<th scope="col">
+									<?php esc_html_e( 'Name', 'wikipress' ); ?>
+								</th>
+								<th scope="col">
+									<?php esc_html_e( 'Author', 'wikipress' ); ?>
+								</th>
+								<th scope="col">
+									<?php esc_html_e( 'Pages', 'wikipress' ); ?>
+								</th>
+								<th scope="col" class="text-end">
+									<?php esc_html_e( 'Actions', 'wikipress' ); ?>
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php foreach ( $wikis as $wiki ) : ?>
+								<?php $author = get_userdata( $wiki->post_author ); ?>
+								<tr>
+									<td style="width: 80px;">
+										<div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width:42px;height:42px;">
+											<span class="fw-bold text-secondary">
+												<?php echo esc_html( strtoupper( substr( get_the_title( $wiki ), 0, 1 ) ) ); ?>
+											</span>
+										</div>
+									</td>
+									<td>
+										<div class="fw-semibold">
+											<?php echo esc_html( get_the_title( $wiki ) ); ?>
+										</div>
+										<div class="small text-secondary">
+											<?php echo esc_html( $wiki->post_name ); ?>
+										</div>
+									</td>
+									<td class="text-secondary">
+										<?php echo esc_html( $wiki->post_excerpt ?: __( 'No description provided.', 'wikipress' ) ); ?>
+									</td>
+									<td>
+										<?php echo esc_html( $author ? $author->display_name : __( 'Unknown owner', 'wikipress' ) ); ?>
+									</td>
+									<td class="text-end">
+										<div class="btn-group" role="group" aria-label="<?php esc_attr_e( 'Wiki actions', 'wikipress' ); ?>">
+											<?php echo FormFieldHelper::button( 
+												FAHelper::faicon( 'pen-to-square'),
+												array(
+													'href'   => admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wikis&view=table&wiki_id=' . absint( $wiki->ID ) ),
+													'size'  => 'sm',
+													'style' => 'btn btn-sm btn-outline-secondary',
+												) 
+											); ?>
+											<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="d-inline">
+												<?php wp_nonce_field( 'wikipress_delete_wiki', 'wikipress_wiki_nonce' ); ?>
+												<input type="hidden" name="action" value="wikipress_delete_wiki" />
+												<input type="hidden" name="wikipress_wiki_id" value="<?php echo esc_attr( (string) $wiki->ID ); ?>" />
+												<?php echo FormFieldHelper::button(
+													FAHelper::faicon( 'trash'),
+													array(
+														'size'  => 'sm',
+														'style' => 'btn btn-sm btn-outline-danger',
+														'onclick' => "return confirm('" . esc_js( __( 'Delete this wiki? This action cannot be undone.', 'wikipress' ) ) . "');"
+													)
+												); ?>
+											</form>
+										</div>
+									</td>
+								</tr>
+							<?php endforeach; ?>
+						</tbody>
+					</table>
+				</div>
+			</div>
 		</div>
 		<?php
 	}
@@ -490,10 +466,34 @@ class Wikis extends WikiManager {
 	public function render_wiki_modal( $wiki = null ): void {
 		$wiki_id = $wiki instanceof \WP_Post ? absint( $wiki->ID ) : 0;
 		$is_edit = $wiki_id > 0;
-		$settings = $is_edit ? get_post_meta( $wiki_id, '_wikipress_wiki_settings', true ) : array();
-		if ( ! is_array( $settings ) ) {
-			$settings = array();
+		$legacy_settings = $is_edit ? get_post_meta( $wiki_id, '_wikipress_wiki_settings', true ) : array();
+		if ( ! is_array( $legacy_settings ) ) {
+			$legacy_settings = array();
 		}
+
+		$defaults = array(
+			'logo'                => '',
+			'navigation_position' => 'top',
+			'internal_wiki'       => false,
+			'permalink_override'  => false,
+			'permalink'           => '',
+		);
+
+		$settings = array(
+			'logo'                => $is_edit ? get_post_meta( $wiki_id, '_wikipress_wiki_logo', true ) : '',
+			'navigation_position' => $is_edit ? get_post_meta( $wiki_id, '_wikipress_wiki_navigation_position', true ) : 'top',
+			'internal_wiki'       => $is_edit ? get_post_meta( $wiki_id, '_wikipress_wiki_internal_wiki', true ) : false,
+			'permalink_override'  => $is_edit ? get_post_meta( $wiki_id, '_wikipress_wiki_permalink_override', true ) : false,
+			'permalink'           => $is_edit ? get_post_meta( $wiki_id, '_wikipress_wiki_permalink', true ) : '',
+		);
+
+		foreach ( $settings as $key => $value ) {
+			if ( '' === $value || false === $value || null === $value ) {
+				$settings[ $key ] = $legacy_settings[ $key ] ?? $defaults[ $key ];
+			}
+		}
+
+		$settings = array_merge( $defaults, $settings );
 
 		$category_selected = $is_edit ? wp_get_post_terms( $wiki_id, 'wikipress_category', array( 'fields' => 'ids' ) ) : array();
 		$tag_selected      = $is_edit ? wp_get_post_terms( $wiki_id, 'wikipress_tag', array( 'fields' => 'ids' ) ) : array();

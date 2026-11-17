@@ -185,7 +185,34 @@ final class FunctionsWiki {
             'permalink'           => isset( $settings['permalink'] ) ? sanitize_text_field( wp_unslash( $settings['permalink'] ) ) : '',
         );
 
-        update_post_meta( $saved_id, '_wikipress_wiki_settings', $settings );
+        $meta_fields = array(
+            'logo'                => '_wikipress_wiki_logo',
+            'navigation_position' => '_wikipress_wiki_navigation_position',
+            'internal_wiki'       => '_wikipress_wiki_internal_wiki',
+            'permalink_override'  => '_wikipress_wiki_permalink_override',
+            'permalink'           => '_wikipress_wiki_permalink',
+        );
+
+        foreach ( $meta_fields as $setting_key => $meta_key ) {
+            $meta_value = $settings[ $setting_key ] ?? '';
+
+            if ( in_array( $setting_key, array( 'internal_wiki', 'permalink_override' ), true ) ) {
+                if ( ! empty( $meta_value ) ) {
+                    update_post_meta( $saved_id, $meta_key, '1' );
+                } else {
+                    delete_post_meta( $saved_id, $meta_key );
+                }
+                continue;
+            }
+
+            if ( '' !== (string) $meta_value ) {
+                update_post_meta( $saved_id, $meta_key, $meta_value );
+            } else {
+                delete_post_meta( $saved_id, $meta_key );
+            }
+        }
+
+        delete_post_meta( $saved_id, '_wikipress_wiki_settings' );
 
         if ( ! empty( $category_ids ) ) {
             wp_set_object_terms( $saved_id, array_map( 'absint', $category_ids ), 'wikipress_category', false );
