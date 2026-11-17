@@ -146,7 +146,7 @@ class Wikis extends WikiManager {
                 </script>
             <?php endif; ?>
         <?php elseif ( $_GET['tab'] === 'wiki-pages' ) : ?>
-            <?php // Render wiki pages content here ?>
+            <?php $this->render_wiki_page_table($wikis); ?>
         <?php elseif ( $_GET['tab'] === 'wiki-settings' ) : ?>
             <?php // Render wiki settings content here ?>
         <?php endif; ?>
@@ -479,18 +479,21 @@ class Wikis extends WikiManager {
 			'permalink'           => '',
 		);
 
-		$settings = array(
-			'logo'                => $is_edit ? get_post_meta( $wiki_id, '_wikipress_wiki_logo', true ) : '',
-			'navigation_position' => $is_edit ? get_post_meta( $wiki_id, '_wikipress_wiki_navigation_position', true ) : 'top',
-			'internal_wiki'       => $is_edit ? get_post_meta( $wiki_id, '_wikipress_wiki_internal_wiki', true ) : false,
-			'permalink_override'  => $is_edit ? get_post_meta( $wiki_id, '_wikipress_wiki_permalink_override', true ) : false,
-			'permalink'           => $is_edit ? get_post_meta( $wiki_id, '_wikipress_wiki_permalink', true ) : '',
+		$setting_meta_keys = array(
+			'logo'                => '_wikipress_wiki_logo',
+			'navigation_position' => '_wikipress_wiki_navigation_position',
+			'internal_wiki'       => '_wikipress_wiki_internal_wiki',
+			'permalink_override'  => '_wikipress_wiki_permalink_override',
+			'permalink'           => '_wikipress_wiki_permalink',
 		);
 
-		foreach ( $settings as $key => $value ) {
+		$settings = array();
+		foreach ( $setting_meta_keys as $key => $meta_key ) {
+			$value = $is_edit ? get_post_meta( $wiki_id, $meta_key, true ) : $defaults[ $key ];
 			if ( '' === $value || false === $value || null === $value ) {
-				$settings[ $key ] = $legacy_settings[ $key ] ?? $defaults[ $key ];
+				$value = $legacy_settings[ $key ] ?? $defaults[ $key ];
 			}
+			$settings[ $key ] = $value;
 		}
 
 		$settings = array_merge( $defaults, $settings );
@@ -783,19 +786,16 @@ class Wikis extends WikiManager {
 						</div>
 						<div class="modal-footer d-flex justify-content-between align-items-center">
 							<?php if ( $wiki_id > 0 ) : ?>
-                                <?php echo FormFieldHelper::button( 
-                                    FAHelper::faicon( 'trash' ) . ' ' . esc_html__( 'Delete', 'wikipress' ), 
-                                    array( 
-                                        'type' => 'button', 
-                                        'class' => 'btn btn-outline-danger', 
-                                        'raw' => true,
-                                        'data-bs-dismiss' => 'modal',
-                                        'onclick' => "if (confirm('" . esc_js( __( 'Delete this wiki? This action cannot be undone.', 'wikipress' ) ) . "')) { document.getElementById('wikipress-delete-wiki-form-" . esc_attr( (string) $wiki_id ) . "').submit(); }"
-                                    ) 
-                                ); ?>
-								<button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal" onclick="if (confirm('<?php echo esc_js( __( 'Delete this wiki? This action cannot be undone.', 'wikipress' ) ); ?>')) { document.getElementById('wikipress-delete-wiki-form-<?php echo esc_attr( (string) $wiki_id ); ?>').submit(); }">
-									<?php esc_html_e( 'Delete', 'wikipress' ); ?>
-								</button>
+								<?php echo FormFieldHelper::button(
+									FAHelper::faicon( 'trash' ) . ' ' . esc_html__( 'Delete', 'wikipress' ),
+									array(
+										'type'          => 'button',
+										'class'         => 'btn btn-outline-danger',
+										'raw'           => true,
+										'data-bs-dismiss' => 'modal',
+										'onclick'       => "if (confirm('" . esc_js( __( 'Delete this wiki? This action cannot be undone.', 'wikipress' ) ) . "')) { document.getElementById('wikipress-delete-wiki-form-" . esc_attr( (string) $wiki_id ) . "').submit(); }",
+									)
+								); ?>
 							<?php endif; ?>
 							<div class="d-flex gap-2 ms-auto">
                                 <?php echo FormFieldHelper::button( 
