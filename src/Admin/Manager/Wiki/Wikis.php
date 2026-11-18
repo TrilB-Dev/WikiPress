@@ -914,7 +914,7 @@ class Wikis extends WikiManager {
 								); ?>
 								<?php echo FormFieldHelper::switch(
 									'confirm_delete_wiki_pages',
-									'1',
+									true,
 									__( 'Delete attached pages', 'wikipress' ),
 									array(
 										'id' => 'confirm_delete_wiki_pages',
@@ -933,7 +933,7 @@ class Wikis extends WikiManager {
 								); ?></p>
 								<p><?php echo FormFieldHelper::switch(
 									'confirm_delete_wiki',
-									'1',
+									true,
 									__( 'Confirm', 'wikipress' ),
 									array(
 										'id' => 'confirm_delete_wiki',
@@ -951,7 +951,7 @@ class Wikis extends WikiManager {
 								); ?>
 								<?php echo FormFieldHelper::switch(
 									'confirm_delete_wiki_page',
-									'1',
+									true,
 									__( 'Confirm', 'wikipress' ),
 									array(
 										'id' => 'confirm_delete_wiki_page',
