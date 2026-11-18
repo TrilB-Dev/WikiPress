@@ -902,7 +902,7 @@ class Wikis extends WikiManager {
 						<input type="hidden" name="wikipress_wiki_id" value="0" />
 						<input type="hidden" name="wikipress_wiki_page_id" value="0" />
 						<div class="modal-body">
-							<p data-actions-modal-body><?php esc_html_e( 'Are you sure you want to continue?', 'wikipress' ); ?></p>
+							<h5 data-actions-modal-body><?php esc_html_e( 'Are you sure you want to continue?', 'wikipress' ); ?></h5>
 							<div data-actions-pages-confirmation hidden>
 								<?php echo FormFieldHelper::label(
 									'confirm_delete_wiki_pages',
@@ -923,22 +923,22 @@ class Wikis extends WikiManager {
 								); ?>
 							</div>
 							<div data-actions-wiki-confirmation>
-								<?php echo FormFieldHelper::label(
+								<p><?php echo FormFieldHelper::label(
 									'confirm_delete_wiki',
 									__( 'Do you wish to delete this wiki?', 'wikipress' ),
 									array(
 										'id' => 'confirm_delete_wiki',
 										'description' => __( 'By checking this, you will permanently delete this wiki.', 'wikipress' ),
 									)
-								); ?>
-								<?php echo FormFieldHelper::switch(
+								); ?></p>
+								<p><?php echo FormFieldHelper::switch(
 									'confirm_delete_wiki',
 									'1',
 									__( 'Confirm', 'wikipress' ),
 									array(
 										'id' => 'confirm_delete_wiki',
 									)
-								); ?>
+								); ?></p>
 							</div>
 							<div data-actions-wiki-page-confirmation hidden>
 								<?php echo FormFieldHelper::label(
@@ -964,15 +964,15 @@ class Wikis extends WikiManager {
 								__( 'Cancel', 'wikipress' ),
 								array(
 									'type' => 'button',
-									'class' => 'btn btn-outline-warning',
+									'class' => 'btn btn-outline-secondary',
 									'data-bs-dismiss' => 'modal',
 								)
 							); ?>
 							<?php echo FormFieldHelper::button(
-								__( 'Confirm', 'wikipress' ),
+								__( 'Delete', 'wikipress' ),
 								array(
 									'type' => 'submit',
-									'class' => 'btn btn-primary',
+									'class' => 'btn btn-outline-danger',
 									'data-actions-modal-submit' => '',
 									'disabled' => true,
 								)
