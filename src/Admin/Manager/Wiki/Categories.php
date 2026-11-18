@@ -21,8 +21,10 @@ class Categories extends WikiManager {
 	public function render_page_content(): void {
         // Render the content for the Wiki Categories page here.
         ?>
-        <div class="card shadow-sm border-0">
-			<div class="card-body p-4">
+        <div class="wikipress-wiki-categories-page">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                </div>
             </div>
         </div>
         <?php

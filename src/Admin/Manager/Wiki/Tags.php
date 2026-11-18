@@ -22,8 +22,10 @@ class Tags extends WikiManager {
 	public function render_page_content(): void {
         // Render the content for the Wiki Tags page here.
         ?>
-        <div class="card shadow-sm border-0">
-			<div class="card-body p-4">
+        <div class="wikipress-wiki-tags-page">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                </div>
             </div>
         </div>
         <?php
