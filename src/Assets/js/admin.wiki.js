@@ -28,6 +28,10 @@
      */
     const wikiPage = document.querySelector('.wikipress-wikis-page');
     wikiPage && (() => {
+        /**
+         * Initializes and handles the actions modal for wiki management, including delete confirmations.
+         * @since 1.0.0
+         */
         const modal = wikiPage.querySelector('#wikipress-actions-modal');
         if (!modal) {
             return;
