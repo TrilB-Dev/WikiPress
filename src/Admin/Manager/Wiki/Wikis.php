@@ -789,11 +789,11 @@ class Wikis extends WikiManager {
 								<?php echo FormFieldHelper::button(
 									FAHelper::faicon( 'trash' ) . ' ' . esc_html__( 'Delete', 'wikipress' ),
 									array(
-										'type'          => 'button',
-										'class'         => 'btn btn-outline-danger',
-										'raw'           => true,
-										'data-bs-dismiss' => 'modal',
-										'onclick'       => "if (confirm('" . esc_js( __( 'Delete this wiki? This action cannot be undone.', 'wikipress' ) ) . "')) { document.getElementById('wikipress-delete-wiki-form-" . esc_attr( (string) $wiki_id ) . "').submit(); }",
+										'type'  => 'submit',
+										'class' => 'btn btn-outline-danger',
+										'raw'   => true,
+										'form'  => 'wikipress-delete-wiki-form-' . esc_attr( (string) $wiki_id ),
+										'onclick' => "return confirm('" . esc_js( __( 'Delete this wiki? This action cannot be undone.', 'wikipress' ) ) . "');",
 									)
 								); ?>
 							<?php endif; ?>
