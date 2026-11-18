@@ -106,8 +106,16 @@
             setConfirmationState();
         });
 
-        modal.querySelectorAll('#confirm_delete_wiki, #confirm_delete_wiki_pages, #confirm_delete_wiki_page')
-            .forEach((checkbox) => checkbox.addEventListener('change', setConfirmationState));
+        modal.addEventListener('change', (event) => {
+            if (event.target.matches('#confirm_delete_wiki, #confirm_delete_wiki_pages, #confirm_delete_wiki_page')) {
+                setConfirmationState();
+            }
+        });
+        modal.addEventListener('input', (event) => {
+            if (event.target.matches('#confirm_delete_wiki, #confirm_delete_wiki_pages, #confirm_delete_wiki_page')) {
+                setConfirmationState();
+            }
+        });
     })();
     /**
      * Wiki Categories page script setup

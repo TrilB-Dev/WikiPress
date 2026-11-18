@@ -130,7 +130,7 @@ abstract class Manager {
 
 		$mapping = array(
 			'dashboard' 	=> 'admin.dashboard',
-			'wikis'     	=> 'admin.wikis',
+			'wikis'     	=> 'admin.wiki',
 			'settings'  	=> 'admin.settings',
 			'tools'     	=> 'admin.tools',
 			'plugins'   	=> 'admin.plugins',
