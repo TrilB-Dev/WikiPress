@@ -93,14 +93,14 @@
 
             if ('delete-wiki' === action) {
                 actionInput && (actionInput.value = 'wikipress_delete_wiki');
-                actionTitle && (actionTitle.textContent = `Delete Wiki${wikiTitle ? ` ${wikiTitle}` : ''}`);
+                actionTitle && (actionTitle.textContent = `Delete Wiki: ${wikiTitle ? ` ${wikiTitle}` : ''}`);
                 actionBody && (actionBody.textContent = 'Are you sure you want to delete this wiki?');
                 pagesConfirmationWrap && (pagesConfirmationWrap.hidden = !(pagesCount > 0));
                 modal.querySelector('[data-actions-wiki-confirmation]')?.removeAttribute('hidden');
                 modal.querySelector('[data-actions-wiki-page-confirmation]')?.setAttribute('hidden', '');
             } else if ('delete-wiki-page' === action) {
                 actionInput && (actionInput.value = 'wikipress_delete_wiki_page');
-                actionTitle && (actionTitle.textContent = `Delete Wiki Page${wikiPageTitle ? ` ${wikiPageTitle}` : ''}`);
+                actionTitle && (actionTitle.textContent = `Delete Wiki Page: ${wikiPageTitle ? ` ${wikiPageTitle}` : ''}`);
                 actionBody && (actionBody.textContent = 'Are you sure you want to delete this wiki page?');
                 pagesConfirmationWrap && (pagesConfirmationWrap.hidden = true);
                 modal.querySelector('[data-actions-wiki-confirmation]')?.setAttribute('hidden', '');

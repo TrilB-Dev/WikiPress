@@ -904,15 +904,15 @@ class Wikis extends WikiManager {
 						<div class="modal-body">
 							<h5 data-actions-modal-body><?php esc_html_e( 'Are you sure you want to continue?', 'wikipress' ); ?></h5>
 							<div data-actions-pages-confirmation hidden>
-								<?php echo FormFieldHelper::label(
+								<p><?php echo FormFieldHelper::label(
 									'confirm_delete_wiki_pages',
 									__( 'Do you wish to delete the pages attached to this wiki?', 'wikipress' ),
 									array(
 										'id' => 'confirm_delete_wiki_pages',
 										'description' => __( 'By checking this, you will permanently delete all pages attached to this wiki.', 'wikipress' ),
 									)
-								); ?>
-								<?php echo FormFieldHelper::switch(
+								); ?></p>
+								<p><?php echo FormFieldHelper::switch(
 									'confirm_delete_wiki_pages',
 									true,
 									__( 'Delete attached pages', 'wikipress' ),
@@ -920,7 +920,7 @@ class Wikis extends WikiManager {
 										'id' => 'confirm_delete_wiki_pages',
 										'checked' => true,
 									)
-								); ?>
+								); ?></p>
 							</div>
 							<div data-actions-wiki-confirmation>
 								<p><?php echo FormFieldHelper::label(
@@ -941,22 +941,22 @@ class Wikis extends WikiManager {
 								); ?></p>
 							</div>
 							<div data-actions-wiki-page-confirmation hidden>
-								<?php echo FormFieldHelper::label(
+								<p><?php echo FormFieldHelper::label(
 									'confirm_delete_wiki_page',
 									__( 'Do you wish to delete this page?', 'wikipress' ),
 									array(
 										'id' => 'confirm_delete_wiki_page',
 										'description' => __( 'By checking this, you will permanently delete this page.', 'wikipress' ),
 									)
-								); ?>
-								<?php echo FormFieldHelper::switch(
+								); ?></p>
+								<p><?php echo FormFieldHelper::switch(
 									'confirm_delete_wiki_page',
 									true,
 									__( 'Confirm', 'wikipress' ),
 									array(
 										'id' => 'confirm_delete_wiki_page',
 									)
-								); ?>
+								); ?></p>
 							</div>
 						</div>
 						<div class="modal-footer">
