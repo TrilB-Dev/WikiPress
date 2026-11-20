@@ -968,15 +968,30 @@ class Wikis extends WikiManager {
 									'data-bs-dismiss' => 'modal',
 								)
 							); ?>
-							<?php echo FormFieldHelper::button(
-								__( 'Delete', 'wikipress' ),
-								array(
-									'type' => 'submit',
-									'class' => 'btn btn-outline-danger',
-									'data-actions-modal-submit' => '',
-									'disabled' => true,
-								)
-							);?>
+							<div data-actions-wiki-confirmation>
+								<?php echo FormFieldHelper::button(
+									__( 'Delete', 'wikipress' ),
+									array(
+										'type' => 'submit',
+										'class' => 'btn btn-outline-danger',
+										'data-actions-modal-submit' => '',
+										'id' => 'delete-wiki-button',
+										'disabled' => true,
+									)
+								);?>
+							</div>
+							<div data-actions-wiki-page-confirmation hidden>
+								<?php echo FormFieldHelper::button(
+									__( 'Delete', 'wikipress' ),
+									array(
+										'type' => 'submit',
+										'class' => 'btn btn-outline-danger',
+										'data-actions-modal-submit' => '',
+										'id' => 'delete-wiki-page-button',
+										'disabled' => true,
+									)
+								);?>
+							</div>
 						</div>
 					</form>
 				</div>
