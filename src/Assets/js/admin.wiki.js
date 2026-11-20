@@ -82,8 +82,8 @@
                 actionTitle && (actionTitle.textContent = `Delete Wiki: ${wikiTitle ? ` ${wikiTitle}` : ''}`);
                 actionBody && (actionBody.textContent = 'Are you sure you want to delete this wiki?');
                 pagesConfirmationWrap && (pagesConfirmationWrap.hidden = !(pagesCount > 0));
-                const confirmWikiDelete = document.getElementById('confirm-wiki-delete');
-                const deleteWikiButton = document.getElementById('delete-wiki-button');
+                const confirmWikiDelete = modal.getElementById('confirm-wiki-delete');
+                const deleteWikiButton = modal.getElementById('delete-wiki-button');
                 confirmWikiDelete.addEventListener('change', function () {
                     // Enable or disable the button based on the checkbox state
                     deleteWikiButton.disabled = !this.checked;
@@ -95,8 +95,8 @@
                 pagesConfirmationWrap && (pagesConfirmationWrap.hidden = true);
                 modal.querySelector('[data-actions-wiki-confirmation]')?.setAttribute('hidden', '');
                 modal.querySelector('[data-actions-wiki-page-confirmation]')?.removeAttribute('hidden');
-                const confirmWikiDeletePage = document.getElementById('confirm-delete-wiki-page');
-                const deleteWikiPageButton = document.getElementById('delete-wiki-page-button');
+                const confirmWikiDeletePage = modal.getElementById('confirm-delete-wiki-page');
+                const deleteWikiPageButton = modal.getElementById('delete-wiki-page-button');
                 confirmWikiDeletePage.addEventListener('change', function () {
                     // Enable or disable the button based on the checkbox state
                     deleteWikiPageButton.disabled = !this.checked;
