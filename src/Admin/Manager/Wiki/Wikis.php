@@ -55,11 +55,9 @@ class Wikis extends WikiManager {
 			'wiki_deleted'           => __( 'Wiki deleted successfully.', 'wikipress' ),
 			'wiki_missing_title'     => __( 'Please provide a wiki title before saving.', 'wikipress' ),
 			'wiki_missing_id'        => __( 'No wiki was selected to delete.', 'wikipress' ),
-			'wiki_delete_confirmation_required' => __( 'Please confirm that you want to delete the wiki.', 'wikipress' ),
 			'wiki_page_saved'        => __( 'Wiki page created successfully.', 'wikipress' ),
 			'wiki_page_updated'      => __( 'Wiki page updated successfully.', 'wikipress' ),
 			'wiki_page_deleted'      => __( 'Wiki page deleted successfully.', 'wikipress' ),
-			'wiki_page_delete_confirmation_required' => __( 'Please confirm that you want to delete the wiki page.', 'wikipress' ),
 			'wiki_page_missing_wiki' => __( 'The selected wiki could not be found.', 'wikipress' ),
 			'wiki_page_missing_title' => __( 'Please provide a wiki page title before saving.', 'wikipress' ),
 			'wiki_page_missing_id'   => __( 'No wiki page was selected to delete.', 'wikipress' ),
@@ -903,7 +901,7 @@ class Wikis extends WikiManager {
 						<input type="hidden" name="wikipress_wiki_page_id" value="0" />
 						<div class="modal-body">
 							<h5 data-actions-modal-body><?php esc_html_e( 'Are you sure you want to continue?', 'wikipress' ); ?></h5>
-							<div data-actions-pages-confirmation hidden>
+							<div data-actions-wiki-confirmation hidden>
 								<p><?php echo FormFieldHelper::label(
 									'confirm_delete_wiki_pages',
 									__( 'Do you wish to delete the pages attached to this wiki?', 'wikipress' ),
@@ -922,42 +920,6 @@ class Wikis extends WikiManager {
 									)
 								); ?></p>
 							</div>
-							<div data-actions-wiki-confirmation>
-								<p><?php echo FormFieldHelper::label(
-									'confirm_delete_wiki',
-									__( 'Do you wish to delete this wiki?', 'wikipress' ),
-									array(
-										'id' => 'confirm_delete_wiki',
-										'description' => __( 'By checking this, you will permanently delete this wiki.', 'wikipress' ),
-									)
-								); ?></p>
-								<p><?php echo FormFieldHelper::switch(
-									'confirm_delete_wiki',
-									true,
-									__( 'Confirm', 'wikipress' ),
-									array(
-										'id' => 'confirm_delete_wiki',
-									)
-								); ?></p>
-							</div>
-							<div data-actions-wiki-page-confirmation hidden>
-								<p><?php echo FormFieldHelper::label(
-									'confirm_delete_wiki_page',
-									__( 'Do you wish to delete this page?', 'wikipress' ),
-									array(
-										'id' => 'confirm_delete_wiki_page',
-										'description' => __( 'By checking this, you will permanently delete this page.', 'wikipress' ),
-									)
-								); ?></p>
-								<p><?php echo FormFieldHelper::switch(
-									'confirm_delete_wiki_page',
-									true,
-									__( 'Confirm', 'wikipress' ),
-									array(
-										'id' => 'confirm_delete_wiki_page',
-									)
-								); ?></p>
-							</div>
 						</div>
 						<div class="modal-footer">
 							<?php echo FormFieldHelper::button(
@@ -968,30 +930,14 @@ class Wikis extends WikiManager {
 									'data-bs-dismiss' => 'modal',
 								)
 							); ?>
-							<div data-actions-wiki-confirmation>
-								<?php echo FormFieldHelper::button(
-									__( 'Delete', 'wikipress' ),
-									array(
-										'type' => 'submit',
-										'class' => 'btn btn-outline-danger',
-										'data-actions-modal-submit' => '',
-										'id' => 'delete-wiki-button',
-										'disabled' => true,
-									)
-								);?>
-							</div>
-							<div data-actions-wiki-page-confirmation hidden>
-								<?php echo FormFieldHelper::button(
-									__( 'Delete', 'wikipress' ),
-									array(
-										'type' => 'submit',
-										'class' => 'btn btn-outline-danger',
-										'data-actions-modal-submit' => '',
-										'id' => 'delete-wiki-page-button',
-										'disabled' => true,
-									)
-								);?>
-							</div>
+							<?php echo FormFieldHelper::button(
+								__( 'Delete', 'wikipress' ),
+								array(
+									'type' => 'submit',
+									'class' => 'btn btn-outline-danger',
+									'data-actions-modal-submit' => '',
+								)
+							);?>
 						</div>
 					</form>
 				</div>

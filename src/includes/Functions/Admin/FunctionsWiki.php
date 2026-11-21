@@ -252,13 +252,6 @@ final class FunctionsWiki {
         check_admin_referer( 'wikipress_delete_wiki', 'wikipress_wiki_nonce' );
 
         $wiki_id = absint( $_POST['wikipress_wiki_id'] ?? 0 );
-        $confirmed = isset( $_POST['confirm_delete_wiki'] ) && '1' === sanitize_key( wp_unslash( $_POST['confirm_delete_wiki'] ) );
-        if ( ! $confirmed ) {
-            $redirect = add_query_arg( 'wikipress_notice', 'wiki_delete_confirmation_required', admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wikis' ) );
-            wp_safe_redirect( $redirect );
-            exit;
-        }
-
         if ( $wiki_id <= 0 ) {
             $redirect = add_query_arg( 'wikipress_notice', 'wiki_missing_id', admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wikis' ) );
             wp_safe_redirect( $redirect );
@@ -358,13 +351,6 @@ final class FunctionsWiki {
         check_admin_referer( 'wikipress_delete_wiki_page', 'wikipress_wiki_nonce' );
 
         $page_id = absint( $_POST['wikipress_wiki_page_id'] ?? 0 );
-        $confirmed = isset( $_POST['confirm_delete_wiki_page'] ) && '1' === sanitize_key( wp_unslash( $_POST['confirm_delete_wiki_page'] ) );
-        if ( ! $confirmed ) {
-            $redirect = add_query_arg( 'wikipress_notice', 'wiki_page_delete_confirmation_required', admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wikis' ) );
-            wp_safe_redirect( $redirect );
-            exit;
-        }
-
         if ( $page_id <= 0 ) {
             $redirect = add_query_arg( 'wikipress_notice', 'wiki_page_missing_id', admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wikis' ) );
             wp_safe_redirect( $redirect );

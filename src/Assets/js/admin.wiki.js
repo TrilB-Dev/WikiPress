@@ -44,9 +44,6 @@
         const nonceInput = form?.querySelector('input[name="wikipress_wiki_nonce"]');
         const wikiIdInput = form?.querySelector('input[name="wikipress_wiki_id"]');
         const wikiPageIdInput = form?.querySelector('input[name="wikipress_wiki_page_id"]');
-        const submitButtons = modal.querySelectorAll('[data-actions-modal-submit]');
-        const confirmation = modal.querySelector('#confirm_delete_wiki');
-        const pageConfirmation = modal.querySelector('#confirm_delete_wiki_page');
         const pagesConfirmationWrap = modal.querySelector('[data-actions-pages-confirmation]');
         const pagesConfirmation = modal.querySelector('#confirm_delete_wiki_pages');
 
@@ -64,12 +61,6 @@
             const wikiPageTitle = trigger.dataset.wikiPageTitle ?? '';
             const pagesCount = Number.parseInt(trigger.dataset.wikiPagesCount ?? '0', 10);
 
-            if (confirmation) {
-                confirmation.checked = false;
-            }
-            if (pageConfirmation) {
-                pageConfirmation.checked = false;
-            }
             if (pagesConfirmation) {
                 pagesConfirmation.checked = true;
             }
@@ -84,34 +75,12 @@
                 actionBody && (actionBody.textContent = 'Are you sure you want to delete this wiki?');
                 pagesConfirmationWrap && (pagesConfirmationWrap.hidden = !(pagesCount > 0));
                 modal.querySelector('[data-actions-wiki-confirmation]')?.removeAttribute('hidden');
-                modal.querySelector('[data-actions-wiki-page-confirmation]')?.setAttribute('hidden', '');
             } else if ('delete-wiki-page' === action) {
                 actionInput && (actionInput.value = 'wikipress_delete_wiki_page');
                 actionTitle && (actionTitle.textContent = `Delete Wiki Page: ${wikiPageTitle ? ` ${wikiPageTitle}` : ''}`);
                 actionBody && (actionBody.textContent = 'Are you sure you want to delete this wiki page?');
                 pagesConfirmationWrap && (pagesConfirmationWrap.hidden = true);
                 modal.querySelector('[data-actions-wiki-confirmation]')?.setAttribute('hidden', '');
-                modal.querySelector('[data-actions-wiki-page-confirmation]')?.removeAttribute('hidden');
-            }
-
-            submitButtons.forEach((button) => {
-                button.disabled = true;
-            });
-        });
-        modal.addEventListener('change', (event) => {
-            if (event.target.matches('#confirm_delete_wiki, #confirm_delete_wiki_page')) {
-                const action = actionInput?.value ?? '';
-                let requiredConfirmation = null;
-
-                if ('wikipress_delete_wiki' === action) {
-                    requiredConfirmation = confirmation;
-                } else if ('wikipress_delete_wiki_page' === action) {
-                    requiredConfirmation = pageConfirmation;
-                }
-
-                submitButtons.forEach((button) => {
-                    button.disabled = !(requiredConfirmation?.checked);
-                });
             }
         });
     })();
