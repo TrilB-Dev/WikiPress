@@ -10,6 +10,7 @@ use WikiPress\Admin\Manager\Wiki\WikiManager;
 use WikiPress\Includes\Functions\Helpers\AlertHelper;
 use WikiPress\Includes\Functions\Helpers\FormFieldHelper;
 use WikiPress\Includes\Functions\Helpers\PostHelper;
+use WikiPress\Includes\Functions\Helpers\PermalinkHelper;
 use WikiPress\Includes\Plugins\FontAwesome\Includes\Functions\Helpers\FAHelper;
 use WikiPress\Includes\Functions\Helpers\WPMediaHelper;
 
@@ -562,6 +563,15 @@ class Wikis extends WikiManager {
 			$settings
 		);
 
+		$settings['permalink'] = PermalinkHelper::sanitize_pattern( (string) $settings['permalink'] );
+		$permalink_token_definitions = array(
+			'%wiki_root%'     => __( 'The WikiPress root.', 'wikipress' ),
+			'%wiki_parent%'   => __( 'The slug for this Wiki.', 'wikipress' ),
+			'%wiki_category%' => __( 'The Wiki category slug.', 'wikipress' ),
+			'%wiki_tag%'      => __( 'The Wiki tag slug.', 'wikipress' ),
+			'%wiki_page%'     => __( 'The Wiki page slug.', 'wikipress' ),
+		);
+
 		$primary_rows = array(
 			array(
 				'name'        => 'wikipress_wiki[title]',
@@ -746,15 +756,36 @@ class Wikis extends WikiManager {
 				'name'        => 'wikipress_wiki[settings][permalink]',
 				'label'       => __( 'Custom Permalink', 'wikipress' ),
 				'field_id'    => 'wikipress-wiki-permalink',
-				'renderer'    => function () use ( $settings ) {
-					return FormFieldHelper::text_input(
+				'hidden'      => empty( $settings['permalink_override'] ),
+				'renderer'    => function () use ( $settings, $permalink_token_definitions ) {
+					$html = FormFieldHelper::text_input(
 						'wikipress_wiki[settings][permalink]',
 						$settings['permalink'],
 						array(
-							'id'    => 'wikipress-wiki-permalink',
-							'class' => 'w-100',
+							'id'                  => 'wikipress-wiki-permalink',
+							'class'               => 'w-100',
+							'data-permalink-field' => 'permalink',
 						)
 					);
+
+					$html .= '<div class="wikipress-permalink-tokens mt-2" aria-label="' . esc_attr__( 'Available permalink tokens', 'wikipress' ) . '">';
+					foreach ( $permalink_token_definitions as $token => $description ) {
+						$html .= FormFieldHelper::button(
+							$token,
+							array(
+								'class' => 'btn-sm btn-outline-secondary me-1 mb-1',
+								'type'  => 'button',
+								'attributes' => array(
+									'data-permalink-token' => $token,
+									'title'               => $description,
+								),
+							)
+						);
+					}
+					$html .= '</div>';
+					$html .= '<div class="form-text">' . esc_html__( 'Click a token to add it to the pattern. Tokens are inserted with a trailing slash and reappear when removed.', 'wikipress' ) . '</div>';
+
+					return $html;
 				},
 				'description' => __( 'Optional custom permalink pattern for this wiki.', 'wikipress' ),
 				'hint'        => __( 'Use a structure such as /docs/%wiki%/%page%/ or leave blank to use the global default.', 'wikipress' ),
@@ -852,7 +883,7 @@ class Wikis extends WikiManager {
 					$field_id = $row['field_id'] ?? 'wikipress-' . str_replace( array( '[', ']', '_' ), '-', sanitize_key( str_replace( 'wikipress_', '', $field_name ) ) );
 					$field_html = is_callable( $field_renderer ) ? (string) call_user_func( $field_renderer ) : '';
 					?>
-                    <tr>
+                    <tr<?php echo ! empty( $row['hidden'] ) ? ' hidden' : ''; ?>>
                         <th scope="row" class="align-top text-wrap pe-4" style="width: 35%;" >
                             <?php echo wp_kses_post(
                                 FormFieldHelper::label(

@@ -182,7 +182,7 @@ final class FunctionsWiki {
             'navigation_position' => isset( $settings['navigation_position'] ) ? sanitize_key( wp_unslash( $settings['navigation_position'] ) ) : 'top',
             'internal_wiki'       => ! empty( $settings['internal_wiki'] ),
             'permalink_override'  => ! empty( $settings['permalink_override'] ),
-            'permalink'           => isset( $settings['permalink'] ) ? sanitize_text_field( wp_unslash( $settings['permalink'] ) ) : '',
+            'permalink'           => isset( $settings['permalink'] ) ? PermalinkHelper::sanitize_pattern( wp_unslash( $settings['permalink'] ) ) : '',
         );
 
         $meta_fields = array(
