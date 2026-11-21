@@ -85,8 +85,13 @@
                 const confirmWikiDelete = modal.getElementById('confirm-wiki-delete');
                 const deleteWikiButton = modal.getElementById('delete-wiki-button');
                 confirmWikiDelete.addEventListener('change', function () {
-                    // Enable or disable the button based on the checkbox state
-                    deleteWikiButton.disabled = !this.checked;
+                    if (this.checked) {
+                        // Remove disabled attribute
+                        deleteWikiButton.removeAttribute('disabled');
+                    } else {
+                        // Add disabled attribute back
+                        deleteWikiButton.setAttribute('disabled', 'true');
+                    }
                 });
             } else if ('delete-wiki-page' === action) {
                 actionInput && (actionInput.value = 'wikipress_delete_wiki_page');
@@ -98,8 +103,13 @@
                 const confirmWikiDeletePage = modal.getElementById('confirm-delete-wiki-page');
                 const deleteWikiPageButton = modal.getElementById('delete-wiki-page-button');
                 confirmWikiDeletePage.addEventListener('change', function () {
-                    // Enable or disable the button based on the checkbox state
-                    deleteWikiPageButton.disabled = !this.checked;
+                    if (this.checked) {
+                        // Remove disabled attribute
+                        deleteWikiPageButton.removeAttribute('disabled');
+                    } else {
+                        // Add disabled attribute back
+                        deleteWikiPageButton.setAttribute('disabled', 'true');
+                    }
                 });
             }
         });
