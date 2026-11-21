@@ -140,7 +140,7 @@ class Wikis extends WikiManager {
 				<?php $this->render_wiki_modal( $wiki_id > 0 ? get_post( $wiki_id ) : null ); ?>
 				<?php $this->render_actions_modal(); ?>
 
-				<?php if ( $wiki_id > 0 ) : ?>
+				<?php if ( $wiki_id > 0 && isset( $_GET['wiki_id'] ) ) : ?>
 					<script>
 						window.addEventListener('load', function () {
 							var modalEl = document.getElementById('wikipress-wiki-modal');

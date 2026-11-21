@@ -233,7 +233,6 @@ final class FunctionsWiki {
         }
 
         $redirect = admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wikis' );
-        $redirect = add_query_arg( 'wiki_id', absint( $saved_id ), $redirect );
         $redirect = add_query_arg( 'wikipress_notice', $wiki_id > 0 ? 'wiki_updated' : 'wiki_saved', $redirect );
         wp_safe_redirect( $redirect );
         exit;
