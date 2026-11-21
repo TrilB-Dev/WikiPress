@@ -253,7 +253,7 @@ class Wikis extends WikiManager {
                                     'type'            => 'button',
                                     'class'           => 'btn btn-outline-secondary btn-sm',
                                     'data-bs-toggle'  => 'modal',
-                                    'data-bs-target'  => '#wikipress-wiki-modal' . $settings_id,
+                                    'data-bs-target'  => '#wikipress-wiki-modal-' . absint( $wiki->ID ),
                                 ] 
                             ); ?>
                             <?php echo FormFieldHelper::button( 
@@ -266,6 +266,7 @@ class Wikis extends WikiManager {
                             ); ?>
                         </div>
                     </article>
+                    <?php $this->render_wiki_modal( $wiki, 'wikipress-wiki-modal-' . absint( $wiki->ID ) ); ?>
 				</div>
 			<?php endforeach; ?>
 		</div>
@@ -480,9 +481,16 @@ class Wikis extends WikiManager {
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public function render_wiki_modal( $wiki = null ): void {
+	public function render_wiki_modal( $wiki = null, string $modal_id = 'wikipress-wiki-modal' ): void {
 		$wiki_id = $wiki instanceof \WP_Post ? absint( $wiki->ID ) : 0;
 		$is_edit = $wiki_id > 0;
+		$modal_id = sanitize_key( $modal_id );
+		$modal_title_id = $modal_id . '-title';
+		$accordion_id = $modal_id . '-accordion';
+		$info_heading_id = $modal_id . '-info-heading';
+		$info_id = $modal_id . '-info';
+		$settings_heading_id = $modal_id . '-settings-heading';
+		$settings_id = $modal_id . '-settings';
 		$legacy_settings = $is_edit ? get_post_meta( $wiki_id, '_wikipress_wiki_settings', true ) : array();
 		if ( ! is_array( $legacy_settings ) ) {
 			$legacy_settings = array();
@@ -792,38 +800,38 @@ class Wikis extends WikiManager {
 			),
 		);
 		?>
-		<div class="modal fade" id="wikipress-wiki-modal" tabindex="-1" aria-labelledby="wikipress-wiki-modal-title" aria-hidden="true">
+		<div class="modal fade" id="<?php echo esc_attr( $modal_id ); ?>" tabindex="-1" aria-labelledby="<?php echo esc_attr( $modal_title_id ); ?>" aria-hidden="true">
 			<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
 				<div class="modal-content">
-					<form id="wikipress-wiki-save-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+					<form id="<?php echo esc_attr( $modal_id . '-save-form' ); ?>" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 						<input type="hidden" name="action" value="wikipress_save_wiki" />
 						<input type="hidden" name="wikipress_wiki_id" value="<?php echo esc_attr( (string) $wiki_id ); ?>" />
 						<?php wp_nonce_field( 'wikipress_save_wiki', 'wikipress_wiki_nonce' ); ?>
 						<div class="modal-header">
-							<h5 class="modal-title" id="wikipress-wiki-modal-title"><?php echo esc_html( $is_edit ? __( 'Edit Wiki', 'wikipress' ) : __( 'Create Wiki', 'wikipress' ) ); ?></h5>
+							<h5 class="modal-title" id="<?php echo esc_attr( $modal_title_id ); ?>"><?php echo esc_html( $is_edit ? __( 'Edit Wiki', 'wikipress' ) : __( 'Create Wiki', 'wikipress' ) ); ?></h5>
 							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 						</div>
 						<div class="modal-body">
-							<div class="accordion" id="wikipress-wiki-form-accordion">
+							<div class="accordion" id="<?php echo esc_attr( $accordion_id ); ?>">
 								<div class="accordion-item">
-									<h2 class="accordion-header" id="wikipress-wiki-info-heading">
-										<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#wikipress-wiki-info" aria-expanded="true" aria-controls="wikipress-wiki-info">
+									<h2 class="accordion-header" id="<?php echo esc_attr( $info_heading_id ); ?>">
+										<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#<?php echo esc_attr( $info_id ); ?>" aria-expanded="true" aria-controls="<?php echo esc_attr( $info_id ); ?>">
 											<?php esc_html_e( 'Wiki Info', 'wikipress' ); ?>
 										</button>
 									</h2>
-									<div id="wikipress-wiki-info" class="accordion-collapse collapse show" aria-labelledby="wikipress-wiki-info-heading" data-bs-parent="#wikipress-wiki-form-accordion">
+									<div id="<?php echo esc_attr( $info_id ); ?>" class="accordion-collapse collapse show" aria-labelledby="<?php echo esc_attr( $info_heading_id ); ?>" data-bs-parent="#<?php echo esc_attr( $accordion_id ); ?>">
 										<div class="accordion-body p-0">
 											<?php $this->render_form_table_rows( $primary_rows ); ?>
 										</div>
 									</div>
 								</div>
 								<div class="accordion-item">
-									<h2 class="accordion-header" id="wikipress-wiki-settings-heading">
-										<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#wikipress-wiki-settings" aria-expanded="false" aria-controls="wikipress-wiki-settings">
+									<h2 class="accordion-header" id="<?php echo esc_attr( $settings_heading_id ); ?>">
+										<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#<?php echo esc_attr( $settings_id ); ?>" aria-expanded="false" aria-controls="<?php echo esc_attr( $settings_id ); ?>">
 											<?php esc_html_e( 'Wiki Settings', 'wikipress' ); ?>
 										</button>
 									</h2>
-									<div id="wikipress-wiki-settings" class="accordion-collapse collapse" aria-labelledby="wikipress-wiki-settings-heading" data-bs-parent="#wikipress-wiki-form-accordion">
+									<div id="<?php echo esc_attr( $settings_id ); ?>" class="accordion-collapse collapse" aria-labelledby="<?php echo esc_attr( $settings_heading_id ); ?>" data-bs-parent="#<?php echo esc_attr( $accordion_id ); ?>">
 										<div class="accordion-body p-0">
 											<?php $this->render_form_table_rows( $settings_rows ); ?>
 										</div>

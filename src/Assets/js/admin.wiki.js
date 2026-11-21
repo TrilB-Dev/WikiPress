@@ -28,10 +28,9 @@
      */
     const wikiPage = document.querySelector('.wikipress-wikis-page');
     wikiPage && (() => {
-        const wikiModal = wikiPage.querySelector('#wikipress-wiki-modal');
-        if (wikiModal) {
-            const permalinkOverride = wikiModal.querySelector('#wikipress-wiki-permalink-override');
-            const permalinkField = wikiModal.querySelector('#wikipress-wiki-permalink');
+        wikiPage.querySelectorAll('.modal[id^="wikipress-wiki-modal"]').forEach((wikiModal) => {
+            const permalinkOverride = wikiModal.querySelector('[name="wikipress_wiki[settings][permalink_override]"]');
+            const permalinkField = wikiModal.querySelector('[name="wikipress_wiki[settings][permalink]"]');
             const permalinkRow = permalinkField?.closest('tr');
 
             const updatePermalinkVisibility = () => {
@@ -44,7 +43,7 @@
 
             permalinkOverride?.addEventListener('change', updatePermalinkVisibility);
             updatePermalinkVisibility();
-        }
+        });
 
         /**
          * Initializes and handles the actions modal for wiki management, including delete confirmations.
