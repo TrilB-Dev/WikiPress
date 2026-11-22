@@ -15,6 +15,8 @@
 
 	const { registerPlugin } = window.wp.plugins;
 	const { PluginDocumentSettingPanel } = window.wp.editPost;
+	const MainDashboardButton = window.wp.editPost.__experimentalMainDashboardButton;
+	const FullscreenModeClose = window.wp.editPost.__experimentalFullscreenModeClose;
 	const { SelectControl, ToggleControl, TextControl } = window.wp.components;
 	const { createElement: el } = window.wp.element;
 	const { useSelect, useDispatch } = window.wp.data;
@@ -32,41 +34,43 @@
 
 	const pagesUrl = config.pagesUrl || '';
 
-	const updateBackButtonUrl = () => {
-		if (!pagesUrl) {
-			return;
+	const WikiPageBackButton = () => {
+		if (!MainDashboardButton || !FullscreenModeClose || !pagesUrl) {
+			return null;
 		}
 
-		let parentId = config.parentId || 0;
-		if (window.wp.data.select) {
-			const editor = window.wp.data.select('core/editor');
-			if (editor && editor.getEditedPostAttribute) {
-				parentId = editor.getEditedPostAttribute('parent') || parentId;
-			}
+		const postType = useSelect(
+			( select ) => select( 'core/editor' ).getCurrentPostType(),
+			[]
+		);
+
+		if ('wikipress_wiki_page' !== postType) {
+			return null;
 		}
 
+		const parentId = useSelect(
+			( select ) => select( 'core/editor' ).getEditedPostAttribute( 'parent' ),
+			[]
+		);
+		const selectedParentId = parentId || config.parentId || 0;
 		const url = new URL(pagesUrl, window.location.origin);
-		if (parentId) {
-			url.searchParams.set('wiki', String(parentId));
+
+		if (selectedParentId) {
+			url.searchParams.set('wiki', String(selectedParentId));
 		}
 
-		document.querySelectorAll(
-			'.editor-header__back-button a, ' +
-			'a[aria-label="View Pages"]'
-		).forEach((link) => {
-			link.href = url.toString();
-		});
+		return el(
+			MainDashboardButton,
+			null,
+			el(FullscreenModeClose, {
+				href: url.toString(),
+			})
+		);
 	};
 
-	updateBackButtonUrl();
-	window.wp.data.subscribe(updateBackButtonUrl);
-
-	if (window.MutationObserver) {
-		new MutationObserver(updateBackButtonUrl).observe(document.body, {
-			childList: true,
-			subtree: true,
-		});
-	}
+	registerPlugin( 'wikipress-wiki-page-back-button', {
+		render: WikiPageBackButton,
+	} );
 
 	const WikiPageSettingsPanel = () => {
 		const postType = useSelect(
