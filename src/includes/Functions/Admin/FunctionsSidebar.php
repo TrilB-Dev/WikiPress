@@ -163,7 +163,7 @@ final class FunctionsSidebar {
 						'label'      => __( 'Wikis', 'wikipress' ),
 						'icon'       => 'fa-solid fa-cubes',
 						'link'       => 'wikipress&group=wiki-manager&tab=wikis',
-						'capability' => 'wikipress_manager_wikis_view',
+						'capability' => 'wikipress_manager_wiki_view',
 					],
 					'categories' => [
 						'label'      => __( 'Categories', 'wikipress' ),
