@@ -53,6 +53,11 @@ final class FunctionsWiki {
 				),
 				array(
 					'type'     => 'action',
+					'hook'     => 'admin_post_wikipress_create_wiki_page',
+					'callback' => 'create_wiki_page',
+				),
+				array(
+					'type'     => 'action',
 					'hook'     => 'admin_post_wikipress_save_tags',
 					'callback' => 'save_tags',
 				),
@@ -279,6 +284,45 @@ final class FunctionsWiki {
 
         $redirect = add_query_arg( 'wikipress_notice', 'wiki_deleted', admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wikis' ) );
         wp_safe_redirect( $redirect );
+        exit;
+    }
+    /**
+     * Create a draft wiki page and open it in the WordPress editor.
+     *
+     * @return void
+     * @since 1.0.0
+     */
+    public function create_wiki_page(): void {
+        if ( ! current_user_can( 'wikipress_manager_wiki_edit' ) && ! current_user_can( 'manage_options' ) ) {
+            wp_die( esc_html__( 'You are not allowed to manage WikiPress wikis.', 'wikipress' ) );
+        }
+
+        check_admin_referer( 'wikipress_create_wiki_page', 'wikipress_wiki_nonce' );
+
+        $wiki_id = absint( $_POST['wikipress_wiki_id'] ?? $_GET['wikipress_wiki_id'] ?? 0 );
+        $wiki = $wiki_id > 0 ? get_post( $wiki_id ) : null;
+        if ( ! $wiki || 'wikipress_wiki' !== $wiki->post_type ) {
+            wp_safe_redirect( admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wikis&wikipress_notice=wiki_page_missing_wiki' ) );
+            exit;
+        }
+
+        $page_id = wp_insert_post(
+            array(
+                'post_type'   => 'wikipress_wiki_page',
+                'post_parent' => $wiki_id,
+                'post_title'  => __( 'Untitled Wiki Page', 'wikipress' ),
+                'post_status' => 'draft',
+                'post_author' => get_current_user_id(),
+            ),
+            true
+        );
+
+        if ( is_wp_error( $page_id ) ) {
+            wp_safe_redirect( admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wiki-pages&wiki=' . $wiki_id . '&wikipress_notice=wiki_page_error' ) );
+            exit;
+        }
+
+        wp_safe_redirect( admin_url( 'post.php?action=edit&post=' . absint( $page_id ) ) );
         exit;
     }
     /**

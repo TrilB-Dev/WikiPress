@@ -102,6 +102,7 @@ class WikiManager extends Manager {
         //add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
         add_action( 'admin_post_wikipress_save_wiki', array( $this->functions_wiki, 'save_wiki' ) );
         add_action( 'admin_post_wikipress_delete_wiki', array( $this->functions_wiki, 'delete_wiki' ) );
+        add_action( 'admin_post_wikipress_create_wiki_page', array( $this->functions_wiki, 'create_wiki_page' ) );
         add_action( 'admin_post_wikipress_save_wiki_page', array( $this->functions_wiki, 'save_wiki_page' ) );
         add_action( 'admin_post_wikipress_delete_wiki_page', array( $this->functions_wiki, 'delete_wiki_page' ) );
         add_action( 'admin_post_wikipress_save_tags', array( $this->functions_wiki, 'save_tags' ) );
