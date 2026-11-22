@@ -30,6 +30,44 @@
 		...( config.wikis || [] ),
 	];
 
+	const pagesUrl = config.pagesUrl || '';
+
+	const updateBackButtonUrl = () => {
+		if (!pagesUrl) {
+			return;
+		}
+
+		let parentId = config.parentId || 0;
+		if (window.wp.data.select) {
+			const editor = window.wp.data.select('core/editor');
+			if (editor && editor.getEditedPostAttribute) {
+				parentId = editor.getEditedPostAttribute('parent') || parentId;
+			}
+		}
+
+		const url = new URL(pagesUrl, window.location.origin);
+		if (parentId) {
+			url.searchParams.set('wiki', String(parentId));
+		}
+
+		document.querySelectorAll(
+			'.editor-header__back-button a, ' +
+			'a[aria-label="View Pages"]'
+		).forEach((link) => {
+			link.href = url.toString();
+		});
+	};
+
+	updateBackButtonUrl();
+	window.wp.data.subscribe(updateBackButtonUrl);
+
+	if (window.MutationObserver) {
+		new MutationObserver(updateBackButtonUrl).observe(document.body, {
+			childList: true,
+			subtree: true,
+		});
+	}
+
 	const WikiPageSettingsPanel = () => {
 		const postType = useSelect(
 			( select ) => select( 'core/editor' ).getCurrentPostType(),

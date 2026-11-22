@@ -13,6 +13,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class Meta {
+	/**
+	 * Register Gutenberg metadata and REST API hooks.
+	 *
+	 * @return void
+	 * @since 1.0.0
+	 */
 	public static function register(): void {
 		add_action( 'init', array( self::class, 'register_post_meta' ) );
 		add_filter( 'rest_prepare_wikipress_wiki_page', array( self::class, 'prepare_editor_link' ), 10, 3 );
@@ -41,7 +47,13 @@ final class Meta {
 
 		return $response;
 	}
-
+	/**
+	 * Register post meta for WikiPress wiki pages.
+	 *
+	 * @param string $value The permalink pattern to register.
+	 * @return void
+	 * @since 1.0.0
+	 */
 	public static function register_post_meta(): void {
 		register_post_meta(
 			'wikipress_wiki_page',
@@ -57,7 +69,13 @@ final class Meta {
 			)
 		);
 	}
-
+	/**
+	 * Sanitize permalink pattern for WikiPress wiki pages.
+	 *
+	 * @param mixed $value The value to sanitize.
+	 * @return string
+	 * @since 1.0.0
+	 */
 	public static function sanitize_permalink( $value ): string {
 		return PermalinkHelper::sanitize_pattern( is_scalar( $value ) ? (string) $value : '' );
 	}

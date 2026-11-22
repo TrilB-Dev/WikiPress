@@ -85,6 +85,14 @@ final class Assets {
 				'wikis'   => $wiki_options,
 				'metaKey' => \WikiPress\Includes\Functions\Helpers\PermalinkHelper::OVERRIDE_META,
 				'parentId' => $post instanceof \WP_Post ? (int) $post->post_parent : 0,
+				'pagesUrl' => add_query_arg(
+					array(
+						'page'  => 'wikipress',
+						'group' => 'wiki-manager',
+						'tab'   => 'wiki-pages',
+					),
+					admin_url( 'admin.php' )
+				),
 			)
 		);
 	}
