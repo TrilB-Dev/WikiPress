@@ -15,6 +15,31 @@ if ( ! defined( 'ABSPATH' ) ) {
 final class Meta {
 	public static function register(): void {
 		add_action( 'init', array( self::class, 'register_post_meta' ) );
+		add_filter( 'rest_prepare_wikipress_wiki_page', array( self::class, 'prepare_editor_link' ), 10, 3 );
+	}
+
+	/**
+	 * Point Gutenberg's View link at the parent wiki's Wiki Pages screen.
+	 *
+	 * @param \WP_REST_Response $response REST response.
+	 * @param \WP_Post           $post     Wiki page post.
+	 * @param \WP_REST_Request  $request  REST request.
+	 * @return \WP_REST_Response
+	 */
+	public static function prepare_editor_link( \WP_REST_Response $response, \WP_Post $post, \WP_REST_Request $request ): \WP_REST_Response {
+		if ( $post->post_parent > 0 ) {
+			$response->data['link'] = add_query_arg(
+				array(
+					'page'  => 'wikipress',
+					'group' => 'wiki-manager',
+					'tab'   => 'wiki-pages',
+					'wiki'  => absint( $post->post_parent ),
+				),
+				admin_url( 'admin.php' )
+			);
+		}
+
+		return $response;
 	}
 
 	public static function register_post_meta(): void {
