@@ -278,9 +278,9 @@ class Wikis extends WikiManager {
                             <?php echo FormFieldHelper::button( 
                                 __( 'Manage', 'wikipress' ), 
                                 [
-                                    'type'            => 'button',
-                                    'class'           => 'btn btn-outline-primary btn-sm',
-                                    'href'            => admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wiki-pages&wiki=' . $wiki->ID ),
+                                    'type'  => 'button',
+                                    'class' => 'btn btn-outline-primary btn-sm',
+                                    'href'  => admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wiki-pages&wiki=' . $wiki->ID ),
                                 ] 
                             ); ?>
                         </div>
@@ -354,16 +354,15 @@ class Wikis extends WikiManager {
 												FAHelper::faicon( 'pen-to-square'),
 												array(
 													'href'   => admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wikis&view=table&wiki_id=' . absint( $wiki->ID ) ),
-													'size'  => 'sm',
-													'style' => 'btn btn-sm btn-outline-secondary',
+													'type'   => 'button',
+                                    				'class'  => 'btn btn-outline-secondary btn-sm',
 												) 
 											); ?>
 											<?php echo FormFieldHelper::button(
 												FAHelper::faicon( 'trash'),
 												array(
-													'type' => 'button',
-													'size'  => 'sm',
-													'style' => 'btn btn-sm btn-outline-danger',
+													'type'           => 'button',
+                                    				'class'          => 'btn btn-outline-danger btn-sm',
 													'data-bs-toggle' => 'modal',
 													'data-bs-target' => '#wikipress-actions-modal',
 													'data-wikipress-action' => 'delete-wiki',
@@ -466,16 +465,15 @@ class Wikis extends WikiManager {
 												FAHelper::faicon( 'pen-to-square'),
 												array(
 													'href'   => admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wiki-page&form=editor&wiki_id=' . absint( $wiki->ID ) ),
-													'size'  => 'sm',
-													'style' => 'btn btn-sm btn-outline-primary',
+													'type'   => 'button',
+                                    				'class'  => 'btn btn-outline-secondary btn-sm',
 												) 
 											); ?>
 											<?php echo FormFieldHelper::button(
 												FAHelper::faicon( 'trash'),
 												array(
-													'type' => 'button',
-													'size' => 'sm',
-													'style' => 'btn btn-sm btn-outline-danger',
+													'type'           => 'button',
+                                    				'class'          => 'btn btn-outline-danger btn-sm',
 													'data-bs-toggle' => 'modal',
 													'data-bs-target' => '#wikipress-actions-modal',
 													'data-wikipress-action' => 'delete-wiki',
