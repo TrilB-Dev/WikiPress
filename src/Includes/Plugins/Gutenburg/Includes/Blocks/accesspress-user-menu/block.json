@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "accesspress/ap-menu-user",
+  "title": "AccessPress Menu User",
+  "category": "widgets",
+  "icon": "admin-users",
+  "textdomain": "accesspress",
+  "editorScript": "accesspress-gutenburg-blocks",
+  "attributes": {}
+}
+

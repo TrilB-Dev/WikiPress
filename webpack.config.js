@@ -64,6 +64,11 @@ const tinyMCEEntries = {
     './src/Includes/Plugins/TinyMCE/Assets/scss/tinymce.scss',
   ],
 };
+const gutenburgEntries = {
+  'admin.gutenburg': [
+    './src/Includes/Plugins/Gutenburg/Assets/js/admin.gutenburg.js',
+  ],
+};
 
 const jsDirectory = path.resolve(__dirname, 'src/Assets/js');
 fs.readdirSync(jsDirectory)
@@ -173,6 +178,18 @@ module.exports = [
     entry: tinyMCEEntries,
     output: {
       path: path.resolve(__dirname, 'src/Includes/Plugins/TinyMCE/Assets/dist'),
+      filename: 'js/[name].js',
+      clean: true,
+    },
+    plugins: [
+      new MiniCssExtractPlugin({ filename: 'css/[name].css' }),
+    ],
+  },
+  {
+    ...shared,
+    entry: gutenburgEntries,
+    output: {
+      path: path.resolve(__dirname, 'src/Includes/Plugins/Gutenburg/Assets/dist'),
       filename: 'js/[name].js',
       clean: true,
     },

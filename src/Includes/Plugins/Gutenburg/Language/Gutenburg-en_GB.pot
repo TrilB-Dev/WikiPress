@@ -1,0 +1,203 @@
+# Translation catalog for Gutenburg.
+# Copyright (C) 2026 AccessPress contributors
+# This file is distributed under the same license as the AccessPress package.
+msgid ""
+msgstr ""
+"Project-Id-Version: AccessPress 1.0.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Domain: accesspress\n"
+#: src/includes/Plugins/Gutenburg/Includes/Blocks/wiki-reading-time/WikiReadingTime.php:25
+msgid "%d minute read"
+msgid_plural "%d minute read"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/includes/Plugins/Gutenburg/Includes/Settings/Settings.php:48
+msgid "Add a modal search interface for wiki content."
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Includes/Settings/Settings.php:43
+msgid "Adds breadcrumb navigation to block-based layouts."
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Assets/js/blocks.js:20
+msgid "Block settings"
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Includes/Blocks/wiki-breadcrumbs/WikiBreadcrumbs.php:23
+msgid "Breadcrumbs"
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Includes/Blocks/wiki-search-modal/WikiSearchModal.php:19
+msgid "Close search"
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Assets/js/blocks.js:14
+msgid "Date"
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Includes/Settings/Settings.php:42
+msgid "Disable this to remove AccessPress blocks from the Gutenberg editor."
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Assets/js/blocks.js:34
+msgid "Displays a list of Wiki posts."
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Assets/js/blocks.js:38
+msgid "Displays a Wiki search modal."
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Assets/js/blocks.js:37
+msgid "Displays headings from the current Wiki."
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Assets/js/blocks.js:36
+msgid "Displays related Wiki posts."
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Assets/js/blocks.js:33
+msgid "Displays the current Wiki breadcrumb trail."
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Assets/js/blocks.js:35
+msgid "Displays the estimated reading time for the current Wiki."
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Includes/Settings/Settings.php:42
+msgid "Enable the AccessPress blocks available in the block editor."
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Includes/Settings/Settings.php:42
+msgid "Enable AccessPress Gutenberg blocks"
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Includes/Settings/Settings.php:38
+msgid "Gutenberg"
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Gutenburg.php:68
+msgid "Gutenberg blocks for AccessPress content."
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Includes/Settings/Settings.php:39
+msgid "Gutenberg integration"
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Includes/Blocks/wiki-list/WikiList.php:26
+msgid "No wiki posts found."
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Assets/js/blocks.js:15
+msgid "Order"
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Assets/js/blocks.js:14
+msgid "Order by"
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Assets/js/blocks.js:13
+msgid "Posts per page"
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Includes/Settings/Settings.php:46
+msgid "Related content helps visitors continue exploring the wiki."
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Assets/js/blocks.js:18
+msgid "Related posts"
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Includes/Blocks/wiki-related/WikiRelated.php:41
+msgid "Related Wiki Posts"
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Includes/Blocks/wiki-search-modal/WikiSearchModal.php:18
+#: src/includes/Plugins/Gutenburg/Includes/Blocks/wiki-search-modal/WikiSearchModal.php:19
+msgid "Search"
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Includes/Blocks/wiki-search-modal/WikiSearchModal.php:19
+msgid "Search Wiki"
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Includes/Settings/Settings.php:44
+msgid "Show a list of AccessPress content."
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Includes/Settings/Settings.php:47
+msgid "Show a table of contents for wiki page headings."
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Includes/Settings/Settings.php:46
+msgid "Show related wiki content."
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Includes/Settings/Settings.php:43
+msgid "Show the current wiki location and hierarchy."
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Includes/Settings/Settings.php:45
+msgid "Show the estimated reading time for a wiki page."
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Includes/Blocks/wiki-toc/WikiTOC.php:34
+msgid "Table of contents"
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Includes/Settings/Settings.php:45
+msgid "The estimate is based on the page content."
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Includes/Settings/Settings.php:47
+msgid "The table of contents is generated from headings in the page."
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Assets/js/blocks.js:29
+msgid "This AccessPress block renders on the frontend."
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Assets/js/blocks.js:14
+msgid "Title"
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Includes/Settings/Settings.php:44
+msgid "Use this block to display wiki entries in a page or post."
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Includes/Settings/Settings.php:48
+msgid "Visitors can open the modal and search without leaving the page."
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Assets/js/blocks.js:33
+#: src/includes/Plugins/Gutenburg/Includes/Settings/Settings.php:43
+msgid "Wiki Breadcrumbs"
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Assets/js/blocks.js:34
+#: src/includes/Plugins/Gutenburg/Includes/Settings/Settings.php:44
+msgid "Wiki List"
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Assets/js/blocks.js:35
+#: src/includes/Plugins/Gutenburg/Includes/Settings/Settings.php:45
+msgid "Wiki Reading Time"
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Assets/js/blocks.js:36
+#: src/includes/Plugins/Gutenburg/Includes/Settings/Settings.php:46
+msgid "Wiki Related"
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Assets/js/blocks.js:38
+#: src/includes/Plugins/Gutenburg/Includes/Settings/Settings.php:48
+msgid "Wiki Search Modal"
+msgstr ""
+
+#: src/includes/Plugins/Gutenburg/Assets/js/blocks.js:37
+#: src/includes/Plugins/Gutenburg/Includes/Settings/Settings.php:47
+msgid "Wiki Table of Contents"
+msgstr ""
+
+

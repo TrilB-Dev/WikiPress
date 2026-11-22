@@ -38,7 +38,7 @@ final class PostTypes {
 			array(
 				'label'           => __( 'Wikis', 'wikipress' ),
 				'description'     => __( 'Wiki managed by WikiPress.', 'wikipress' ),
-				'supports'        => array( 'title', 'editor', 'excerpt', 'thumbnail', 'revisions' ),
+				'supports'        => array( 'title', 'excerpt', 'thumbnail', 'author', 'revisions', 'custom-fields' ),
 				'taxonomies'      => array( 'wikipress_category', 'wikipress_tag' ),
 				'public'          => true,
 				'show_ui'         => true,
@@ -65,7 +65,7 @@ final class PostTypes {
 			array(
 				'label'           => __( 'Wiki Page', 'wikipress' ),
 				'description'     => __( 'Wiki page manager for WikiPress.', 'wikipress' ),
-				'supports'        => array( 'title', 'editor', 'excerpt', 'thumbnail', 'revisions' ),
+				'supports'        => array( 'title', 'editor', 'excerpt', 'thumbnail', 'revisions', 'author', 'trackbacks', 'page-attributes', 'post-formats', 'custom-fields', 'comments' ),
 				'taxonomies'      => array( 'wikipress_page_category', 'wikipress_page_tag' ),
 				'public'          => true,
 				'show_ui'         => true,

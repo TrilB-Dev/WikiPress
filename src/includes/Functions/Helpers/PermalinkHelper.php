@@ -89,6 +89,13 @@ final class PermalinkHelper {
 			$pattern = get_post_meta( $object_id, self::OVERRIDE_META, true );
 		}
 
+		if ( '' === $pattern && $object_id > 0 ) {
+			$object = get_post( $object_id );
+			if ( $object && 'wikipress_wiki_page' === $object->post_type && $object->post_parent > 0 ) {
+				$pattern = get_post_meta( $object->post_parent, self::OVERRIDE_META, true );
+			}
+		}
+
 		$resolved_pattern = '' !== $pattern ? $pattern : Settings::get( 'permalink', $fallback );
 		$sanitized        = self::sanitize_pattern( (string) $resolved_pattern );
 		return '' !== $sanitized ? $sanitized : $fallback;
