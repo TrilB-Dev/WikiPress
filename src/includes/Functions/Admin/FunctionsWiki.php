@@ -403,7 +403,11 @@ final class FunctionsWiki {
         $wiki_id = absint( get_post_field( 'post_parent', $page_id ) ?: $_POST['wikipress_wiki_id'] ?? 0 );
         wp_delete_post( $page_id, true );
 
-        $redirect = add_query_arg( 'wikipress_notice', 'wiki_page_deleted', admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wikis' . ( $wiki_id > 0 ? '&wiki_id=' . $wiki_id : '' ) ) );
+        $redirect_url = admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wiki-pages' );
+        if ( $wiki_id > 0 ) {
+            $redirect_url = add_query_arg( 'wiki', $wiki_id, $redirect_url );
+        }
+        $redirect = add_query_arg( 'wikipress_notice', 'wiki_page_deleted', $redirect_url );
         wp_safe_redirect( $redirect );
         exit;
     }
