@@ -17,10 +17,7 @@ use WikiPress\Includes\Functions\Helpers\RequestHelper;
 use WikiPress\Includes\Functions\Helpers\DBHelper;
 use WikiPress\Includes\Functions\Helpers\FormFieldHelper;
 use WikiPress\Includes\Functions\Helpers\WPMediaHelper;
-use WikiPress\Includes\ModManagement\GroupsManager;
-use WikiPress\Includes\ModManagement\ModsManager;
-use WikiPress\Includes\ModManagement\ChangelogManager;
-use WikiPress\Includes\ModManagement\FileManager;
+use WikiPress\Includes\Functions\Helpers\MenuHelper;
 use WikiPress\Includes\Plugins\FontAwesome\Includes\IconPicker;
 use WikiPress\Includes\Plugins\FontAwesome\Includes\Functions\Helpers\FAHelper;
 
@@ -237,6 +234,8 @@ final class FunctionsWiki {
             delete_post_meta( $saved_id, PermalinkHelper::OVERRIDE_META );
         }
 
+        MenuHelper::ensure_wiki_menu( absint( $saved_id ), $title, $postarr['post_name'] );
+
         $redirect = admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wikis' );
         $redirect = add_query_arg( 'wikipress_notice', $wiki_id > 0 ? 'wiki_updated' : 'wiki_saved', $redirect );
         wp_safe_redirect( $redirect );
@@ -376,6 +375,8 @@ final class FunctionsWiki {
             exit;
         }
 
+        MenuHelper::sync_wiki_page_items( $wiki_id );
+
         $redirect = add_query_arg( 'wikipress_notice', $page_id > 0 ? 'wiki_page_updated' : 'wiki_page_saved', admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wikis&wiki_id=' . $wiki_id ) );
         wp_safe_redirect( $redirect );
         exit;
@@ -402,6 +403,9 @@ final class FunctionsWiki {
 
         $wiki_id = absint( get_post_field( 'post_parent', $page_id ) ?: $_POST['wikipress_wiki_id'] ?? 0 );
         wp_delete_post( $page_id, true );
+        if ( $wiki_id > 0 ) {
+            MenuHelper::sync_wiki_page_items( $wiki_id );
+        }
 
         $redirect_url = admin_url( 'admin.php?page=wikipress&group=wiki-manager&tab=wiki-pages' );
         if ( $wiki_id > 0 ) {

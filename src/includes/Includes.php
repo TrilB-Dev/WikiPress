@@ -9,6 +9,7 @@ namespace WikiPress\Includes;
 use WikiPress\Includes\Core\WP\WPLoader;
 use WikiPress\Includes\Functions\Helpers\LoggerHelper;
 use WikiPress\Includes\Pages\CronJobs;
+use WikiPress\Includes\Pages\Menus;
 use WikiPress\Includes\Pages\PostTypes;
 use WikiPress\Includes\Pages\Shortcodes;
 use WikiPress\Includes\Pages\Taxonomies;
@@ -70,6 +71,12 @@ final class Includes {
          * @since 1.0.0
          */
         PostTypes::register();
+        /**
+         * Navigation menu registration and WikiPress menu filters.
+         *
+         * @since 1.0.0
+         */
+        Menus::register();
         /**
          * Taxonomies registration.
          * 
