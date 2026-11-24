@@ -13,6 +13,7 @@ use WikiPress\Admin\Manager\Tools\Import;
 use WikiPress\Admin\Manager\Tools\Export;
 use WikiPress\Admin\Manager\Tools\General;
 use WikiPress\Admin\Manager\Tools\Licencing;
+use WikiPress\Admin\Manager\Tools\Integrations;
 use WikiPress\Assets\Assets;
 use WikiPress\Includes\Functions\Helpers\RequestHelper;
 use WikiPress\Includes\Functions\Helpers\SanitizationHelper;
@@ -53,6 +54,7 @@ class ToolsManager extends Manager {
 			'export' => 'wikipress_tools_export',
 			'general' => 'wikipress_tools_general',
 			'licencing' => 'wikipress_tools_licencing',
+			'integrations' => 'wikipress_tools_integrations',
 		);
 		if ( ! PermissionHelper::can( $capabilities[ $tool ] ) ) {
 			wp_die( esc_html__( 'You are not authorized to access this WikiPress tool.', 'wikipress' ) );
@@ -78,7 +80,7 @@ class ToolsManager extends Manager {
 			$tool = RequestHelper::get_key( 'tab', 'debug' );
 		}
 
-		$valid_tools = array( 'debug', 'reset', 'import', 'export', 'general', 'licencing' );
+		$valid_tools = array( 'debug', 'reset', 'import', 'export', 'general', 'licencing', 'integrations' );
 		return in_array( $tool, $valid_tools, true ) ? $tool : 'debug';
 	}
 
@@ -103,6 +105,8 @@ class ToolsManager extends Manager {
 				return new Export();
 			case 'licencing':
 				return new Licencing();
+			case 'integrations':
+				return new Integrations();
 		}
 	}
 	/**
@@ -130,6 +134,7 @@ class ToolsManager extends Manager {
 			'export' => __( 'Export', 'wikipress' ),
 			'general' => __( 'General', 'wikipress' ),
 			'licencing' => __( 'Licencing', 'wikipress' ),
+			'integrations' => __( 'Integrations', 'wikipress' ),
 		)[ $tool ];
 	}
 }
