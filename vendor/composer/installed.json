@@ -2,17 +2,17 @@
     "packages": [
         {
             "name": "antecedent/patchwork",
-            "version": "2.2.4",
-            "version_normalized": "2.2.4.0",
+            "version": "2.2.5",
+            "version_normalized": "2.2.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/antecedent/patchwork.git",
-                "reference": "d5d5c6032b7109477163b68e25ff531f7654ebf9"
+                "reference": "1ea49951bdf0d2d7c0bd436ffd95215e08ed30ed"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/antecedent/patchwork/zipball/d5d5c6032b7109477163b68e25ff531f7654ebf9",
-                "reference": "d5d5c6032b7109477163b68e25ff531f7654ebf9",
+                "url": "https://api.github.com/repos/antecedent/patchwork/zipball/1ea49951bdf0d2d7c0bd436ffd95215e08ed30ed",
+                "reference": "1ea49951bdf0d2d7c0bd436ffd95215e08ed30ed",
                 "shasum": ""
             },
             "require": {
@@ -23,7 +23,8 @@
                 "phpunit/phpunit": ">=4",
                 "squizlabs/php_codesniffer": "^3.13.5 || ^4.0"
             },
-            "time": "2026-10-25T05:26:39+00:00",
+            "time": "2026-11-10T09:08:20+00:00",
+            "published-time": "2026-11-10T21:11:40+00:00",
             "type": "library",
             "installation-source": "dist",
             "notification-url": "https://packagist.org/downloads/",
@@ -49,7 +50,7 @@
             ],
             "support": {
                 "issues": "https://github.com/antecedent/patchwork/issues",
-                "source": "https://github.com/antecedent/patchwork/tree/2.2.4"
+                "source": "https://github.com/antecedent/patchwork/tree/2.2.5"
             },
             "install-path": "../antecedent/patchwork"
         },
@@ -125,30 +126,30 @@
         },
         {
             "name": "brain/monkey",
-            "version": "2.7.0",
-            "version_normalized": "2.7.0.0",
+            "version": "2.8.0",
+            "version_normalized": "2.8.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Brain-WP/BrainMonkey.git",
-                "reference": "ea3aeb3d559ba3c0930b3f4d210b665a4c044d83"
+                "reference": "7a7aa42265247fae63e38eebd9d6512a499238a2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Brain-WP/BrainMonkey/zipball/ea3aeb3d559ba3c0930b3f4d210b665a4c044d83",
-                "reference": "ea3aeb3d559ba3c0930b3f4d210b665a4c044d83",
+                "url": "https://api.github.com/repos/Brain-WP/BrainMonkey/zipball/7a7aa42265247fae63e38eebd9d6512a499238a2",
+                "reference": "7a7aa42265247fae63e38eebd9d6512a499238a2",
                 "shasum": ""
             },
             "require": {
-                "antecedent/patchwork": "^2.1.17",
-                "mockery/mockery": "~1.3.6 || ~1.4.4 || ~1.5.1 || ^1.6.10",
-                "php": ">=5.6.0"
+                "antecedent/patchwork": "^2.2.5",
+                "mockery/mockery": "~1.3.6 || ~1.4.4 || ~1.5.1 || ^1.6.13",
+                "php": ">=7.2.0"
             },
             "require-dev": {
-                "dealerdirect/phpcodesniffer-composer-installer": "^1.0.0",
-                "phpcompatibility/php-compatibility": "^9.3.0",
-                "phpunit/phpunit": "^5.7.27 || ^6.5.14 || ^7.5.20 || ^8.5.49 || ^9.6.30"
+                "phpcompatibility/php-compatibility": "^10.0.0@alpha",
+                "phpunit/phpunit": "^8.5.52 || ^9.6.34"
             },
-            "time": "2026-02-05T09:22:14+00:00",
+            "time": "2026-11-24T10:42:26+00:00",
+            "published-time": "2026-11-24T10:49:03+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -297,17 +298,17 @@
         },
         {
             "name": "doctrine/instantiator",
-            "version": "2.1.0",
-            "version_normalized": "2.1.0.0",
+            "version": "2.2.0",
+            "version_normalized": "2.2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/instantiator.git",
-                "reference": "23da848e1a2308728fe5fdddabf4be17ff9720c7"
+                "reference": "bf3870fbe25c1b5f4febaf281be76d1e2d86df30"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/instantiator/zipball/23da848e1a2308728fe5fdddabf4be17ff9720c7",
-                "reference": "23da848e1a2308728fe5fdddabf4be17ff9720c7",
+                "url": "https://api.github.com/repos/doctrine/instantiator/zipball/bf3870fbe25c1b5f4febaf281be76d1e2d86df30",
+                "reference": "bf3870fbe25c1b5f4febaf281be76d1e2d86df30",
                 "shasum": ""
             },
             "require": {
@@ -317,17 +318,18 @@
                 "doctrine/coding-standard": "^14",
                 "ext-pdo": "*",
                 "ext-phar": "*",
-                "phpbench/phpbench": "^1.2",
-                "phpstan/phpstan": "^2.1",
-                "phpstan/phpstan-phpunit": "^2.0",
-                "phpunit/phpunit": "^10.5.58"
+                "phpbench/phpbench": "^1.7",
+                "phpstan/phpstan": "^2.3",
+                "phpstan/phpstan-phpunit": "^2.1",
+                "phpunit/phpunit": "^13.4.6"
             },
-            "time": "2026-01-05T06:47:08+00:00",
+            "time": "2026-11-15T20:06:55+00:00",
+            "published-time": "2026-11-15T20:08:11+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
                 "psr-4": {
-                    "Doctrine\\Instantiator\\": "src/Doctrine/Instantiator/"
+                    "Doctrine\\Instantiator\\": "src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -349,7 +351,7 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/instantiator/issues",
-                "source": "https://github.com/doctrine/instantiator/tree/2.1.0"
+                "source": "https://github.com/doctrine/instantiator/tree/2.2.0"
             },
             "funding": [
                 {
@@ -657,6 +659,7 @@
                 "php": "^7.2 || ^8.0"
             },
             "time": "2024-03-03T12:33:53+00:00",
+            "published-time": "2024-03-03T12:39:44+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -759,17 +762,17 @@
         },
         {
             "name": "php-stubs/woocommerce-stubs",
-            "version": "v11.2.2",
-            "version_normalized": "11.2.2.0",
+            "version": "v11.3.1",
+            "version_normalized": "11.3.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-stubs/woocommerce-stubs.git",
-                "reference": "d5c232c183c09689d75c177b01bef60e6dd53639"
+                "reference": "80c661dc71012c7d82ebcb8098a11ef4b0f01bf3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/d5c232c183c09689d75c177b01bef60e6dd53639",
-                "reference": "d5c232c183c09689d75c177b01bef60e6dd53639",
+                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/80c661dc71012c7d82ebcb8098a11ef4b0f01bf3",
+                "reference": "80c661dc71012c7d82ebcb8098a11ef4b0f01bf3",
                 "shasum": ""
             },
             "require": {
@@ -783,7 +786,8 @@
                 "symfony/polyfill-php73": "Symfony polyfill backporting some PHP 7.3+ features to lower PHP versions",
                 "szepeviktor/phpstan-wordpress": "WordPress extensions for PHPStan"
             },
-            "time": "2026-11-04T21:47:17+00:00",
+            "time": "2026-11-19T22:34:55+00:00",
+            "published-time": "2026-11-19T22:54:59+00:00",
             "type": "library",
             "installation-source": "dist",
             "notification-url": "https://packagist.org/downloads/",
@@ -800,7 +804,7 @@
             ],
             "support": {
                 "issues": "https://github.com/php-stubs/woocommerce-stubs/issues",
-                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v11.2.2"
+                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v11.3.1"
             },
             "install-path": "../php-stubs/woocommerce-stubs"
         },
@@ -936,6 +940,7 @@
                 "roave/security-advisories": "dev-master || Helps prevent installing dependencies with known security issues."
             },
             "time": "2019-12-27T09:44:58+00:00",
+            "published-time": "2019-12-27T10:11:56+00:00",
             "type": "phpcodesniffer-standard",
             "installation-source": "dist",
             "notification-url": "https://packagist.org/downloads/",
@@ -999,6 +1004,7 @@
                 "roave/security-advisories": "dev-master || Helps prevent installing dependencies with known security issues."
             },
             "time": "2025-09-19T17:43:28+00:00",
+            "published-time": "2025-09-19T17:46:46+00:00",
             "type": "phpcodesniffer-standard",
             "installation-source": "dist",
             "notification-url": "https://packagist.org/downloads/",
@@ -1078,6 +1084,7 @@
                 "roave/security-advisories": "dev-master || Helps prevent installing dependencies with known security issues."
             },
             "time": "2025-10-18T00:05:59+00:00",
+            "published-time": "2025-10-18T00:08:18+00:00",
             "type": "phpcodesniffer-standard",
             "installation-source": "dist",
             "notification-url": "https://packagist.org/downloads/",
@@ -1645,17 +1652,17 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "9.6.38",
-            "version_normalized": "9.6.38.0",
+            "version": "9.6.39",
+            "version_normalized": "9.6.39.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "8b5f757e8e92071bfdbfa93943f94f84c4e31007"
+                "reference": "133394556c813b61aa3481a87bef8419d8ec95c0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/8b5f757e8e92071bfdbfa93943f94f84c4e31007",
-                "reference": "8b5f757e8e92071bfdbfa93943f94f84c4e31007",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/133394556c813b61aa3481a87bef8419d8ec95c0",
+                "reference": "133394556c813b61aa3481a87bef8419d8ec95c0",
                 "shasum": ""
             },
             "require": {
@@ -1691,7 +1698,8 @@
                 "ext-soap": "To be able to generate mocks based on WSDL files",
                 "ext-xdebug": "PHP extension that provides line coverage as well as branch and path coverage"
             },
-            "time": "2026-10-05T05:44:26+00:00",
+            "time": "2026-11-13T11:05:34+00:00",
+            "published-time": "2026-11-13T11:06:33+00:00",
             "bin": [
                 "phpunit"
             ],
@@ -1731,7 +1739,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/9.6.38"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/9.6.39"
             },
             "funding": [
                 {

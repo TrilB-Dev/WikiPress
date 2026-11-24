@@ -12,4 +12,5 @@ return array(
     'ec07570ca5a812141189b1fa81503674' => $vendorDir . '/phpunit/phpunit/src/Framework/Assert/Functions.php',
     '051bafe20e2674435a162870efa2d2a7' => $vendorDir . '/brain/monkey/inc/api.php',
     '7d3b315c4f303f2fc14aca642a738e50' => $vendorDir . '/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php',
+    'c0d40b57dd66690950261575793373fe' => $baseDir . '/src/Includes/Plugins/PluginsInterface.php',
 );

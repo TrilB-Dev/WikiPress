@@ -756,7 +756,7 @@ return array(
     'TheSeer\\Tokenizer\\TokenCollectionException' => $vendorDir . '/theseer/tokenizer/src/TokenCollectionException.php',
     'TheSeer\\Tokenizer\\Tokenizer' => $vendorDir . '/theseer/tokenizer/src/Tokenizer.php',
     'TheSeer\\Tokenizer\\XMLSerializer' => $vendorDir . '/theseer/tokenizer/src/XMLSerializer.php',
-    'WikiPress\\WikiPress' => $baseDir . '/src/WikiPress.php',
+    'WikiPress\\Plugin' => $baseDir . '/src/Plugin.php',
     'Yoast\\WPTestUtils\\BrainMonkey\\TestCase' => $vendorDir . '/yoast/wp-test-utils/src/BrainMonkey/TestCase.php',
     'Yoast\\WPTestUtils\\BrainMonkey\\YoastTestCase' => $vendorDir . '/yoast/wp-test-utils/src/BrainMonkey/YoastTestCase.php',
     'Yoast\\WPTestUtils\\Helpers\\ExpectOutputHelper' => $vendorDir . '/yoast/wp-test-utils/src/Helpers/ExpectOutputHelper.php',

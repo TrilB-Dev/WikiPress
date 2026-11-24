@@ -43,7 +43,7 @@ class ClosureParamStringForm
      */
     public static function fromString($param)
     {
-        $param = trim($param);
+        $param = trim($param, " \f\n\r\t\v\x00");
 
         $variadic = substr_count($param, '...') === 1;
         $variadic and $param = str_replace('.', '', $param);
@@ -77,22 +77,13 @@ class ClosureParamStringForm
     public static function fromReflectionParameter(\ReflectionParameter $parameter)
     {
         $type = '';
-        if (PHP_MAJOR_VERSION >= 7) {
-            if ($parameter->hasType()) {
-                $type = $parameter->getType();
-                if ($type instanceof \ReflectionNamedType) {
-                    // PHP >= 7.1.
-                    $type = $type->getName();
-                }
+        if ($parameter->hasType()) {
+            $type = $parameter->getType();
+            if ($type instanceof \ReflectionNamedType) {
+                $type = $type->getName();
+            }
 
-                // In PHP 7.0 the ReflectionType::__toString() method will retrieve the type.
-                $type = ltrim($type, '\\');
-            }
-        } else {
-            preg_match(self::REFLECTION_PARAM_PATTERN, $parameter->__toString(), $matches);
-            if (isset($matches[1])) {
-                $type = $matches[1];
-            }
+            $type = ltrim($type, '\\');
         }
 
         return new static($parameter->getName(), $type, $parameter->isVariadic());
